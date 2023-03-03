@@ -1,0 +1,553 @@
+Axis             enum          5 src/datastructure/bvh/boundingbox.rs pub enum Axis {
+Axis             implementation   11 src/datastructure/bvh/boundingbox.rs impl Axis {
+BVHNode          enum          8 src/datastructure/bvh/node.rs pub enum BVHNode<'d> {
+BVHNode          implementation   21 src/datastructure/bvh/node.rs impl<'d> Display for BVHNode<'d> {
+BVHNode          implementation   27 src/datastructure/bvh/node.rs impl<'d> BVHNode<'d> {
+BasicDataStructure implementation   13 src/datastructure/basic.rs impl<'d> BasicDataStructure<'d> {
+BasicDataStructure implementation   64 src/datastructure/basic.rs impl<'d> DataStructure for BasicDataStructure<'d> {
+BasicDataStructure struct        9 src/datastructure/basic.rs pub struct BasicDataStructure<'d> {
+BasicGenerator   implementation    8 src/generator/basic.rs impl Generator for BasicGenerator {
+BasicGenerator   struct        6 src/generator/basic.rs pub struct BasicGenerator;
+BasicRaytracer   implementation   10 src/raytracer/basic.rs impl RayTracer for BasicRaytracer {
+BasicRaytracer   struct        8 src/raytracer/basic.rs pub struct BasicRaytracer;
+BoundingBox      implementation   37 src/datastructure/bvh/boundingbox.rs impl BoundingBox {
+BoundingBox      struct       32 src/datastructure/bvh/boundingbox.rs pub struct BoundingBox {
+BoxIntersection  struct        5 src/datastructure/bvh/boxintersection.rs pub struct BoxIntersection<'i> {
+Callback         typedef      13 src/generator/mod.rs type Callback<'a> = (dyn Fn(usize, usize) -> Vector + Sync + 'a);
+Camera           implementation   18 src/util/camera.rs impl Camera {
+Camera           struct        6 src/util/camera.rs pub struct Camera {
+CameraConfig     implementation   18 src/config/defaults.rs impl Default for CameraConfig {
+CameraConfig     struct       76 src/config/mod.rs pub struct CameraConfig {
+Clamp01          interface    10 src/util/vector.rs trait Clamp01 {
+Color            implementation    8 src/util/color.rs impl Color {
+Color            struct        2 src/util/color.rs pub struct Color {
+Config           implementation   23 src/config/run.rs impl Config {
+Config           implementation  118 src/config/mod.rs impl Default for Config {
+Config           implementation  132 src/config/mod.rs impl Config {
+Config           struct       16 src/config/mod.rs pub struct Config {
+ConfigError      enum          5 src/config/error.rs pub enum ConfigError {
+ConfigError      implementation   12 src/config/error.rs impl From<serde_yaml::Error> for ConfigError {
+ConfigError      implementation   18 src/config/error.rs impl From<io::Error> for ConfigError {
+ConfigError      implementation   24 src/config/error.rs impl From<tobj::LoadError> for ConfigError {
+ConfigError      implementation   30 src/config/error.rs impl From<SceneError> for ConfigError {
+CrossbeamGenerator implementation   12 src/generator/crossbeam.rs impl CrossbeamGenerator {
+CrossbeamGenerator implementation   18 src/generator/crossbeam.rs impl Generator for CrossbeamGenerator {
+CrossbeamGenerator struct        8 src/generator/crossbeam.rs pub struct CrossbeamGenerator {
+DataStructure    interface    11 src/datastructure/mod.rs pub trait DataStructure: Send + Sync + Debug {
+DatastructureConfig enum        111 src/config/mod.rs pub enum DatastructureConfig {
+DatastructureConfig implementation   30 src/config/defaults.rs impl Default for DatastructureConfig {
+EMPTY            constant     38 src/datastructure/bvh/boundingbox.rs pub const EMPTY: BoundingBox = BoundingBox {
+EPSILON          constant      8 src/util/vector.rs const EPSILON: f64 = 0.00001;
+FileName         enumerator   15 src/scene/texture/mod.rs FileName,
+Gamma            implementation    9 src/postprocessors/gamma.rs impl PostProcessor for Gamma {
+Gamma            struct        7 src/postprocessors/gamma.rs pub struct Gamma;
+GeneralConfig    implementation    7 src/config/defaults.rs impl Default for GeneralConfig {
+GeneralConfig    struct       60 src/config/mod.rs pub struct GeneralConfig {
+Generator        interface    21 src/generator/mod.rs pub trait Generator: Debug {
+GeneratorConfig  enum         41 src/config/mod.rs pub enum GeneratorConfig {
+GeneratorConfig  implementation   51 src/config/defaults.rs impl Default for GeneratorConfig {
+GlowStoneGamma   implementation   15 src/setup/glowstone_gamma.rs impl Setup for GlowStoneGamma {
+GlowStoneGamma   struct       13 src/setup/glowstone_gamma.rs pub struct GlowStoneGamma;
+HardBoxBHV       implementation   15 src/setup/hard_box_bhv.rs impl Setup for HardBoxBHV {
+HardBoxBHV       struct       13 src/setup/hard_box_bhv.rs pub struct HardBoxBHV;
+HouseBVH         implementation   15 src/setup/house_bvh.rs impl Setup for HouseBVH {
+HouseBVH         struct       13 src/setup/house_bvh.rs pub struct HouseBVH;
+HouseCB          implementation   14 src/setup/house_cb.rs impl Setup for HouseCB {
+HouseCB          struct       12 src/setup/house_cb.rs pub struct HouseCB;
+INTERSECTION_EPSILON constant      1 src/util/consts.rs pub const INTERSECTION_EPSILON: f64 = 0.00001;
+IdentityPostProcessor implementation    9 src/postprocessors/identity.rs impl PostProcessor for IdentityPostProcessor {
+IdentityPostProcessor struct        7 src/postprocessors/identity.rs pub struct IdentityPostProcessor;
+ImageError       enumerator   14 src/scene/texture/mod.rs ImageError(ImageError),
+Intersection     implementation   19 src/datastructure/intersection.rs impl<'i> Intersection<'i> {
+Intersection     struct        8 src/datastructure/intersection.rs pub struct Intersection<'i> {
+IoError          enumerator    7 src/config/error.rs IoError(io::Error),
+JMSTracer        implementation   14 src/raytracer/jmstracer.rs impl JMSTracer {
+JMSTracer        implementation   20 src/raytracer/jmstracer.rs impl RayTracer for JMSTracer {
+JMSTracer        struct       10 src/raytracer/jmstracer.rs pub struct JMSTracer {
+KDTreeDataStructure implementation   24 src/datastructure/bvh/mod.rs impl<'d> Debug for KDTreeDataStructure<'d> {
+KDTreeDataStructure implementation   71 src/datastructure/bvh/mod.rs impl<'d> KDTreeDataStructure<'d> {
+KDTreeDataStructure implementation  143 src/datastructure/bvh/mod.rs impl<'d> DataStructure for KDTreeDataStructure<'d> {
+KDTreeDataStructure struct       20 src/datastructure/bvh/mod.rs pub struct KDTreeDataStructure<'d> {
+Leaf             enumerator    9 src/datastructure/bvh/node.rs Leaf {
+LightError       enum         12 src/scene/light/mod.rs pub enum LightError {
+LightError       enumerator    7 src/scene/error.rs LightError(LightError),
+LightSourceManager implementation   21 src/scene/light/mod.rs impl<'l> Debug for LightSourceManager<'l> {
+LightSourceManager implementation   27 src/scene/light/mod.rs impl<'l> LightSourceManager<'l> {
+LightSourceManager struct       16 src/scene/light/mod.rs pub struct LightSourceManager<'l> {
+MSTracer         implementation   12 src/raytracer/mstracer.rs impl MSTracer {
+MSTracer         implementation   18 src/raytracer/mstracer.rs impl RayTracer for MSTracer {
+MSTracer         struct        8 src/raytracer/mstracer.rs pub struct MSTracer {
+Material         implementation   70 src/scene/material.rs impl<'m> Material<'m> {
+Material         struct       28 src/scene/material.rs pub struct Material<'m> {
+McCornellBoxGamma implementation   14 src/setup/mc_cornell_box_gamma.rs impl Setup for McCornellBoxGamma {
+McCornellBoxGamma struct       12 src/setup/mc_cornell_box_gamma.rs pub struct McCornellBoxGamma;
+McShader         implementation   10 src/shader/mcshader.rs impl McShader {
+McShader         implementation   50 src/shader/mcshader.rs impl Shader for McShader {
+McShader         struct        8 src/shader/mcshader.rs pub struct McShader;
+Mesh             implementation   36 src/scene/mod.rs impl<'m> Mesh<'m> {
+Mesh             implementation   42 src/scene/mod.rs impl<'m> Default for Mesh<'m> {
+Mesh             struct       24 src/scene/mod.rs pub struct Mesh<'m> {
+MonteCarlo       implementation   14 src/setup/monte_carlo.rs impl Setup for MonteCarlo {
+MonteCarlo       struct       12 src/setup/monte_carlo.rs pub struct MonteCarlo;
+MonteCarloBVH    implementation   14 src/setup/monte_carlo_bvh.rs impl Setup for MonteCarloBVH {
+MonteCarloBVH    struct       12 src/setup/monte_carlo_bvh.rs pub struct MonteCarloBVH;
+MonteCarloCrossbeam implementation   14 src/setup/monte_carlo_crossbeam.rs impl Setup for MonteCarloCrossbeam {
+MonteCarloCrossbeam struct       12 src/setup/monte_carlo_crossbeam.rs pub struct MonteCarloCrossbeam;
+MonteCarloGamma  implementation   15 src/setup/monte_carlo_gamma.rs impl Setup for MonteCarloGamma {
+MonteCarloGamma  struct       13 src/setup/monte_carlo_gamma.rs pub struct MonteCarloGamma;
+MtlShader        implementation   10 src/shader/mtlshader.rs impl Shader for MtlShader {
+MtlShader        struct        8 src/shader/mtlshader.rs pub struct MtlShader;
+Node             enumerator   13 src/datastructure/bvh/node.rs Node {
+Output           typedef      16 src/scene/texturecoordinate.rs type Output = TextureCoordinate;
+Output           typedef      27 src/scene/texturecoordinate.rs type Output = TextureCoordinate;
+Output           typedef      38 src/scene/texturecoordinate.rs type Output = TextureCoordinate;
+Output           typedef      49 src/scene/texturecoordinate.rs type Output = TextureCoordinate;
+Output           typedef      60 src/scene/texturecoordinate.rs type Output = TextureCoordinate;
+Output           typedef     176 src/util/vector.rs type Output = Vector;
+Output           typedef     188 src/util/vector.rs type Output = Vector;
+Output           typedef     208 src/util/vector.rs type Output = Vector;
+Output           typedef     220 src/util/vector.rs type Output = Vector;
+Output           typedef     232 src/util/vector.rs type Output = Vector;
+Output           typedef     244 src/util/vector.rs type Output = Vector;
+OutputBuffer     implementation   10 src/util/outputbuffer.rs impl Deref for OutputBuffer {
+OutputBuffer     implementation   18 src/util/outputbuffer.rs impl DerefMut for OutputBuffer {
+OutputBuffer     implementation   24 src/util/outputbuffer.rs impl OutputBuffer {
+OutputBuffer     implementation   63 src/util/outputbuffer.rs impl Default for OutputBuffer {
+OutputBuffer     struct        6 src/util/outputbuffer.rs pub struct OutputBuffer {
+PostProcessor    interface    11 src/postprocessors/mod.rs pub trait PostProcessor: Debug {
+PostProcessorGroup implementation   12 src/postprocessors/group.rs impl<'p> PostProcessorGroup<'p> {
+PostProcessorGroup implementation   22 src/postprocessors/group.rs impl<'p> PostProcessor for PostProcessorGroup<'p> {
+PostProcessorGroup struct        8 src/postprocessors/group.rs pub struct PostProcessorGroup<'p> {
+Ray              implementation    9 src/util/ray.rs  impl Ray {
+Ray              struct        4 src/util/ray.rs  pub struct Ray {
+RayTracer        interface    14 src/raytracer/mod.rs pub trait RayTracer: Send + Sync + Debug {
+RayonGenerator   implementation   15 src/generator/rayon.rs impl RayonGenerator {
+RayonGenerator   implementation   21 src/generator/rayon.rs impl Generator for RayonGenerator {
+RayonGenerator   struct       11 src/generator/rayon.rs pub struct RayonGenerator {
+RaytracerConfig  enum         28 src/config/mod.rs pub enum RaytracerConfig {
+RaytracerConfig  implementation   45 src/config/defaults.rs impl Default for RaytracerConfig {
+Renderer         implementation   22 src/renderer/mod.rs impl<'r> Renderer<'r> {
+Renderer         struct       14 src/renderer/mod.rs pub struct Renderer<'r> {
+RendererBuilder  implementation   31 src/renderer/builder.rs impl<'a> RendererBuilder<'a> {
+RendererBuilder  struct        9 src/renderer/builder.rs pub struct RendererBuilder<'a> {
+RendererBuilderDatastructure implementation   68 src/renderer/builder.rs impl<'a> RendererBuilderDatastructure<'a> {
+RendererBuilderDatastructure struct       24 src/renderer/builder.rs pub struct RendererBuilderDatastructure<'a> {
+RendererBuilderRaytracer implementation   44 src/renderer/builder.rs impl<'a> RendererBuilderRaytracer<'a> {
+RendererBuilderRaytracer struct       13 src/renderer/builder.rs pub struct RendererBuilderRaytracer<'a> {
+RendererBuilderShader implementation   54 src/renderer/builder.rs impl<'a> RendererBuilderShader<'a> {
+RendererBuilderShader struct       18 src/renderer/builder.rs pub struct RendererBuilderShader<'a> {
+RngType          typedef       5 src/util/rng.rs  type RngType = SplitMix64;
+Scene            implementation   70 src/scene/mod.rs impl<'s> Debug for Scene<'s> {
+Scene            implementation   76 src/scene/mod.rs impl<'s> Scene<'s> {
+Scene            struct       59 src/scene/mod.rs pub struct Scene<'s> {
+SceneBuilder     implementation  103 src/scene/mod.rs impl<'s> SceneBuilder<'s> {
+SceneBuilder     struct       98 src/scene/mod.rs pub struct SceneBuilder<'s> {
+SceneError       enum          5 src/scene/error.rs pub enum SceneError {
+SceneError       enumerator    9 src/config/error.rs SceneError(SceneError),
+SceneError       implementation   10 src/scene/error.rs impl From<TextureError> for SceneError {
+SceneError       implementation   15 src/scene/error.rs impl From<LightError> for SceneError {
+Setup            interface    12 src/setup/mod.rs pub trait Setup {
+Shader           interface    15 src/shader/mod.rs pub trait Shader: Send + Sync + Debug {
+ShaderConfig     enum         95 src/config/mod.rs pub enum ShaderConfig {
+ShaderConfig     implementation   36 src/config/defaults.rs impl Default for ShaderConfig {
+State            struct       99 src/datastructure/bvh/node.rs struct State<'s> {
+Target           typedef      11 src/util/outputbuffer.rs type Target = Vec<Vec<Vector>>;
+Texture          implementation   23 src/scene/texture/mod.rs impl Debug for Texture {
+Texture          implementation   29 src/scene/texture/mod.rs impl Texture {
+Texture          struct       18 src/scene/texture/mod.rs pub struct Texture {
+TextureAtlas     implementation   77 src/scene/texture/textureatlas.rs impl<'t> TextureAtlas<'t> {
+TextureAtlas     struct       71 src/scene/texture/textureatlas.rs pub struct TextureAtlas<'t> {
+TextureAtlasBuilder implementation   11 src/scene/texture/textureatlas.rs impl TextureAtlasBuilder {
+TextureAtlasBuilder struct        7 src/scene/texture/textureatlas.rs pub struct TextureAtlasBuilder {
+TextureCoordinate implementation    9 src/scene/texturecoordinate.rs impl TextureCoordinate {
+TextureCoordinate implementation   15 src/scene/texturecoordinate.rs impl Add for TextureCoordinate {
+TextureCoordinate implementation   26 src/scene/texturecoordinate.rs impl Sub for TextureCoordinate {
+TextureCoordinate implementation   37 src/scene/texturecoordinate.rs impl Sub for &TextureCoordinate {
+TextureCoordinate implementation   48 src/scene/texturecoordinate.rs impl Mul for TextureCoordinate {
+TextureCoordinate implementation   59 src/scene/texturecoordinate.rs impl Mul<f64> for TextureCoordinate {
+TextureCoordinate struct        4 src/scene/texturecoordinate.rs pub struct TextureCoordinate {
+TextureError     enum         13 src/scene/texture/mod.rs pub enum TextureError {
+TextureError     enumerator    6 src/scene/error.rs TextureError(TextureError),
+ThreadCount      enum          6 src/config/corecount.rs pub enum ThreadCount {
+ThreadCount      implementation   17 src/config/corecount.rs impl ThreadCount {
+ThreadCount      implementation   29 src/config/corecount.rs impl Default for ThreadCount {
+TobjLoadError    enumerator    8 src/config/error.rs TobjLoadError(tobj::LoadError),
+Triangle         implementation   22 src/scene/triangle.rs impl<'t> Debug for Triangle<'t> {
+Triangle         implementation   34 src/scene/triangle.rs impl<'t> Triangle<'t> {
+Triangle         struct       14 src/scene/triangle.rs pub struct Triangle<'t> {
+VMcShader        implementation   16 src/shader/vmcshader.rs impl VMcShader {
+VMcShader        implementation  107 src/shader/vmcshader.rs impl Shader for VMcShader {
+VMcShader        struct       11 src/shader/vmcshader.rs pub struct VMcShader {
+Vector           implementation   27 src/util/vector.rs impl Vector {
+Vector           implementation  165 src/util/vector.rs impl Into<Color> for Vector {
+Vector           implementation  187 src/util/vector.rs impl Add for Vector {
+Vector           implementation  199 src/util/vector.rs impl AddAssign for Vector {
+Vector           implementation  207 src/util/vector.rs impl Sub for Vector {
+Vector           implementation  219 src/util/vector.rs impl Div<f64> for Vector {
+Vector           implementation  231 src/util/vector.rs impl Mul<f64> for Vector {
+Vector           implementation  243 src/util/vector.rs impl Mul<Vector> for Vector {
+Vector           struct       21 src/util/vector.rs pub struct Vector {
+WeightedError    enumerator   13 src/scene/light/mod.rs WeightedError(WeightedError),
+X                enumerator    6 src/datastructure/bvh/boundingbox.rs X(f64),
+Y                enumerator    7 src/datastructure/bvh/boundingbox.rs Y(f64),
+YamlError        enumerator    6 src/config/error.rs YamlError(serde_yaml::Error),
+Z                enumerator    8 src/datastructure/bvh/boundingbox.rs Z(f64),
+a                field        15 src/scene/triangle.rs pub(super) a: usize,
+a                method       36 src/scene/triangle.rs pub fn a(&self) -> Vector {
+add              method       18 src/scene/texturecoordinate.rs fn add(self, rhs: Self) -> Self::Output {
+add              method      190 src/util/vector.rs fn add(self, rhs: Self) -> Self::Output {
+add_assign       method      200 src/util/vector.rs fn add_assign(&mut self, rhs: Self) {
+add_postprocessor method       17 src/postprocessors/group.rs pub fn add_postprocessor(&mut self, postprocessor: &'p dyn PostProcessor) {
+add_texture      method       35 src/scene/texture/textureatlas.rs pub fn add_texture(&mut self, name: String, texture: Texture) {
+add_texture_file method       18 src/scene/texture/textureatlas.rs pub fn add_texture_file(
+air_density      field        12 src/shader/vmcshader.rs air_density: f64,
+all              enumerator    8 src/config/corecount.rs all,
+ambient          field        32 src/scene/material.rs pub ambient: Vector,
+ambient          function      5 src/shader/shaders.rs pub fn ambient(intersection: &Intersection) -> Vector {
+ambient_texture  field        48 src/scene/material.rs pub ambient_texture: Option<&'m Texture>,
+angle            field        14 src/util/camera.rs pub angle: f64,
+area             method       76 src/scene/triangle.rs pub fn area(&self) -> f64 {
+aspect_ratio     field        15 src/util/camera.rs pub aspect_ratio: f64,
+at               method       40 src/scene/texture/mod.rs pub fn at(&self, coord: TextureCoordinate) -> Vector {
+atlas            field         8 src/scene/texture/textureatlas.rs atlas: HashMap<String, Texture>,
+atlas            field        72 src/scene/texture/textureatlas.rs pub(self) atlas: HashMap<String, &'t Texture>,
+b                field         5 src/util/color.rs pub b: u8,
+b                field        16 src/scene/triangle.rs pub(super) b: usize,
+b                method       41 src/scene/triangle.rs pub fn b(&self) -> Vector {
+basic            enumerator   30 src/config/mod.rs basic,
+basic            enumerator   43 src/config/mod.rs basic,
+basic            enumerator  113 src/config/mod.rs basic,
+basic            module        5 src/datastructure/mod.rs pub mod basic;
+basic            module        7 src/raytracer/mod.rs pub mod basic;
+basic            module        9 src/generator/mod.rs pub mod basic;
+boundingbox      field         8 src/datastructure/bvh/boxintersection.rs pub boundingbox: &'i BoundingBox,
+boundingbox      module       16 src/datastructure/bvh/mod.rs mod boundingbox;
+boxintersection  module       17 src/datastructure/bvh/mod.rs mod boxintersection;
+buffer           field         7 src/util/outputbuffer.rs buffer: Vec<Vec<Vector>>,
+build            method       39 src/scene/texture/textureatlas.rs pub fn build<'t>(self) -> TextureAtlas<'t> {
+build_from_tobj  method      115 src/scene/mod.rs pub fn build_from_tobj<'a>(
+builder          module        7 src/renderer/mod.rs mod builder;
+bvh              module        6 src/datastructure/mod.rs pub mod bvh;
+c                field        17 src/scene/triangle.rs pub(super) c: usize,
+c                method       46 src/scene/triangle.rs pub fn c(&self) -> Vector {
+camera           field        18 src/config/mod.rs camera: CameraConfig,
+camera           module        1 src/util/mod.rs  pub mod camera;
+clamp01          method       11 src/util/vector.rs fn clamp01(self) -> Self;
+clamp01          method       15 src/util/vector.rs fn clamp01(self) -> Self {
+color            module        2 src/util/mod.rs  pub mod color;
+config           module        6 src/main.rs      mod config;
+consts           module        3 src/util/mod.rs  pub mod consts;
+contains         method      104 src/datastructure/bvh/boundingbox.rs pub fn contains(&self, triangle: &Triangle) -> bool {
+corecount        module        8 src/config/mod.rs pub mod corecount;
+cost             method       99 src/datastructure/bvh/boundingbox.rs pub fn cost(&self, numtriangles: usize) -> f64 {
+count            enumerator   11 src/config/corecount.rs count(usize),
+cross            method       49 src/util/vector.rs pub fn cross(&self, other: Self) -> Self {
+crossbeam        enumerator   47 src/config/mod.rs crossbeam {
+crossbeam        module       10 src/generator/mod.rs pub mod crossbeam;
+data             field        10 src/datastructure/basic.rs data: &'d Scene<'d>,
+datastructure    field        18 src/renderer/mod.rs datastructure: &'r dyn DataStructure,
+datastructure    field        22 src/config/mod.rs datastructure: DatastructureConfig,
+datastructure    field        28 src/renderer/builder.rs pub(self) datastructure: &'a dyn DataStructure,
+datastructure    module        7 src/main.rs      mod datastructure;
+default          method        8 src/config/defaults.rs fn default() -> Self {
+default          method       19 src/config/defaults.rs fn default() -> Self {
+default          method       30 src/config/corecount.rs fn default() -> Self {
+default          method       31 src/config/defaults.rs fn default() -> Self {
+default          method       37 src/config/defaults.rs fn default() -> Self {
+default          method       43 src/scene/mod.rs fn default() -> Self {
+default          method       46 src/config/defaults.rs fn default() -> Self {
+default          method       52 src/config/defaults.rs fn default() -> Self {
+default          method       64 src/util/outputbuffer.rs fn default() -> Self {
+default          method      119 src/config/mod.rs fn default() -> Self {
+defaults         module        9 src/config/mod.rs pub mod defaults;
+deref            method       13 src/util/outputbuffer.rs fn deref(&self) -> &Self::Target {
+deref_mut        method       19 src/util/outputbuffer.rs fn deref_mut(&mut self) -> &mut Self::Target {
+diffuse          field        34 src/scene/material.rs pub diffuse: Vector,
+diffuse          function     42 src/shader/shaders.rs pub fn diffuse(intersection: &Intersection, hit_pos: Vector, light_pos: Vector) -> Vector {
+diffuse_texture  field        51 src/scene/material.rs pub diffuse_texture: Option<&'m Texture>,
+direction        field         6 src/util/ray.rs  pub direction: Vector,
+direction        field         8 src/util/camera.rs pub direction: Vector,
+direction        field        81 src/config/mod.rs direction: Vector,
+dissolve         field        41 src/scene/material.rs pub dissolve: f64,
+dissolve_texture field        61 src/scene/material.rs pub dissolve_texture: Option<&'m Texture>,
+div              method      222 src/util/vector.rs fn div(self, rhs: f64) -> Self::Output {
+divide           method       12 src/datastructure/bvh/boundingbox.rs pub fn divide(
+divide_triangles_over_boundingboxes method       60 src/datastructure/bvh/node.rs fn divide_triangles_over_boundingboxes<'a>(
+dot              method       45 src/util/vector.rs pub fn dot(&self, other: Self) -> f64 {
+dump             method      134 src/config/mod.rs pub fn dump(&self, filename: impl AsRef<Path>) -> Result<(), ConfigError> {
+emittance        field        66 src/scene/material.rs pub emittance: Vector,
+emittance        function     17 src/shader/shaders.rs pub fn emittance(intersection: &Intersection) -> Vector {
+emittance_texture field        67 src/scene/material.rs pub emittance_texture: Option<&'m Texture>,
+epsilon          field        63 src/config/mod.rs epsilon: f64,
+error            module        1 src/scene/mod.rs pub mod error;
+error            module       10 src/config/mod.rs pub mod error;
+f64              implementation   14 src/util/vector.rs impl Clamp01 for f64 {
+f64              implementation  175 src/util/vector.rs impl Mul<Vector> for f64 {
+fmt              method       22 src/datastructure/bvh/node.rs fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+fmt              method       22 src/scene/light/mod.rs fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+fmt              method       23 src/scene/triangle.rs fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+fmt              method       24 src/scene/texture/mod.rs fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+fmt              method       25 src/datastructure/bvh/mod.rs fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+fmt              method       71 src/scene/mod.rs fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+fov              field        11 src/util/camera.rs pub fov: f64,
+fov              field        89 src/config/mod.rs fov: f64,
+from             method       11 src/scene/error.rs fn from(t: TextureError) -> Self {
+from             method       13 src/config/error.rs fn from(e: serde_yaml::Error) -> Self {
+from             method       16 src/scene/error.rs fn from(l: LightError) -> Self {
+from             method       19 src/config/error.rs fn from(e: io::Error) -> Self {
+from             method       25 src/config/error.rs fn from(e: tobj::LoadError) -> Self {
+from             method       31 src/config/error.rs fn from(e: SceneError) -> Self {
+from_arr         method       37 src/util/vector.rs pub fn from_arr([a, b, c]: [f32; 3]) -> Self {
+from_tobj_material method       71 src/scene/material.rs pub(super) unsafe fn from_tobj_material<'a>(
+from_triangle    method       55 src/datastructure/bvh/boundingbox.rs pub fn from_triangle(triangle: &Triangle) -> Self {
+from_triangle_iter method       32 src/scene/light/mod.rs pub(super) fn from_triangle_iter(
+from_triangles   method       73 src/datastructure/bvh/boundingbox.rs pub fn from_triangles<'a>(triangles: impl Iterator<Item = &'a Triangle<'a>>) -> Self {
+g                field         4 src/util/color.rs pub g: u8,
+gamma            method      113 src/util/vector.rs pub fn gamma(&self, exp: f64) -> Vector {
+gamma            module        4 src/postprocessors/mod.rs pub mod gamma;
+general          field        17 src/config/mod.rs general: GeneralConfig,
+generate         method        9 src/generator/basic.rs fn generate(&self, camera: &Camera, callback: &Callback) -> OutputBuffer {
+generate         method       19 src/generator/crossbeam.rs fn generate(&self, camera: &Camera, callback: &Callback) -> OutputBuffer {
+generate         method       22 src/generator/rayon.rs fn generate<'g>(&self, camera: &Camera, callback: &Callback) -> OutputBuffer {
+generate         method       34 src/generator/mod.rs fn generate(&self, camera: &Camera, callback: &Callback) -> OutputBuffer;
+generate_internal method       22 src/generator/mod.rs fn generate_internal<'g>(
+generate_ray     method       39 src/util/camera.rs pub fn generate_ray(&self, x: f64, y: f64) -> Ray {
+generator        field        10 src/renderer/builder.rs pub(self) generator: &'a dyn Generator,
+generator        field        14 src/renderer/builder.rs pub(self) generator: &'a dyn Generator,
+generator        field        15 src/renderer/mod.rs generator: &'r dyn Generator,
+generator        field        19 src/config/mod.rs generator: GeneratorConfig,
+generator        field        19 src/renderer/builder.rs pub(self) generator: &'a dyn Generator,
+generator        field        25 src/renderer/builder.rs pub(self) generator: &'a dyn Generator,
+generator        module       12 src/main.rs      mod generator;
+get_cores        method       18 src/config/corecount.rs pub fn get_cores(&self) -> usize {
+get_rng          function     11 src/util/rng.rs  pub fn get_rng<T>(mut func: impl FnMut(RefMut<RngType>) -> T) -> T {
+get_texture      method       78 src/scene/texture/textureatlas.rs pub fn get_texture(&self, name: &str) -> Option<&'t Texture> {
+group            module        5 src/postprocessors/mod.rs pub mod group;
+height           field        10 src/util/camera.rs pub height: usize,
+height           field        86 src/config/mod.rs height: usize,
+hit_pos          method       22 src/datastructure/intersection.rs pub fn hit_pos(&self) -> Vector {
+identity         module        6 src/postprocessors/mod.rs pub mod identity;
+illumination_model field        64 src/scene/material.rs pub illumination_model: Option<u8>,
+image            field        19 src/scene/texture/mod.rs image: RgbImage,
+include_point    method       66 src/datastructure/bvh/boundingbox.rs pub fn include_point(&self, point: Vector) -> Self {
+includes_point   method      168 src/datastructure/bvh/node.rs pub fn includes_point(&self, point: &Vector) -> bool {
+includes_point   method      179 src/datastructure/bvh/boundingbox.rs pub fn includes_point(&self, point: &Vector) -> bool {
+inf_height       field        13 src/util/camera.rs pub inf_height: f64,
+inf_width        field        12 src/util/camera.rs pub inf_width: f64,
+intersect_internal method       83 src/datastructure/bvh/mod.rs fn intersect_internal<'a>(ray: &'a Ray, node: &'a BVHNode) -> Option<Intersection<'a>> {
+intersection     module        7 src/datastructure/mod.rs pub mod intersection;
+intersects       method       14 src/datastructure/mod.rs fn intersects<'a>(&'a self, ray: &'a Ray) -> Option<Intersection<'a>>;
+intersects       method       65 src/datastructure/basic.rs fn intersects<'a>(&'a self, ray: &'a Ray) -> Option<Intersection<'a>> {
+intersects       method      144 src/datastructure/bvh/mod.rs fn intersects<'a>(&'a self, ray: &'a Ray) -> Option<Intersection<'a>> {
+intersects_bhv   function    149 src/datastructure/bvh/mod.rs pub fn intersects_bhv<'a>(node: &'a BVHNode, ray: &'a Ray) -> Option<BoxIntersection<'a>> {
+intersects_boundingbox function    162 src/datastructure/bvh/mod.rs pub fn intersects_boundingbox<'a>(
+intersects_triangle function     31 src/datastructure/bvh/mod.rs fn intersects_triangle<'a>(ray: &'a Ray, triangle: &'a Triangle) -> Option<Intersection<'a>> {
+intersects_triangle method       19 src/datastructure/basic.rs fn intersects_triangle<'a>(
+into             method      166 src/util/vector.rs fn into(self) -> Color {
+iszero           method       41 src/util/vector.rs pub fn iszero(&self) -> bool {
+jmstracer        enumerator   32 src/config/mod.rs jmstracer { samples_per_pixel: usize },
+jmstracer        module        8 src/raytracer/mod.rs pub mod jmstracer;
+kdtree           enumerator  115 src/config/mod.rs kdtree,
+left             enumerator   14 src/config/corecount.rs left(usize),
+leftbox          field       100 src/datastructure/bvh/node.rs leftbox: BoundingBox,
+leftset          field       102 src/datastructure/bvh/node.rs leftset: Vec<&'s Triangle<'s>>,
+length           method       61 src/util/vector.rs pub fn length(&self) -> f64 {
+length2          method       57 src/util/vector.rs pub fn length2(&self) -> f64 {
+light            module        2 src/scene/mod.rs pub mod light;
+lightsourcemanager field        33 src/scene/mod.rs lightsourcemanager: Option<Arc<LightSourceManager<'m>>>
+lightsourcemanager method       37 src/scene/mod.rs pub fn lightsourcemanager(&self) -> &Arc<LightSourceManager<'m>> {
+lightsources     field        17 src/scene/light/mod.rs lightsources: Vec<&'l Triangle<'l>>,
+load             method      142 src/config/mod.rs pub fn load(filename: impl AsRef<Path>) -> Result<Self, ConfigError> {
+longest_axis     method      163 src/datastructure/bvh/boundingbox.rs pub fn longest_axis(&self) -> Axis {
+main             function     16 src/main.rs      fn main() {
+map_uv           function     29 src/shader/shaders.rs pub fn map_uv(intersection: &Intersection) -> TextureCoordinate {
+material         field        30 src/scene/mod.rs pub material: &'m Material<'m>,
+material         method       51 src/scene/triangle.rs pub fn material(&self) -> &'t Material {
+material         module        3 src/scene/mod.rs pub mod material;
+materials        field        67 src/scene/mod.rs materials: Pin<Box<[Material<'s>]>>,
+max              field        34 src/datastructure/bvh/boundingbox.rs pub(super) max: Vector,
+max              method      105 src/util/vector.rs pub fn max(&self, other: &Self) -> Self {
+max_item         method       83 src/util/vector.rs pub fn max_item(&self) -> f64 {
+mcshader         enumerator  101 src/config/mod.rs mcshader,
+mcshader         module        6 src/shader/mod.rs pub mod mcshader;
+merge            method       62 src/datastructure/bvh/boundingbox.rs pub fn merge(&self, other: &Self) -> Self {
+mesh             field        19 src/scene/triangle.rs pub mesh: &'t Mesh<'t>,
+meshes           field        64 src/scene/mod.rs meshes: Pin<Box<[Mesh<'s>]>>,
+min              field        33 src/datastructure/bvh/boundingbox.rs pub(super) min: Vector,
+min              method       97 src/util/vector.rs pub fn min(&self, other: &Self) -> Self {
+mstracer         enumerator   35 src/config/mod.rs mstracer { samples_per_pixel: usize },
+mstracer         module        9 src/raytracer/mod.rs pub mod mstracer;
+mtlshader        enumerator   97 src/config/mod.rs mtlshader,
+mtlshader        module        7 src/shader/mod.rs pub mod mtlshader;
+mul              method       51 src/scene/texturecoordinate.rs fn mul(self, rhs: Self) -> Self::Output {
+mul              method       62 src/scene/texturecoordinate.rs fn mul(self, rhs: f64) -> Self::Output {
+mul              method      178 src/util/vector.rs fn mul(self, rhs: Vector) -> Self::Output {
+mul              method      234 src/util/vector.rs fn mul(self, rhs: f64) -> Self::Output {
+mul              method      246 src/util/vector.rs fn mul(self, rhs: Vector) -> Self::Output {
+name             field        30 src/scene/material.rs pub name: String,
+new              method        9 src/util/color.rs pub fn new(r: u8, g: u8, b: u8) -> Self {
+new              method       10 src/scene/texturecoordinate.rs pub fn new(u: f64, v: f64) -> Self {
+new              method       10 src/util/ray.rs  pub fn new(origin: Vector, direction: Vector) -> Self {
+new              method       12 src/scene/texture/textureatlas.rs pub fn new() -> Self {
+new              method       13 src/generator/crossbeam.rs pub fn new(threads: usize) -> Self {
+new              method       13 src/postprocessors/group.rs pub fn new() -> Self {
+new              method       13 src/raytracer/mstracer.rs pub fn new(samples_per_pixel: usize) -> Self {
+new              method       14 src/datastructure/basic.rs pub fn new(scene: &'d Scene<'d>) -> Self {
+new              method       15 src/raytracer/jmstracer.rs pub fn new(samples_per_pixel: usize) -> Self {
+new              method       16 src/generator/rayon.rs pub fn new(threads: usize) -> Self {
+new              method       17 src/shader/vmcshader.rs pub fn new(air_density: f64, particle_reflectivity: f64) -> Self {
+new              method       19 src/util/camera.rs pub fn new(pos: Vector, direction: Vector, width: usize, height: usize, fov: f64) -> Self {
+new              method       23 src/renderer/mod.rs pub(self) fn new(
+new              method       25 src/util/outputbuffer.rs pub fn new() -> Self {
+new              method       28 src/scene/light/mod.rs pub fn new(scene: &'l Scene) -> Result<Self, LightError> {
+new              method       28 src/util/vector.rs pub fn new(x: f64, y: f64, z: f64) -> Self {
+new              method       30 src/scene/texture/mod.rs pub fn new(filename: impl AsRef<Path>) -> Result<Self, TextureError> {
+new              method       32 src/renderer/builder.rs pub fn new(generator: &'a dyn Generator) -> Self {
+new              method       51 src/datastructure/bvh/boundingbox.rs pub fn new(min: Vector, max: Vector) -> Self {
+new              method       52 src/datastructure/bvh/node.rs pub fn new(triangles: Vec<&'d Triangle<'d>>) -> Self {
+new              method       72 src/datastructure/bvh/mod.rs pub fn new(scene: &'d Scene<'d>) -> Self {
+new              method      104 src/scene/mod.rs pub fn new() -> Self {
+new_internal     method       79 src/datastructure/bvh/node.rs fn new_internal(
+node             module       18 src/datastructure/bvh/mod.rs mod node;
+normal           method       55 src/scene/triangle.rs pub fn normal(&self) -> Vector {
+normal_texture   field        57 src/scene/material.rs pub normal_texture: Option<&'m Texture>,
+normalize        method       65 src/util/vector.rs pub fn normalize(&mut self) {
+normals          field        26 src/scene/mod.rs pub normals: Box<[Vector]>,
+normals          method       92 src/scene/mod.rs pub fn normals(&self) -> impl Iterator<Item = &Vector> {
+optical_density  field        45 src/scene/material.rs pub optical_density: f64,
+origin           field         5 src/util/ray.rs  pub origin: Vector,
+outputbuffer     module        4 src/util/mod.rs  pub mod outputbuffer;
+outputname       field        69 src/config/mod.rs outputname: String,
+particle_reflectivity field        13 src/shader/vmcshader.rs particle_reflectivity: f64,
+point_on_diffuse_hemisphere method      157 src/util/vector.rs pub fn point_on_diffuse_hemisphere() -> Vector {
+point_on_hemisphere method      135 src/util/vector.rs pub fn point_on_hemisphere() -> Vector {
+point_on_sphere  method      146 src/util/vector.rs pub fn point_on_sphere() -> Vector {
+pos              field         7 src/util/camera.rs pub pos: Vector,
+position         field        78 src/config/mod.rs position: Vector,
+postprocessor    field        19 src/renderer/mod.rs postprocessor: &'r dyn PostProcessor,
+postprocessors   module        8 src/main.rs      mod postprocessors;
+powf             method       79 src/util/vector.rs pub fn powf(&self, exp: f64) -> Vector {
+presize          method       29 src/util/outputbuffer.rs pub fn presize(&mut self, width: usize, height: usize) {
+print            method       28 src/datastructure/bvh/node.rs fn print(&self, f: &mut Formatter<'_>, depth: usize) -> fmt::Result {
+process          method       10 src/postprocessors/gamma.rs fn process(&self, buffer: OutputBuffer) -> OutputBuffer {
+process          method       10 src/postprocessors/identity.rs fn process(&self, buffer: OutputBuffer) -> OutputBuffer {
+process          method       12 src/postprocessors/mod.rs fn process(&self, buffer: OutputBuffer) -> OutputBuffer;
+process          method       23 src/postprocessors/group.rs fn process(&self, buffer: OutputBuffer) -> OutputBuffer {
+processors       field         9 src/postprocessors/group.rs processors: Vec<&'p dyn PostProcessor>,
+r                field         3 src/util/color.rs pub r: u8,
+random_source    method       58 src/scene/light/mod.rs pub fn random_source(&self) -> &'l Triangle {
+ray              field         6 src/datastructure/bvh/boxintersection.rs pub ray: &'i Ray,
+ray              field        10 src/datastructure/intersection.rs pub ray: &'i Ray,
+ray              module        5 src/util/mod.rs  pub mod ray;
+rayon            enumerator   53 src/config/mod.rs rayon {
+rayon            module       11 src/generator/mod.rs pub mod rayon;
+raytrace         method       11 src/raytracer/basic.rs fn raytrace<'r>(
+raytrace         method       15 src/raytracer/mod.rs fn raytrace<'r>(
+raytrace         method       19 src/raytracer/mstracer.rs fn raytrace<'r>(
+raytrace         method       21 src/raytracer/jmstracer.rs fn raytrace<'r>(
+raytracer        field        15 src/renderer/builder.rs pub(self) raytracer: &'a dyn RayTracer,
+raytracer        field        16 src/renderer/mod.rs raytracer: &'r dyn RayTracer,
+raytracer        field        20 src/config/mod.rs raytracer: RaytracerConfig,
+raytracer        field        20 src/renderer/builder.rs pub(self) raytracer: &'a dyn RayTracer,
+raytracer        field        26 src/renderer/builder.rs pub(self) raytracer: &'a dyn RayTracer,
+raytracer        module        9 src/main.rs      mod raytracer;
+render           method       39 src/renderer/mod.rs pub fn render(&self, camera: &Camera) -> OutputBuffer {
+renderer         module       10 src/main.rs      mod renderer;
+repeated         method       33 src/util/vector.rs pub fn repeated(a: f64) -> Self {
+rightbox         field       101 src/datastructure/bvh/node.rs rightbox: BoundingBox,
+rightset         field       103 src/datastructure/bvh/node.rs rightset: Vec<&'s Triangle<'s>>,
+rng              module        6 src/util/mod.rs  pub mod rng;
+root             field        21 src/datastructure/bvh/mod.rs root: BVHNode<'d>,
+rotated          method      117 src/util/vector.rs pub fn rotated(&self, rotation: Vector) -> Vector {
+run              method       13 src/setup/mod.rs fn run(&self);
+run              method       15 src/setup/house_cb.rs fn run(&self) {
+run              method       15 src/setup/mc_cornell_box_gamma.rs fn run(&self) {
+run              method       15 src/setup/monte_carlo.rs fn run(&self) {
+run              method       15 src/setup/monte_carlo_bvh.rs fn run(&self) {
+run              method       15 src/setup/monte_carlo_crossbeam.rs fn run(&self) {
+run              method       16 src/setup/glowstone_gamma.rs fn run(&self) {
+run              method       16 src/setup/hard_box_bhv.rs fn run(&self) {
+run              method       16 src/setup/house_bvh.rs fn run(&self) {
+run              method       16 src/setup/monte_carlo_gamma.rs fn run(&self) {
+run              method       24 src/config/run.rs pub fn run(self) -> Result<(), ConfigError> {
+run              module       11 src/config/mod.rs pub mod run;
+samples_per_pixel field         9 src/raytracer/mstracer.rs samples_per_pixel: usize,
+samples_per_pixel field        11 src/raytracer/jmstracer.rs samples_per_pixel: usize,
+scene            module       11 src/main.rs      mod scene;
+scenename        field        66 src/config/mod.rs scenename: String,
+set_at           method       58 src/util/outputbuffer.rs pub fn set_at(&mut self, x: usize, y: usize, color: Vector) {
+shade            method       11 src/shader/mtlshader.rs fn shade<'s>(&self, ray: &Ray, datastructure: &'s (dyn DataStructure + 's)) -> Vector {
+shade            method       16 src/shader/mod.rs fn shade<'s>(&self, ray: &Ray, datastructure: &'s dyn DataStructure) -> Vector;
+shade            method       51 src/shader/mcshader.rs fn shade<'s>(&self, ray: &Ray, datastructure: &'s (dyn DataStructure + 's)) -> Vector {
+shade            method      108 src/shader/vmcshader.rs fn shade<'s>(&self, ray: &Ray, datastructure: &'s (dyn DataStructure + 's)) -> Vector {
+shade_internal   method       11 src/shader/mcshader.rs pub fn shade_internal<'a>(
+shade_internal   method       24 src/shader/vmcshader.rs pub fn shade_internal<'a>(
+shader           field        17 src/renderer/mod.rs shader: &'r dyn Shader,
+shader           field        21 src/config/mod.rs shader: ShaderConfig,
+shader           field        21 src/renderer/builder.rs pub(self) shader: &'a dyn Shader,
+shader           field        27 src/renderer/builder.rs pub(self) shader: &'a dyn Shader,
+shader           module       13 src/main.rs      mod shader;
+shaders          module        8 src/shader/mod.rs pub mod shaders;
+shininess        field        38 src/scene/material.rs pub shininess: f64,
+size             field        20 src/scene/texture/mod.rs size: (usize, usize),
+size             method       82 src/datastructure/bvh/boundingbox.rs pub fn size(&self) -> Vector {
+specular         field        36 src/scene/material.rs pub specular: Vector,
+specular         function     57 src/shader/shaders.rs pub fn specular(
+specular_texture field        54 src/scene/material.rs pub specular_texture: Option<&'m Texture>,
+split_at         method      128 src/datastructure/bvh/boundingbox.rs pub fn split_at(&self, axis: Axis) -> (BoundingBox, BoundingBox) {
+sub              method       29 src/scene/texturecoordinate.rs fn sub(self, rhs: Self) -> Self::Output {
+sub              method       40 src/scene/texturecoordinate.rs fn sub(self, rhs: &TextureCoordinate) -> Self::Output {
+sub              method      210 src/util/vector.rs fn sub(self, rhs: Self) -> Self::Output {
+surface_area     method       90 src/datastructure/bvh/boundingbox.rs pub fn surface_area(&self) -> f64 {
+t                field         7 src/datastructure/bvh/boxintersection.rs pub t: f64,
+t                field        14 src/datastructure/intersection.rs pub t: f64,
+test_add         function    261 src/util/vector.rs fn test_add() {
+test_create      function    210 src/datastructure/bvh/boundingbox.rs fn test_create() {
+test_include_point function    217 src/datastructure/bvh/boundingbox.rs fn test_include_point() {
+test_merge       function    229 src/datastructure/bvh/boundingbox.rs fn test_merge() {
+test_to_color_1  function    271 src/util/vector.rs fn test_to_color_1() {
+tests            module      205 src/datastructure/bvh/boundingbox.rs pub mod tests {
+tests            module      256 src/util/vector.rs mod tests {
+texcoords        field        28 src/scene/mod.rs pub texcoords: Box<[TextureCoordinate]>,
+texture          module        4 src/scene/mod.rs pub mod texture;
+texture_a        method       62 src/scene/triangle.rs pub fn texture_a(&self) -> &TextureCoordinate {
+texture_b        method       67 src/scene/triangle.rs pub fn texture_b(&self) -> &TextureCoordinate {
+texture_c        method       72 src/scene/triangle.rs pub fn texture_c(&self) -> &TextureCoordinate {
+texture_coordinates method       87 src/scene/mod.rs pub fn texture_coordinates(&self) -> impl Iterator<Item = &TextureCoordinate> {
+textureatlas     field        61 src/scene/mod.rs textureatlas: TextureAtlas<'s>,
+textureatlas     module        4 src/scene/texture/mod.rs mod textureatlas;
+texturecoordinate module        5 src/scene/mod.rs pub mod texturecoordinate;
+texturepath      field        72 src/config/mod.rs texturepath: String,
+texturepath      field       100 src/scene/mod.rs texturepath: &'s Path,
+texturepath      method      110 src/scene/mod.rs pub fn texturepath(mut self, path: &'s Path) -> Self {
+textures         field        74 src/scene/texture/textureatlas.rs pub(self) textures: Pin<Box<[Texture]>>,
+threads          field         9 src/generator/crossbeam.rs threads: usize,
+threads          field        12 src/generator/rayon.rs threads: usize,
+to_bmp           method       44 src/util/outputbuffer.rs pub fn to_bmp(&self) -> Image {
+totalcost        field       105 src/datastructure/bvh/node.rs totalcost: f64,
+triangle         field        16 src/datastructure/intersection.rs pub triangle: &'i Triangle<'i>,
+triangle         module        6 src/scene/mod.rs pub mod triangle;
+triangles        field        27 src/scene/mod.rs pub triangles: Box<[Triangle<'m>]>,
+triangles        method       77 src/scene/mod.rs pub fn triangles(&self) -> impl Iterator<Item = &Triangle> {
+u                field         5 src/scene/texturecoordinate.rs pub u: f64,
+unit             method       74 src/util/vector.rs pub fn unit(&self) -> Vector {
+util             module       14 src/main.rs      mod util;
+uv               field        12 src/datastructure/intersection.rs pub uv: (f64, f64),
+v                field         6 src/scene/texturecoordinate.rs pub v: f64,
+vector           module        7 src/util/mod.rs  pub mod vector;
+vertices         field        25 src/scene/mod.rs pub vertices: Box<[Vector]>,
+vertices         method       82 src/scene/mod.rs pub fn vertices(&self) -> impl Iterator<Item = &Vector> {
+vmcshader        enumerator  102 src/config/mod.rs vmcshader {
+vmcshader        module        9 src/shader/mod.rs pub mod vmcshader;
+weights          field        18 src/scene/light/mod.rs weights: WeightedIndex<f64>,
+width            field         9 src/util/camera.rs pub width: usize,
+width            field        84 src/config/mod.rs width: usize,
+with_datastructure method       55 src/renderer/builder.rs pub fn with_datastructure(
+with_postprocessor method       79 src/renderer/builder.rs pub fn with_postprocessor(self, postprocessor: &'a dyn PostProcessor) -> Renderer<'a> {
+with_raytracer   method       36 src/renderer/builder.rs pub fn with_raytracer(self, raytracer: &'a dyn RayTracer) -> RendererBuilderRaytracer<'a> {
+with_shader      method       45 src/renderer/builder.rs pub fn with_shader(self, shader: &'a dyn Shader) -> RendererBuilderShader<'a> {
+with_size        method       38 src/util/outputbuffer.rs pub fn with_size(width: usize, height: usize) -> Self {
+without_postprocessor method       69 src/renderer/builder.rs pub fn without_postprocessor(self) -> Renderer<'a> {
+x                field        22 src/util/vector.rs pub x: f64,
+y                field        23 src/util/vector.rs pub y: f64,
+z                field        24 src/util/vector.rs pub z: f64,
