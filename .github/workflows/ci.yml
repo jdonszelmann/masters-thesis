@@ -12,7 +12,7 @@ jobs:
 
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: texlive-latex-recommended texlive-xetex latexmk texlive-fonts-extra
+          packages: texlive-latex-recommended texlive-xetex latexmk texlive-fonts-extra texlive-bibtex-extra biber
           version: 1.0
       - run: make all
       - name: Create site
