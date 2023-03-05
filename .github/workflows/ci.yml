@@ -25,6 +25,8 @@ jobs:
         with:
           packages: texlive-latex-recommended texlive-xetex latexmk texlive-fonts-extra texlive-bibtex-extra biber
           version: 1.0
+
+      - run: sudo fmtutil-sys --all
       - run: make all
       - name: Create site
         run: mkdir -p dist; echo '<html style="padding:0; margin 0;"><body style="padding:0; margin 0;"><embed src="document.pdf" type="application/pdf" width="100%" height="100%"/> </body></html>' > dist/index.html; cp document.pdf dist
