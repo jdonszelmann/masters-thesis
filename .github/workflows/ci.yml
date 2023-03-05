@@ -1,0 +1,24 @@
+---
+name: CI
+
+on: [ push ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Generate PDF document
+        steps:
+          - uses: hspaans/latexmk-action@v1
+          - run: make all
+          - run: mkdir -p dist
+          - run: echo "<embed src="document.pdf" type="application/pdf" />" > dist/index.html
+          - run: cp document.pdf dist
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
