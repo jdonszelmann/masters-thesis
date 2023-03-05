@@ -14,10 +14,10 @@ jobs:
         with:
           packages: texlive-latex-recommended
           version: 1.0
+      - run: ls -la; ls -la src
       - run: make all
-      - run: mkdir -p dist
-      - run: echo '<embed src="document.pdf" type="application/pdf" />' > dist/index.html
-      - run: cp document.pdf dist
+      - name: Create site
+        run: mkdir -p dist; echo '<embed src="document.pdf" type="application/pdf" />' > dist/index.html; cp document.pdf dist
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
