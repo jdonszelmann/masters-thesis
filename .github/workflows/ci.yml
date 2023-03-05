@@ -21,8 +21,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - uses: awalsh128/cache-apt-pkgs-action@latest
-        run: sudo apt-get install --reinstall texlive-latex-recommended texlive-xetex latexmk texlive-fonts-extra texlive-bibtex-extra biber
+      - run: sudo apt-get install --reinstall texlive-latex-recommended texlive-xetex latexmk texlive-fonts-extra texlive-bibtex-extra biber
 
       - run: make all
 
