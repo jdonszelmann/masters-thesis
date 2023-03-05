@@ -10,8 +10,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Generate PDF document
-        uses: hspaans/latexmk-action@v1
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: texlive-latex-recommended
+          version: 1.0
       - run: make all
       - run: mkdir -p dist
       - run: echo '<embed src="document.pdf" type="application/pdf" />' > dist/index.html
