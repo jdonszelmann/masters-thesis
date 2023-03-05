@@ -26,7 +26,7 @@ jobs:
       - run: make all
 
       - name: Create site
-        run: mkdir -p dist; echo '<html style="padding:0; margin 0;"><body style="padding:0; margin 0;"><embed src="document.pdf" type="application/pdf" width="100%" height="100%"/> </body></html>' > dist/index.html; cp document.pdf dist
+        run: mkdir -p dist; echo '<html style="padding:0; margin: 0;"><body style="padding:0; margin: 0;"><embed src="document.pdf" type="application/pdf" width="100%" height="100%"/> </body></html>' > dist/index.html; cp document.pdf dist
 
       - name: Setup Pages
         uses: actions/configure-pages@v3
