@@ -12,9 +12,8 @@ jobs:
 
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
-          packages: texlive-latex-recommended
+          packages: texlive-latex-recommended latexmk
           version: 1.0
-      - run: ls -la; ls -la latex/src
       - run: make all
       - name: Create site
         run: mkdir -p dist; echo '<embed src="document.pdf" type="application/pdf" />' > dist/index.html; cp document.pdf dist
