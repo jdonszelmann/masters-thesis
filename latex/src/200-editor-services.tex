@@ -1,0 +1,108 @@
+% !TEX root = document.tex
+
+
+\chapter{Editor Services}
+\label{chap:editor-services}
+
+Although programmers may have started out manually punching their programs into punchcards,
+or even changing the wiring of the computer just to program it, very few people still do this nowadays.
+Instead, programmers write computer programs for a computer, on a computer.
+The obvious advantage of that is of course that it is much easier to change the program after
+it was written the first time.
+
+Early on, there was \texttt{ed}~\autocite{ed}, which is short for `editor'.
+\texttt{ed} was one of the standard tools included on all unix operating systems, and can still be used on many modern computers.
+However, it has also been called ``the most user-hostile editor ever created'' (by Peter H. Salus) because of the
+minimal visual feedback it gives.
+For all kinds of different errors, \texttt{ed} simply prints a \texttt{?} without further context.
+
+Since then, a lot has changed, and editors have become significantly more advanced.
+Not just by actually allowing users to see the document they are editing, a feature which \texttt{ed} notably lacked,
+but also by actively helping programmers to write their program.
+For example, colouring different parts of a program based on their syntactical meaning, and completing words and lines based on context.
+To provide these features, te editor will have a certain amount of knowledge about the language that is being edited, such as the language's grammar.
+
+However, some editors know a lot more about the language that is being written than just the grammar.
+A modern \ac{IDE} may know about different libraries you might want to use and their documentation,
+work for multiple programming languages in large projects, and even automatically generate whole pieces of code based on context.
+As well as simplifying writing code, an \ac{IDE} can also help with compiling and running code, as well as provide tooling to interactively debug it.
+All these tools which make it easier to write code are editor services, a term coined by Kats, Kalleberg and Visser~\autocite*{KatsKV08}.
+
+
+\section{Providing editor services}\label{sec:providing-editor-services}
+
+To provide editor services, the editor needs some information about the language it is providing services for.
+The amount of information, depends on what services are provided.
+In ``The State of the Art in Language Workbenches'',~\autocite{ErdwegSV13} provides a feature model of language workbenches
+\footnote{More will be said about language workbenches in ...}, a part of which is providing editor services.
+This feature model was adapted by Pelsmaeker~\autocite{Pelsmaeker2018} into a list of only editor services, which is shown
+below, together with a short explanation of each feature.
+
+\begin{itemize}
+    \setlength\itemsep{-1em}
+    \item Editor:
+    \begin{itemize}
+        \vspace{-2\topsep}
+        \setlength\itemsep{-0.3em}
+        \item Syntax colouring: giving different colours to different syntactical elements
+        \item Code folding: hiding blocks of related code to reduce visual clutter
+        \item Code completion: suggesting line completions based on context
+    \end{itemize}
+    \item Navigation and structure:
+    \begin{itemize}
+        \vspace{-2\topsep}
+        \setlength\itemsep{-0.3em}
+        \item Structure outline: visualizing the structure of code to quickly navigate it
+        \item Reference resolution: providing quick navigating between related code
+    \end{itemize}
+    \item Help and documentation:
+    \begin{itemize}
+        \vspace{-2\topsep}
+        \setlength\itemsep{-0.3em}
+        \item documentation: showing documentation of written elements in-editor
+        \item Signature help: showing previews of an items parameters after typing the item
+    \end{itemize}
+    \item Actions and transformations:
+    \begin{itemize}
+        \vspace{-2\topsep}
+        \setlength\itemsep{-0.3em}
+        \item Automatic formatting: rewriting source code based on certain formatting rules
+        \item Rename refactoring: language and context aware search-and-replace
+        \item Code actions: language specific actions which transform code
+    \end{itemize}
+    \item Life cycle
+    \begin{itemize}
+        \vspace{-2\topsep}
+        \setlength\itemsep{-0.3em}
+        \item Diagnostic messages: showing warnings and errors in the source text
+        \item Debugging: stepping through code as it runs, allowing inspection of variables
+        \item Testing: running tests directly from the editor, showing its success or failure
+    \end{itemize}
+\end{itemize}
+
+The way these features are provided differs per language and editor.
+
+\todo{
+    if relevant, provide an example of for example how rust-analyzer and maybe another editor service provide do this.
+    In any case mention how in many cases, editor services sort of integrate with a compiler since some services you want in an editor are also those you want in a compiler
+    Also talk about editor services being dynamic
+}
+
+\section{Porting editor services}\label{sec:porting-editor-services}
+
+Because editors need knowledge about a language to provide editor services for that language, not even the most advanced editor will support all languages.
+Especially \acp{DSL} often have very little native support.
+That is why many editors provide a way to be extended by users, often in the form of a plugin system.
+That way, when a new language is created, users can add support for that language to the editor instead of the authors of the editor.
+
+This leads to a complicated problem, called the \ac{IDE} portability problem~\autocite{KeidelPE16}.
+The way every editor provides editor services is slightly different.
+This means that supporting $m$ languages in $n$ editors requires $m \times n$ editor plugins, one for each
+combination of a language and editor.
+This issue often manifests itself as a need for language authors to create different editor plugins for every major editor.
+
+In ``Portable Editor Services'', Pelsmaeker~\autocite*{Pelsmaeker2018} investigates this issue, and proposes a solution: \ac{AESI}.
+\ac{AESI} is a system to create editor plugins.
+\todo{Briefly explain AESI, then talk about LSP itself trying to solve the problem, and language workbenches which generate editor services based on a language's definition}
+
+
