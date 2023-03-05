@@ -34,8 +34,8 @@ $(OUTDIR)/$(DOCUMENT).pdf: .refresh $(SRCS) | $(OUTDIR) $(SRCBIB)
 			-output-directory=$(OUTDIR) \
 			$(DOCUMENT)
 	mv $(OUTDIR)/$(DOCUMENT).pdf $(OUTPUT).pdf
-	-mv $(OUTDIR)/$(DOCUMENT).vtc $(OUTPUT).vtc
-	-mv $(OUTDIR)/$(DOCUMENT).synctex.gz $(OUTPUT).synctex.gz
+	-#mv $(OUTDIR)/$(DOCUMENT).vtc $(OUTPUT).vtc
+	-#mv $(OUTDIR)/$(DOCUMENT).synctex.gz $(OUTPUT).synctex.gz
 
 watch: $(SRCBIB) | $(OUTDIR)
 	cd $(SRCDIR)/ && \
