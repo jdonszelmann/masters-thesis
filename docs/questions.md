@@ -111,6 +111,9 @@ Think about
   * Papers on semantic highlighting (to read):
     * benefits of semantic highlighting: https://fileadmin.cs.lth.se/cs/Education/edan70/CompilerProjects/2021/Reports/ringstrom-frisk.pdf
     * effects of code representation in general: https://dl-acm-org.tudelft.idm.oclc.org/doi/pdf/10.1145/2846680.2846685
+      * "Secondary notation"
+    * "C++ IDE Evolution: From Syntax High-lighting to Semantic Highlighting"
+    * 
 
 From erdweg2013state: On page 5 a diagram is given of important features of a language workbench. Some of those
 features are important editor services. pelsmaeker2018portable references these and lists 13 derived from this diagram
@@ -189,6 +192,45 @@ That leaves the following list of 8 useful code reader features, excluding forma
 8. diagnostic messages
    * List of diagnostic messages with their span
 
+#### What information sources can be combined?
+
+1. syntax coloring and semantic highlighting: class for each token
+2. code folding: list of foldable spans
+3. structure outline: might be useful to be a separate list, but could be derived from syntax coloring information
+4. symbol navigation: "list of references at span" (so also an annotation)
+5. hover documentation: "annotation at span"
+6. signature help: "annotation at span"
+7. Show expansions (macros, types, etc): "annotation at span"
+8. diagnostic messages: "annotation at span"
+
+Everything is in the format of span: metadata, where metadata is often just text that should be interpreted in a certain way. Sometimes its a reference, or list of references,
+and for syntax highlighting its usually a classification of a token.
+
+```rust
+struct Ref;
+struct Span;
+struct TokenClass;
+
+enum Class {
+    Documentation,
+    Type,
+    // etc
+}
+
+struct Entry {
+    span: Span,
+    data: Data,
+}
+
+enum Data {
+    Refs(Vec<Ref>),
+    Syntax(TokenClass),
+    Info {
+        classes: Vec<Class>,
+        data: String,
+    },
+}
+```
 
 ### How is this tool different from all the analysed existing tools
 ### Are there any features not worth pursuing
