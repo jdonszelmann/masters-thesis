@@ -1,2 +1,5 @@
 .idea
 agda/agda
+document.pdf
+document.synctex.gz
+.refresh
