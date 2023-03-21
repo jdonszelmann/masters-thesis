@@ -1,0 +1,27 @@
+[package]
+name = "textmate"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = {version="1.0.154", features=["derive"]}
+serde_json = {version="1.0.94", optional=true}
+serde_yaml = {version="0.9.19", optional=true}
+plist-rs = {version="0.1.0", optional=true}
+thiserror = "1.0.39"
+regress = "0.4.1"
+itertools = "0.10.5"
+
+[features]
+json = ["serde_json"]
+yaml = ["serde_yaml"]
+xml = ["plist-rs", "serde_json"]
+default = ["json", "yaml", "xml"]
+
+[build-dependencies]
+typify = {version="0.0.10", features=[]}
+schemars = "0.8.12"
+serde_json = "1.0.94"

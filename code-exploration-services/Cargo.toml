@@ -1,0 +1,2 @@
+[workspace]
+members = ["code-exploration-services", "code-exploration-services-lib", "textmate"]
