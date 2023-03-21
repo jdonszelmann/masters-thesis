@@ -26,6 +26,7 @@
 % tab:    Table
 % enum:   Enumeration
 % fn:     Footnote
+\newrobustcmd*{\citefirstlastauthor}{\AtNextCite{\DeclareNameAlias{labelname}{given-family}}\citeauthor}
 
 
 % Graphics
@@ -142,7 +143,6 @@
 \setcounter{tocdepth}{1}
 \setsecnumdepth{subsection}
 \maxsecnumdepth{subsection}
-
 
 % Acronyms
 \usepackage{acronym}

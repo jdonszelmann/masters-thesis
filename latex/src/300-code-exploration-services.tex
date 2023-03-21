@@ -1,0 +1,136 @@
+% !TEX root = document.tex
+
+\chapter{Code Exploration Services}
+\label{chap:code-exploration-services}
+
+As the name implies, a programmer's job generally involves writing programs.
+However, a vital part of writing code is also reading and exploring code.
+In the book ``Clean Code: A Handbook of Agile Software Craftsmanship''~\autocite{martin_reading_code_ratio},
+the author estimates that a programmer may spend up to ten hours reading code for every hour of time they spend writing code.
+
+Some examples of such tasks that do not necessarily involve writing code might be reading code from last week, or code written by colleagues.
+Especially in teams, programmers also commonly review code, which mainly involves reading code and verifying its correctness.
+Furthermore, programmers may read code on websites such as \url{https://stackoverflow.com} and \url{https://github.com},
+and in documentation, to learn from others about how to solve a problem.
+All these interactions programmers might have with code, that do not involve writing code, we will call code exploration from now on.
+
+% Reference https://www.informit.com/articles/article.aspx?p=1235624&seqNum=5?
+% Reference https://www.youtube.com/watch?v=QoZU2yN8caY
+
+Exploring programs in an editor can be easier than in other places, because many editors provide editor services that simplify exploring and understanding code.
+Still, editors aren't the only places where programmers explore code.
+The main other locations being on websites, in PDFs (for example, a paper), and in books.
+Although these places are used for exploring code, they often provide few services that help programmers to do so like editors would.
+It might be that only syntax colouring is available, for example.
+However, we think that those services traditionally found in editors, might actually be useful when reading code in other places besides editors
+Those services, which are useful outside an editor, we call code exploration services.
+
+As an example, and a notable exception to websites only providing syntax colouring, there is Github\footnote{\url{https://github.com}}.
+GitHub, apart from being a git server where programmers store their code, is also a place where lots of code is read.
+For example, as a part of code reviews.
+To aid programmers, GitHub has been getting more and more features that make exploring code simpler such
+as more advanced search functionality, and recently code navigation.
+The latter is only supported for a few specific programming languages though\footnote{\url{https://docs.github.com/en/repositories/working-with-files/using-files/navigating-code-on-github}}.
+
+This does raise the question: what other services might (in general) be useful code exploration services?
+
+\section{An overview of code exploration services}\label{sec:an-overview-of-code-exploration-services}
+
+In chapter~\ref{chap:editor-services}, we discuss a list of important editor services.
+For each, we will discuss whether they might be useful as code exploration services as well.
+Before we can do that however, we first need to discuss when a code exploration service is useful.
+We think that a code exploration service is useful, if it has the potential to help a programmer understand the program they are reading quicker.
+With that definition, how useful is each the editor services as code exploration services?
+
+\subsection*{Syntax colouring}
+
+The usefulness of syntax colouring for code comprehension has been extensively researched.
+Although one study, with a low sample size, seems to claim that colouring has a positive effect for novices, but not for
+more experienced programmers~\autocite{Sarkar15a-0}, there is also work that concludes that the effect is in fact minimal.
+In a study where eye movements of participants were tracked, no significant difference between black-and-white code and coloured code\autocite{beelders2016syntax}.
+Similarly, novice students would not perform better at programming tasks where syntax was coloured compared to tasks where syntax was not coloured~\autocite{HannebauerHG18}.
+
+Although there seems to be relatively little evidence that syntax colouring actually helps programmers, it is what many programmers will expect when reading code.
+All editors evaluated by \citeauthor{Pelsmaeker2018} support syntax colouring to a certain extent~\autocite{Pelsmaeker2018},
+and one could argue that the coloured text distinguishes code from the surrounding content.
+Therefore, we would argue that syntax colouring can be useful when exploring code.
+
+\todo{do I want full cited explanations of each of this lke above, or is that not really important for the research on file formats and should I just state that
+these are the things we're going to look at}
+\subsection*{Code folding}
+
+\subsection*{Code completion}
+
+Code completion only helps programmers write code, and has little to do with code exploration.
+
+\subsection*{Structure outline}
+
+\subsection*{Reference resolution}
+
+\subsection*{Documentation}
+
+\subsection*{Signature help}
+
+\subsection*{Automatic formatting}
+
+\subsection*{Rename refactoring}
+
+\subsection*{Code actions}
+
+\subsection*{Diagnostic messages}
+
+\subsection*{Debugging}
+
+
+
+\subsection*{Testing}
+
+%As demonstrated by Github, it certainly seems like it is possible to provide more services to the readers of programs.
+%One might call such services for code readers, code exploration services.
+%However, that's not quite
+
+\subsection{Code search}\label{subsec:code-search}
+
+Although the list of code exploration services has its roots in a list of editor services, which itself has its roots in
+frequently cited theory by \citeauthor{ErdwegSV13}, we actually think that one feature may be missing from the original list.
+That feature is search.
+That search is missing is interesting, because the feature is pretty much universally supported by editors, even `dumb' ones.
+Even many websites, where we showed that often relatively few services are supported, offer advanced search options.
+
+So why is search missing?
+
+
+\section{Availability of code exploration services}\label{sec:availability-of-code-exploration-services}
+
+\todo{Survey of other websites, showing that they pretty much only support syntax colouring}
+
+
+
+\subsection{Github}
+
+
+
+\subsection{Gitlab}
+\subsection{MdBook}
+\subsection{StackOverflow}
+\subsection{Reddit}
+\subsection{Latex and PDF}
+\subsection{Bootlin}
+\subsection{Monaco}
+
+
+%However, to take advantage of editor services, a programmer needs to download the sourcecode to their own computer and actually
+%open the program in an editor, which can be inconvenient.
+
+% Sometimes you look at code not in an IDE (like online, or in papers)
+% What services are available in those places?
+% Most places provide syntax colouring
+% Some places provide code navigation (Github, cross referencers)
+% However for very limited cases (only some languages)
+% What's different from IDEs to these places where code is read? Well,
+% What services could theoretically be provided?
+% We call these services code exploration services
+
+
+%jupyter
+%mdbook

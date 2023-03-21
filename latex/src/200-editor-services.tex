@@ -28,58 +28,90 @@ work for multiple programming languages in large projects, and even automaticall
 As well as simplifying writing code, an \ac{IDE} can also help with compiling and running code, as well as provide tooling to interactively debug it.
 All these tools which make it easier to write code are editor services, a term coined by Kats, Kalleberg and Visser~\autocite*{KatsKV08}.
 
+\section{An overview of editor services}\label{sec:an-overview-of-editor-services}
 
-\section{Providing editor services}\label{sec:providing-editor-services}
-
-To provide editor services, the editor needs some information about the language it is providing services for.
-The amount of information, depends on what services are provided.
+Different editors provide different editor services.
+Nevertheless, the kinds of services provided overlap significantly, meaning we can try to list the main classes of services.
 In ``The State of the Art in Language Workbenches'',~\autocite{ErdwegSV13} provides a feature model of language workbenches
-\footnote{More will be said about language workbenches in ...}, a part of which is providing editor services.
-This feature model was adapted by Pelsmaeker~\autocite{Pelsmaeker2018} into a list of only editor services, which is shown
-below, together with a short explanation of each feature.
+\footnote{More will be said about language workbenches in ...}.
+When \citeauthor{Fowler2004} first wrote about language workbenches, the relation between language workbenches and \acp{IDE} was already discussed~\autocite{Fowler2004}.
+Hence, the feature model by \citeauthor{ErdwegSV13} also describes editor services as one of six main features of a language workbench.
+In the feature model, editor services are further subdivided into
 
 \begin{itemize}
-    \setlength\itemsep{-1em}
+    \item Syntactic services
+    \begin{itemize}
+        \item Highlighting
+        \item Outline
+        \item Folding
+        \item Syntactic completion
+        \item Diff
+        \item Auto formatting
+    \end{itemize}
+    \item Semantic services
+    \begin{itemize}
+        \item Reference resolution
+        \item Semantic completion
+        \item Refactoring
+        \item Error marking
+        \item Quick fixes
+        \item Origin tracking
+        \item Live translation
+    \end{itemize}
+\end{itemize}
+
+The feature model by \citeauthor{ErdwegSV13} was adapted by \citeauthor{Pelsmaeker2018} into a list of just editor services~\autocite{Pelsmaeker2018}.
+This derived list further splits the services into more categories, as well as renaming a few to sound more intuitive.
+For example, syntax highlighting was renamed to syntax colouring as highlighting would imply a change in background colour.
+We also annotated each service in this list with a short explanation, not present in the original list by \citeauthor{Pelsmaeker2018}:
+
+\begin{itemize}
+%    \setlength\itemsep{-1em}
     \item Editor:
     \begin{itemize}
-        \vspace{-2\topsep}
-        \setlength\itemsep{-0.3em}
+%        \vspace{-2\topsep}
+%        \setlength\itemsep{-0.3em}
         \item Syntax colouring: giving different colours to different syntactical elements
         \item Code folding: hiding blocks of related code to reduce visual clutter
-        \item Code completion: suggesting line completions based on context
+        \item Code completion: suggesting word and line completions based on context
     \end{itemize}
     \item Navigation and structure:
     \begin{itemize}
-        \vspace{-2\topsep}
-        \setlength\itemsep{-0.3em}
+%        \vspace{-2\topsep}
+%        \setlength\itemsep{-0.3em}
         \item Structure outline: visualizing the structure of code to quickly navigate it
         \item Reference resolution: providing quick navigating between related code
     \end{itemize}
     \item Help and documentation:
     \begin{itemize}
-        \vspace{-2\topsep}
-        \setlength\itemsep{-0.3em}
-        \item documentation: showing documentation of written elements in-editor
+%        \vspace{-2\topsep}
+%        \setlength\itemsep{-0.3em}
+        \item Documentation: showing documentation of written elements in-editor
         \item Signature help: showing previews of an items parameters after typing the item
     \end{itemize}
     \item Actions and transformations:
     \begin{itemize}
-        \vspace{-2\topsep}
-        \setlength\itemsep{-0.3em}
+%        \vspace{-2\topsep}
+%        \setlength\itemsep{-0.3em}
         \item Automatic formatting: rewriting source code based on certain formatting rules
-        \item Rename refactoring: language and context aware search-and-replace
-        \item Code actions: language specific actions which transform code
+        \item Rename refactoring: language and context aware search-and-replace.
+              May sometimes be called structural search and replace~\autocite{jetbrains_ssr}.
+        \item Code actions: language specific actions that typically fix or transform code~\autocite{lsp_code_actions}
     \end{itemize}
     \item Life cycle
     \begin{itemize}
-        \vspace{-2\topsep}
-        \setlength\itemsep{-0.3em}
+%        \vspace{-2\topsep}
+%        \setlength\itemsep{-0.3em}
         \item Diagnostic messages: showing warnings and errors in the source text
         \item Debugging: stepping through code as it runs, allowing inspection of variables
-        \item Testing: running tests directly from the editor, showing its success or failure
+        \item Testing: running tests directly from the editor, showing their success or failure
     \end{itemize}
 \end{itemize}
 
+\section{Providing editor services}\label{sec:providing-editor-services}
+
+To provide editor services, the editor needs some information about the language it is providing services for.
+The amount of information, depends on what services are provided.
 The way these features are provided differs per language and editor.
 
 \todo{
@@ -87,6 +119,7 @@ The way these features are provided differs per language and editor.
     In any case mention how in many cases, editor services sort of integrate with a compiler since some services you want in an editor are also those you want in a compiler
     Also talk about editor services being dynamic
 }
+
 
 \section{Porting editor services}\label{sec:porting-editor-services}
 

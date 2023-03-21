@@ -127,7 +127,7 @@ year={2018}
 ## The State of the Art in Language Workbenches
 
 * Has an awesome tree of important features of a language workbench
-  * Which of these features translate to useful code viewer services?
+  * Which of these features translate to useful code exploration services?
 * 
 
 https://homepages.cwi.nl/~storm/publications/lwc13paper.pdf

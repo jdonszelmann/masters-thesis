@@ -1,7 +1,7 @@
 
 # Questions
 
-title: A generic format for code viewer services
+title: A generic format for code exploration services
 
 TODO: talk to Hendrik van Antwerpen about Github
 TODO: Peter Mosses
@@ -15,7 +15,7 @@ highlighting spans and linking
 
 Filters / Layers
 
-## Applications for code viewer services
+## Applications for code exploration services
 
 * Displaying code on websites:  
   * for debugging purposes
@@ -43,7 +43,7 @@ Look at:
 * treesitter
 * textmate
 * KDevelop
-* TODO: existing code viewers?
+* TODO: existing code exploration?
   * Highlight.js
   * Prism
   * Shiki
@@ -94,7 +94,7 @@ TODO: Make an evaluation matrix out of this
   * apparently does semantic highlighting pretty well
 
 ## What should the new tool do exactly?
-### Where are code viewers useful
+### Where are code exploration useful
 
 
 ### What features are worth it (especially besides gotos! the difference seems like what I can contribute)
@@ -169,6 +169,8 @@ That leaves the following list of 8 useful code reader features, excluding forma
 7. Show expansions (macros, types, etc)
 8. diagnostic messages
 9. Inlay hints (etc.)
+10. Search?
+    * type based search
 
 ### What information is necessary to provide these features
 
@@ -203,6 +205,12 @@ That leaves the following list of 8 useful code reader features, excluding forma
 7. Show expansions (macros, types, etc): "annotation at span"
 8. diagnostic messages: "annotation at span"
 
+TODO:
+Wide support: reduce complexity?
+minimal format or larger format
+niet-continue spans
+LSP mapping
+
 Everything is in the format of span: metadata, where metadata is often just text that should be interpreted in a certain way. Sometimes its a reference, or list of references,
 and for syntax highlighting its usually a classification of a token.
 
@@ -231,6 +239,75 @@ enum Data {
     },
 }
 ```
+
+#### What token classes are there
+From textmate:
+https://macromates.com/manual/en/language_grammars#naming-conventions
+
+* comment
+  * line
+  * block
+* various forms of constants.
+  * numeric
+  * character
+  * escape
+  * language
+  * other
+* entity
+  * name
+      * function
+      * type
+      * tag
+      * section
+  * other
+      * inherited-class
+      * attribute-name
+* invalid — stuff which is “invalid”.
+  * illegal
+  * deprecated
+* keyword
+  * control
+  * operator
+  * other
+* markup
+  * underline
+  * link
+  * bold
+  * heading
+  * italic
+  * list
+      * numbered
+      * unnumbered
+  * quote
+  * raw
+* meta
+* storage
+  * type — the type of something, class, function, int, var, etc.
+  * modifier — a storage modifier like static, final, abstract, etc.
+* string
+  * quoted
+      * single
+      * double
+      * triple
+      * other
+  * unquoted
+  * interpolated
+    * regexp
+  * other
+* support
+  * function
+  * class
+  * type
+  * constant
+  * variable
+  * other
+* variable
+  * parameter
+  * language
+  * other
+
+Theme extensions for vsc, textmate and sublime are pretty much the same. Even 
+
 
 ### How is this tool different from all the analysed existing tools
 ### Are there any features not worth pursuing

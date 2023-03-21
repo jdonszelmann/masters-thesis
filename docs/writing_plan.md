@@ -6,9 +6,12 @@
   * What editor services exist
   * How are editor services provided
   * Porting editor services
-* Introducing: Code viewer services
-  * What features do we want from code viewers
-* How can code viewer services be facilitated?
+* TODO: more concrete problem statement and concrete questions and motivation (and figure out where)
+  * High level in introduction, maybe a simple example
+* Introducing: Code exploration services
+  * What features do we want from code exploration
+  * Definitions
+* How can code exploration services be facilitated?
   * What information is needed?
   * How is this information stored?
   * How is this information generated?
@@ -20,3 +23,6 @@
   * Browser-based IDEs
   * Cross-Referencers (like bootlin)
 * Conclusion
+
+TODO:
+differences between related and prior work
