@@ -1,13 +1,13 @@
+use crate::analysis::Field;
+use crate::analysis::Span;
 use crate::input::{Analyser, AnalysisError};
 use crate::{Analysis, SourceCode};
-use crate::analysis::Field;
 use thiserror::Error;
-use crate::analysis::Span;
 
 #[derive(Debug, Error)]
 pub enum TextmateAnalysisError {
     #[error("parse textmate: {0}")]
-    Textmate(#[from] textmate::ParseError)
+    Textmate(#[from] textmate::ParseError),
 }
 
 pub struct TextmateAnalyser;
@@ -21,11 +21,16 @@ impl Analyser for TextmateAnalyser {
             return Err(AnalysisError::NotImplemented)
         };
 
-        let res = parser.parse(s.as_str()).map_err(TextmateAnalysisError::Textmate)?;
+        let res = parser
+            .parse(s.as_str())
+            .map_err(TextmateAnalysisError::Textmate)?;
         let mut fields = Vec::new();
 
         for (span, name) in res {
-            fields.push((Span::new(span.start, span.len), Field::SyntaxColour(name.to_string())))
+            fields.push((
+                Span::new(span.start, span.len),
+                Field::SyntaxColour(name.to_string()),
+            ))
         }
 
         Ok(Analysis::new(s, fields))

@@ -1,11 +1,9 @@
-
 pub mod grammar;
 pub mod theme;
 
+pub use grammar::constructor::{FileType, FromFileError, FromPathError};
 pub use grammar::parser::ParseError;
-pub use grammar::constructor::{FromPathError, FromFileError, FileType};
 pub use grammar::TextmateGrammar;
-
 
 #[cfg(test)]
 mod tests {
@@ -13,8 +11,9 @@ mod tests {
 
     #[test]
     fn test_rust() {
-        let grammar = TextmateGrammar::from_path("textmate_grammars/rust.tmLanguage.json").expect("parse grammar");
-        let input ="
+        let grammar = TextmateGrammar::from_path("textmate_grammars/rust.tmLanguage.json")
+            .expect("parse grammar");
+        let input = "
 fn main() {
     let a = 3;
 }
@@ -24,14 +23,22 @@ fn main() {
         assert!(res.is_ok(), "{}", res.unwrap_err());
 
         for (span, name) in res.unwrap() {
-            println!("{:?} = {}", name, input.chars().skip(span.start).take(span.len).collect::<String>())
+            println!(
+                "{:?} = {}",
+                name,
+                input
+                    .chars()
+                    .skip(span.start)
+                    .take(span.len)
+                    .collect::<String>()
+            )
         }
-
     }
 
     #[test]
     fn test_json() {
-        let grammar = TextmateGrammar::from_path("textmate_grammars/json.tmLanguage.xml").expect("parse grammar");
+        let grammar = TextmateGrammar::from_path("textmate_grammars/json.tmLanguage.xml")
+            .expect("parse grammar");
         let input = r#"
 {"menu": {
   "id": "file",
@@ -51,8 +58,15 @@ fn main() {
 
         for (span, name) in res.unwrap() {
             // println!("{:?}", span);
-            println!("{:?} = {}", name, input.chars().skip(span.start).take(span.len).collect::<String>())
+            println!(
+                "{:?} = {}",
+                name,
+                input
+                    .chars()
+                    .skip(span.start)
+                    .take(span.len)
+                    .collect::<String>()
+            )
         }
     }
 }
-

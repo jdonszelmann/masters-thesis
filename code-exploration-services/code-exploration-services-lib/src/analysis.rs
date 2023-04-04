@@ -1,9 +1,9 @@
-use std::fmt::{Display, Formatter};
-use serde::{Deserialize, Serialize};
 use crate::sourcecode::SourceCodeHash;
+use crate::SourceCode;
+use serde::{Deserialize, Serialize};
+use std::fmt::{Display, Formatter};
 use std::io::Write;
 use thiserror::Error;
-use crate::SourceCode;
 
 #[derive(Debug, Error)]
 #[error("Can't merge two analyses generated from different source files (source hashes of analyses don't match)")]
@@ -39,12 +39,7 @@ impl Span {
 
 impl Span {
     pub fn serialize(&self, w: &mut Vec<u8>) {
-        let _ = write!(
-            w,
-            "{}+{}",
-            self.start,
-            self.len
-        );
+        let _ = write!(w, "{}+{}", self.start, self.len);
         if let Some(ref i) = self.next {
             let _ = write!(w, "&");
             Span::serialize(i, w);
@@ -60,21 +55,20 @@ pub enum Field {
     SyntaxColour(String),
     Outline {
         description: Option<String>,
-        parent: Option<FieldRef>
-    }
+        parent: Option<FieldRef>,
+    },
 }
 
 impl Field {
     pub fn serialize(&self, w: &mut Vec<u8>) {
-        serde_json::to_writer(w, self)
-            .unwrap()
+        serde_json::to_writer(w, self).unwrap()
     }
 }
 
 #[derive(Debug)]
 pub struct Analysis {
     hash: SourceCodeHash,
-    fields: Vec<(Span, Field)>
+    fields: Vec<(Span, Field)>,
 }
 
 impl Analysis {
@@ -85,13 +79,13 @@ impl Analysis {
         }
     }
 
-    pub fn fields(&self) -> impl Iterator<Item=&(Span, Field)> {
+    pub fn fields(&self) -> impl Iterator<Item = &(Span, Field)> {
         self.fields.iter()
     }
 
     pub fn merge(self, other: Analysis) -> Result<Self, HashesDontMatch> {
         if self.hash != other.hash {
-            return Err(HashesDontMatch)
+            return Err(HashesDontMatch);
         }
 
         Ok(Self {
@@ -121,6 +115,10 @@ impl Analysis {
 
 impl Display for Analysis {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", String::from_utf8(self.serialize()).expect("valid utf8"))
+        write!(
+            f,
+            "{}",
+            String::from_utf8(self.serialize()).expect("valid utf8")
+        )
     }
 }

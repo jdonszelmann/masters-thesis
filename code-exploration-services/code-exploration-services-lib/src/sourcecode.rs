@@ -1,10 +1,11 @@
+use crate::analysis::Span;
+use once_cell::unsync::OnceCell;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
 use std::io;
 use std::path::Path;
-use once_cell::unsync::OnceCell;
+use std::str::FromStr;
 use temp_file::TempFile;
-use crate::analysis::Span;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct SourceCodeHash(String);
@@ -29,7 +30,19 @@ impl Display for SourceCodeHash {
 pub struct SourceCode {
     contents: String,
     extension: Option<String>,
-    hash: OnceCell<SourceCodeHash>
+    hash: OnceCell<SourceCodeHash>,
+}
+
+impl FromStr for SourceCode {
+    type Err = std::convert::Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self {
+            contents: s.to_string(),
+            extension: None,
+            hash: OnceCell::new(),
+        })
+    }
 }
 
 impl SourceCode {
@@ -37,15 +50,7 @@ impl SourceCode {
         self.contents.as_str()
     }
 
-    pub fn from_str(s: impl AsRef<str>) -> Self {
-        Self {
-            contents: s.as_ref().to_string(),
-            extension: None,
-            hash: OnceCell::new(),
-        }
-    }
-
-    pub fn slice(&self, span: &Span)-> &str {
+    pub fn slice(&self, span: &Span) -> &str {
         &self.contents.as_str()[span.start..span.start + span.len]
     }
 
@@ -55,7 +60,7 @@ impl SourceCode {
         } else {
             TempFile::new()
         }
-            .and_then(|i| i.with_contents(self.contents.as_bytes()))
+        .and_then(|i| i.with_contents(self.contents.as_bytes()))
     }
 
     pub fn from_str_extension(s: impl AsRef<str>, extension: Option<impl AsRef<str>>) -> Self {
@@ -73,37 +78,35 @@ impl SourceCode {
     pub fn from_path(p: impl AsRef<Path>) -> io::Result<Self> {
         Ok(Self::from_str_extension(
             std::fs::read_to_string(&p)?,
-            p.as_ref().extension().map(|i| i.to_string_lossy().to_string())
+            p.as_ref()
+                .extension()
+                .map(|i| i.to_string_lossy().to_string()),
         ))
     }
 
     pub fn hash(&self) -> &SourceCodeHash {
-        self.hash.get_or_init(|| {
-            SourceCodeHash(sha256::digest(self.contents.as_str()))
-        })
+        self.hash
+            .get_or_init(|| SourceCodeHash(sha256::digest(self.contents.as_str())))
     }
 
     pub fn offset_of_line_num(&self, mut line_num: usize) -> Option<usize> {
         for (idx, i) in self.contents.bytes().enumerate() {
-            match i {
-                b'\n' => {
-                    line_num -= 1;
-                    if line_num <= 1 {
-                        return Some(idx)
-                    }
+            if i == b'\n' {
+                line_num -= 1;
+                if line_num <= 1 {
+                    return Some(idx);
                 }
-                _ => {}
             }
         }
 
-         None
+        None
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::io;
     use crate::SourceCode;
+    use std::io;
 
     #[test]
     fn test_temp() -> io::Result<()> {
@@ -125,4 +128,3 @@ mod tests {
         Ok(())
     }
 }
-

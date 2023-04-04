@@ -1,7 +1,7 @@
-use thiserror::Error;
-use crate::{Analysis, SourceCode};
 use crate::input::subsystems::ctags::CtagsAnalysisError;
 use crate::input::subsystems::textmate::TextmateAnalysisError;
+use crate::{Analysis, SourceCode};
+use thiserror::Error;
 
 pub mod subsystems;
 
@@ -20,7 +20,7 @@ pub enum AnalysisError {
 }
 
 #[inline]
-fn or<T>(fs: &[&dyn Fn() -> Result<T, AnalysisError>]) -> Result<T, AnalysisError>{
+fn or<T>(fs: &[&dyn Fn() -> Result<T, AnalysisError>]) -> Result<T, AnalysisError> {
     for f in fs {
         match f() {
             Ok(i) => return Ok(i),

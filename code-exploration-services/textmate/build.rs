@@ -1,6 +1,6 @@
-use std::{env, fs};
-use std::path::Path;
 use schemars::schema::Schema;
+use std::path::Path;
+use std::{env, fs};
 use typify::{TypeSpace, TypeSpaceSettings};
 
 fn main() {
@@ -15,10 +15,7 @@ fn main() {
         let _ = type_space.add_type(&Schema::Object(schema.schema)).unwrap();
     }
 
-    let contents = format!(
-        "{}",
-        type_space.to_string()
-    );
+    let contents = type_space.to_string();
 
     let mut out_file = Path::new(&env::var("OUT_DIR").unwrap()).to_path_buf();
     out_file.push("codegen.rs");

@@ -1,21 +1,20 @@
-use serde::{Deserialize, Serialize};
-use std::process::Command;
-use std::io::BufRead;
 use crate::input::subsystems::ctags::CtagsAnalysisError;
 use crate::input::subsystems::ctags::CtagsAnalysisError::RunCtagsCommand;
 use crate::SourceCode;
+use serde::{Deserialize, Serialize};
+use std::io::BufRead;
+use std::process::Command;
 
 #[derive(Clone)]
 pub struct CtagsAnalysis {
-    pub tags: Vec<Tag>
+    pub tags: Vec<Tag>,
 }
-
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum TagType {
     Ptag,
-    Tag
+    Tag,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -33,7 +32,7 @@ pub struct Tag {
     pub scope: Option<String>,
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(rename="scopeKind")]
+    #[serde(rename = "scopeKind")]
     pub scope_kind: Option<String>,
 }
 
@@ -50,13 +49,16 @@ pub fn run_ctags(s: &SourceCode) -> Result<CtagsAnalysis, CtagsAnalysisError> {
 
     let output = cmd.output().map_err(RunCtagsCommand)?;
     if !output.status.success() {
-        return Err(CtagsAnalysisError::Ctags(String::from_utf8_lossy(&output.stderr).to_string()));
+        return Err(CtagsAnalysisError::Ctags(
+            String::from_utf8_lossy(&output.stderr).to_string(),
+        ));
     }
 
-
     Ok(CtagsAnalysis {
-        tags: output.stdout.lines()
-        .map(|i| Ok::<_, CtagsAnalysisError>(parse_json_tag(&i?)?))
-        .collect::<Result<Vec<_>, _>>()?
+        tags: output
+            .stdout
+            .lines()
+            .map(|i| parse_json_tag(&i?))
+            .collect::<Result<Vec<_>, _>>()?,
     })
 }

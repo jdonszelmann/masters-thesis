@@ -1,20 +1,20 @@
+use convert_case::{Case, Casing};
 use std::collections::{HashMap, HashSet};
 use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::io::BufRead;
+use std::io::Write;
 use std::path::PathBuf;
 use std::process::Command;
-use std::io::Write;
-use convert_case::{Case, Casing};
 
-fn generate_xref_kinds() -> Result<(), Box<dyn Error>>{
+fn generate_xref_kinds() -> Result<(), Box<dyn Error>> {
     let mut cmd = Command::new("ctags");
     cmd.arg("--list-kinds-full");
 
     let output = cmd.output()?;
     if !output.status.success() {
-        return Err(String::from_utf8_lossy(&output.stderr).to_string().into())
+        return Err(String::from_utf8_lossy(&output.stderr).to_string().into());
     }
 
     let mut path = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
@@ -40,14 +40,20 @@ fn generate_xref_kinds() -> Result<(), Box<dyn Error>>{
     let mut dedup_names = HashMap::new();
     for i in &names {
         let camel = i.to_case(Case::UpperCamel);
-        dedup_names.entry(camel).or_insert_with(HashSet::new).insert(i);
+        dedup_names
+            .entry(camel)
+            .or_insert_with(HashSet::new)
+            .insert(i);
     }
     let mut names = dedup_names.into_iter().collect::<Vec<_>>();
     names.sort_by_key(|i| i.0.clone());
 
     writeln!(f, "use strum::{{EnumString, AsRefStr}};")?;
-    writeln!(f, "")?;
-    writeln!(f, "#[derive(Copy, Clone, Debug, EnumString, Eq, PartialEq, Hash, AsRefStr)]")?;
+    writeln!(f)?;
+    writeln!(
+        f,
+        "#[derive(Copy, Clone, Debug, EnumString, Eq, PartialEq, Hash, AsRefStr)]"
+    )?;
     writeln!(f, "pub enum XrefKind {{")?;
     for (variant, originals) in names {
         let mut res = String::new();

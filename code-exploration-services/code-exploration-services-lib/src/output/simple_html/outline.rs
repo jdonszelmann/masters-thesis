@@ -1,10 +1,10 @@
-use axohtml::dom::DOMTree;
-use std::collections::VecDeque;
-use axohtml::{html, text, unsafe_text};
-use crate::{Analysis, SourceCode};
 use crate::analysis::{Field, Span};
-use crate::output::simple_html::{FieldIndex, SimpleHtmlError, tokenize};
-use crate::output::simple_html::format::format_tokens;
+use crate::output::simple_html::generate_html::generate_html_from_tokens;
+use crate::output::simple_html::{tokenize, FieldIndex, SimpleHtmlError};
+use crate::{Analysis, SourceCode};
+use axohtml::dom::DOMTree;
+use axohtml::{html, text, unsafe_text};
+use std::collections::VecDeque;
 
 #[derive(Debug)]
 struct OutlineItem<'a> {
@@ -13,7 +13,12 @@ struct OutlineItem<'a> {
     description: &'a Option<String>,
 }
 
-fn insert<'a>(outline: &mut Vec<OutlineItem<'a>>, span: &'a Span, parent: &'a Span, description: &'a Option<String>) -> bool {
+fn insert<'a>(
+    outline: &mut Vec<OutlineItem<'a>>,
+    span: &'a Span,
+    parent: &'a Span,
+    description: &'a Option<String>,
+) -> bool {
     for i in outline {
         if i.span == parent {
             i.children.push(OutlineItem {
@@ -29,19 +34,22 @@ fn insert<'a>(outline: &mut Vec<OutlineItem<'a>>, span: &'a Span, parent: &'a Sp
         }
     }
 
-    return false
+    false
 }
 
-fn generate_outline_html(outline: &[OutlineItem], parent: &OutlineItem, index: &FieldIndex, source: &SourceCode) -> Result<DOMTree<String>, SimpleHtmlError> {
+fn generate_outline_html(
+    outline: &[OutlineItem],
+    parent: &OutlineItem,
+    index: &FieldIndex,
+    source: &SourceCode,
+) -> Result<DOMTree<String>, SimpleHtmlError> {
     let contents = outline
         .iter()
         .map(|i| -> Result<_, SimpleHtmlError> {
-            let elem = generate_outline_html(&i.children, &i, index, source)?.to_string();
-            Ok(unsafe_text!(
-                "{}",
-                elem
-            ))
-        }).collect::<Result<Vec<_>, _>>()?;
+            let elem = generate_outline_html(&i.children, i, index, source)?.to_string();
+            Ok(unsafe_text!("{}", elem))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
 
     let source_text = source.slice(parent.span);
     let tokens = tokenize::tokenize_string(source_text, parent.span.start, index);
@@ -56,7 +64,7 @@ fn generate_outline_html(outline: &[OutlineItem], parent: &OutlineItem, index: &
         <div class="outline-item">
             <div class="outline-header">
                 <span>{heading}</span>
-                <pre>{format_tokens(tokens)}</pre>
+                <pre>{generate_html_from_tokens(tokens)}</pre>
             </div>
             {
                 contents
@@ -75,12 +83,20 @@ fn sort_outline(outline: &mut Vec<OutlineItem>) {
     }
 }
 
-pub fn generate_outline(analysis: &Analysis, index: &FieldIndex, source: &SourceCode) -> Result<DOMTree<String>, SimpleHtmlError> {
+pub fn generate_outline(
+    analysis: &Analysis,
+    index: &FieldIndex,
+    source: &SourceCode,
+) -> Result<DOMTree<String>, SimpleHtmlError> {
     let mut todo = VecDeque::new();
     let mut outline = Vec::new();
 
     for (span, field) in analysis.fields() {
-        if let Field::Outline { parent , description} = field {
+        if let Field::Outline {
+            parent,
+            description,
+        } = field
+        {
             if let Some(parent) = parent {
                 todo.push_back((span, parent, description));
             } else {
@@ -104,12 +120,10 @@ pub fn generate_outline(analysis: &Analysis, index: &FieldIndex, source: &Source
     let contents = outline
         .iter()
         .map(|i| -> Result<_, SimpleHtmlError> {
-            let elem = generate_outline_html(&i.children, &i, index, source)?.to_string();
-            Ok(unsafe_text!(
-                "{}",
-                elem
-            ))
-        }).collect::<Result<Vec<_>, _>>()?;
+            let elem = generate_outline_html(&i.children, i, index, source)?.to_string();
+            Ok(unsafe_text!("{}", elem))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
 
     let doc: DOMTree<String> = html! {
         <div class="outline-root">

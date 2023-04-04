@@ -35,7 +35,7 @@ impl<'a> Iterator for LinesInclusiveImpl<'a> {
             };
 
             if next_char == '\n' {
-                let res = &self.inner[self.position..(pos + 1)];
+                let res = &self.inner[self.position..=pos];
                 self.position = pos + 1;
                 return Some(res);
             }
@@ -51,10 +51,22 @@ mod tests {
     #[test]
     fn lines() {
         assert_eq!("test".lines_inclusive().collect::<Vec<_>>(), vec!["test"]);
-        assert_eq!("test\n".lines_inclusive().collect::<Vec<_>>(), vec!["test\n"]);
-        assert_eq!("test\ntest".lines_inclusive().collect::<Vec<_>>(), vec!["test\n", "test"]);
-        assert_eq!("\ntest\ntest".lines_inclusive().collect::<Vec<_>>(), vec!["\n", "test\n", "test"]);
-        assert_eq!("\n\n\n\n".lines_inclusive().collect::<Vec<_>>(), vec!["\n", "\n", "\n", "\n"]);
+        assert_eq!(
+            "test\n".lines_inclusive().collect::<Vec<_>>(),
+            vec!["test\n"]
+        );
+        assert_eq!(
+            "test\ntest".lines_inclusive().collect::<Vec<_>>(),
+            vec!["test\n", "test"]
+        );
+        assert_eq!(
+            "\ntest\ntest".lines_inclusive().collect::<Vec<_>>(),
+            vec!["\n", "test\n", "test"]
+        );
+        assert_eq!(
+            "\n\n\n\n".lines_inclusive().collect::<Vec<_>>(),
+            vec!["\n", "\n", "\n", "\n"]
+        );
         assert_eq!("\n".lines_inclusive().collect::<Vec<_>>(), vec!["\n"]);
         assert_eq!("".lines_inclusive().collect::<Vec<_>>(), Vec::<&str>::new());
     }

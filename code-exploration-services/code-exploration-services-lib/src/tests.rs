@@ -1,5 +1,5 @@
-use crate::SourceCode;
 use crate::input::analyse;
+use crate::SourceCode;
 
 #[test]
 fn test_example_rs() {

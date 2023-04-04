@@ -1,15 +1,15 @@
-use std::process::Command;
-use std::io::BufRead;
 use crate::analysis::Span;
+use crate::input::subsystems::ctags::xref_kinds::XrefKind;
 use crate::input::subsystems::ctags::CtagsAnalysisError;
 use crate::input::subsystems::ctags::CtagsAnalysisError::RunCtagsCommand;
 use crate::parse::ParseHelper;
 use crate::SourceCode;
-use crate::input::subsystems::ctags::xref_kinds::XrefKind;
+use std::io::BufRead;
+use std::process::Command;
 
 #[derive(Clone, Debug)]
 pub struct XrefAnalysis {
-    pub xrefs: Vec<Xref>
+    pub xrefs: Vec<Xref>,
 }
 
 #[derive(Clone, Debug)]
@@ -61,7 +61,9 @@ fn parse_xref_line(xref: &str) -> Result<Xref, CtagsAnalysisError> {
 
     Ok(Xref {
         name: name.to_string(),
-        kind: kind.parse().map_err(|e| CtagsAnalysisError::ParseXrefKind(e, kind.to_string()))?,
+        kind: kind
+            .parse()
+            .map_err(|e| CtagsAnalysisError::ParseXrefKind(e, kind.to_string()))?,
 
         line_num: line_num.parse()?,
         file: file.to_string(),
@@ -69,14 +71,17 @@ fn parse_xref_line(xref: &str) -> Result<Xref, CtagsAnalysisError> {
         parent: (!parent_name.is_empty()).then(|| parent_name.to_string()),
         parent_kind: if parent_kind.is_empty() {
             None
-        }else {
-            Some(parent_kind.parse().map_err(|e| CtagsAnalysisError::ParseXrefKind(e, parent_kind.to_string()))?)
+        } else {
+            Some(
+                parent_kind
+                    .parse()
+                    .map_err(|e| CtagsAnalysisError::ParseXrefKind(e, parent_kind.to_string()))?,
+            )
         },
 
         pattern: pattern.to_string(),
     })
 }
-
 
 pub fn run_xref(s: &SourceCode) -> Result<XrefAnalysis, CtagsAnalysisError> {
     let mut cmd = Command::new("ctags");
@@ -88,12 +93,16 @@ pub fn run_xref(s: &SourceCode) -> Result<XrefAnalysis, CtagsAnalysisError> {
 
     let output = cmd.output().map_err(RunCtagsCommand)?;
     if !output.status.success() {
-        return Err(CtagsAnalysisError::Ctags(String::from_utf8_lossy(&output.stderr).to_string()));
+        return Err(CtagsAnalysisError::Ctags(
+            String::from_utf8_lossy(&output.stderr).to_string(),
+        ));
     }
 
     Ok(XrefAnalysis {
-        xrefs: output.stdout.lines()
-            .map(|i| Ok::<_, CtagsAnalysisError>(parse_xref_line(&i?)?))
-            .collect::<Result<Vec<_>, _>>()?
+        xrefs: output
+            .stdout
+            .lines()
+            .map(|i| parse_xref_line(&i?))
+            .collect::<Result<Vec<_>, _>>()?,
     })
 }

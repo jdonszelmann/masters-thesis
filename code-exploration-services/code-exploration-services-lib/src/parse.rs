@@ -1,6 +1,6 @@
-use std::iter::Peekable;
 use itertools::Itertools;
 use std::fmt::{Debug, Display, Formatter};
+use std::iter::Peekable;
 use std::ops::{Range, RangeInclusive};
 use std::sync::Arc;
 
@@ -141,7 +141,11 @@ impl<'a> ParseHelper<'a> {
     /// assert!(!p.accept('t'));
     /// assert!(p.accept_skip_layout('t', ' '));
     /// ```
-    pub fn accept_skip_layout<'c>(&mut self, c: impl Into<CharacterClass<'c>>, layout: impl Into<CharacterClass<'c>>) -> bool {
+    pub fn accept_skip_layout<'c>(
+        &mut self,
+        c: impl Into<CharacterClass<'c>>,
+        layout: impl Into<CharacterClass<'c>>,
+    ) -> bool {
         let mut self_clone = self.clone();
         self_clone.skip_layout(layout);
 
@@ -163,7 +167,11 @@ impl<'a> ParseHelper<'a> {
     /// assert!(!p.accept_str("test"));
     /// assert!(p.accept_str_skip_layout("test", ' '));
     /// ```
-    pub fn accept_str_skip_layout<'c>(&mut self, s: &str, layout: impl Into<CharacterClass<'c>>) -> bool {
+    pub fn accept_str_skip_layout<'c>(
+        &mut self,
+        s: &str,
+        layout: impl Into<CharacterClass<'c>>,
+    ) -> bool {
         let mut self_clone = self.clone();
         self_clone.skip_layout(layout);
         if self_clone.accept_str(s) {
@@ -245,7 +253,6 @@ impl<'a> Iterator for ParseHelper<'a> {
     }
 }
 
-
 /// Represent a class of characters like in a regex
 /// such as [a-z] or [^0-9]
 #[derive(Clone)]
@@ -312,7 +319,7 @@ impl Display for CharacterClass<'_> {
             CharacterClass::Fn(_) => {
                 write!(f, "<function>")
             }
-            CharacterClass::Ref(r) => write!(f, "{r}")
+            CharacterClass::Ref(r) => write!(f, "{r}"),
         }
     }
 }

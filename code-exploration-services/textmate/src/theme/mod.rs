@@ -1,6 +1,6 @@
-use std::fmt::{Display, Formatter};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::Error;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt::{Display, Formatter};
 
 pub mod constructor;
 
@@ -9,20 +9,32 @@ pub struct Color(u8, u8, u8, u8);
 
 impl Display for Color {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "#{:02x}{:02x}{:02x}{:02x}", self.0, self.1, self.2, self.3)
+        write!(
+            f,
+            "#{:02x}{:02x}{:02x}{:02x}",
+            self.0, self.1, self.2, self.3
+        )
     }
 }
 
 impl<'de> Deserialize<'de> for Color {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         let s = String::deserialize(deserializer)?;
         if s.len() != 7 && s.len() != 9 {
-            return Err(D::Error::custom(format!("can't parse as colour because length isn't 7 or 9: {s}")));
+            return Err(D::Error::custom(format!(
+                "can't parse as colour because length isn't 7 or 9: {s}"
+            )));
         }
 
-        let b1 = u8::from_str_radix(&s[1..=2], 16).map_err(|_| D::Error::custom("can't parse as u8"))?;
-        let b2 = u8::from_str_radix(&s[3..=4], 16).map_err(|_| D::Error::custom("can't parse as u8"))?;
-        let b3 = u8::from_str_radix(&s[5..=6], 16).map_err(|_| D::Error::custom("can't parse as u8"))?;
+        let b1 =
+            u8::from_str_radix(&s[1..=2], 16).map_err(|_| D::Error::custom("can't parse as u8"))?;
+        let b2 =
+            u8::from_str_radix(&s[3..=4], 16).map_err(|_| D::Error::custom("can't parse as u8"))?;
+        let b3 =
+            u8::from_str_radix(&s[5..=6], 16).map_err(|_| D::Error::custom("can't parse as u8"))?;
         let b4 = if s.len() == 9 {
             u8::from_str_radix(&s[7..=8], 16).map_err(|_| D::Error::custom("can't parse as u8"))?
         } else {
@@ -34,7 +46,10 @@ impl<'de> Deserialize<'de> for Color {
 }
 
 impl Serialize for Color {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         self.to_string().serialize(serializer)
     }
 }
@@ -46,7 +61,7 @@ pub struct Settings {
     pub caret: Color,
     pub selection: Color,
     pub invisibles: Color,
-    #[serde(rename="lineHighlight")]
+    #[serde(rename = "lineHighlight")]
     pub line_highlight: Color,
 }
 
@@ -67,7 +82,7 @@ impl Default for Settings {
 #[serde(untagged)]
 pub enum SettingsItem {
     Settings {
-        settings: Settings
+        settings: Settings,
     },
     Style {
         name: String,
@@ -85,7 +100,10 @@ pub enum FontStyle {
 }
 
 impl Serialize for FontStyle {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         match self {
             FontStyle::Bold => "bold".serialize(serializer),
             FontStyle::Italic => "italic".serialize(serializer),
@@ -96,14 +114,17 @@ impl Serialize for FontStyle {
 }
 
 impl<'de> Deserialize<'de> for FontStyle {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         let s = String::deserialize(deserializer)?;
         Ok(match s.trim().to_lowercase().as_str() {
             "bold" => Self::Bold,
             "italic" => Self::Italic,
             "underline" => Self::Underline,
             "" => Self::None,
-            s => return Err(D::Error::custom(format!("not a valid font style: {s}")))
+            s => return Err(D::Error::custom(format!("not a valid font style: {s}"))),
         })
     }
 }
@@ -111,21 +132,21 @@ impl<'de> Deserialize<'de> for FontStyle {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct StyleItemSettings {
     #[serde(default)]
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub foreground: Option<Color>,
     #[serde(default)]
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub background: Option<Color>,
-    #[serde(rename="fontStyle")]
+    #[serde(rename = "fontStyle")]
     #[serde(default)]
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub font_style: Option<FontStyle>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TextmateTheme {
     #[serde(default)]
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<String>,
     pub name: String,
     pub settings: Vec<SettingsItem>,
@@ -137,35 +158,50 @@ pub struct TextmateThemeManager {
 }
 
 impl TextmateThemeManager {
+    #[must_use]
     pub fn new() -> Self {
-        Self {
-            items: vec![],
-        }
+        Self { items: vec![] }
     }
 
     pub fn add(&mut self, theme: TextmateTheme) {
         self.items.push(theme);
     }
 
-    pub fn iter(&self) -> impl Iterator<Item=&TextmateTheme> {
+    pub fn iter(&self) -> impl Iterator<Item = &TextmateTheme> {
         self.items.iter()
     }
 }
-
 
 impl Default for TextmateThemeManager {
     fn default() -> Self {
         let mut res = Self::new();
         #[cfg(feature = "xml")]
-        res.add(TextmateTheme::from_xml(include_str!("../../textmate_themes/one-dark.tmTheme")).expect("theme to parse"));
+        res.add(
+            TextmateTheme::from_xml(include_str!("../../textmate_themes/one-dark.tmTheme"))
+                .expect("theme to parse"),
+        );
         #[cfg(feature = "xml")]
-        res.add(TextmateTheme::from_xml(include_str!("../../textmate_themes/cobalt.tmTheme")).expect("theme to parse"));
+        res.add(
+            TextmateTheme::from_xml(include_str!("../../textmate_themes/cobalt.tmTheme"))
+                .expect("theme to parse"),
+        );
         #[cfg(feature = "xml")]
-        res.add(TextmateTheme::from_xml(include_str!("../../textmate_themes/3024-day.tmTheme")).expect("theme to parse"));
+        res.add(
+            TextmateTheme::from_xml(include_str!("../../textmate_themes/3024-day.tmTheme"))
+                .expect("theme to parse"),
+        );
         #[cfg(feature = "xml")]
-        res.add(TextmateTheme::from_xml(include_str!("../../textmate_themes/solarized-dark.tmTheme")).expect("theme to parse"));
+        res.add(
+            TextmateTheme::from_xml(include_str!("../../textmate_themes/solarized-dark.tmTheme"))
+                .expect("theme to parse"),
+        );
         #[cfg(feature = "xml")]
-        res.add(TextmateTheme::from_xml(include_str!("../../textmate_themes/solarized-light.tmTheme")).expect("theme to parse"));
+        res.add(
+            TextmateTheme::from_xml(include_str!(
+                "../../textmate_themes/solarized-light.tmTheme"
+            ))
+            .expect("theme to parse"),
+        );
         res
     }
 }

@@ -1,15 +1,15 @@
+use crate::analysis::Field;
+use crate::input::{Analyser, AnalysisError};
+use crate::{Analysis, SourceCode};
 use std::collections::HashMap;
 use std::io;
 use std::num::ParseIntError;
 use strum::ParseError;
-use crate::input::{Analyser, AnalysisError};
-use crate::{Analysis, SourceCode};
 use thiserror::Error;
-use crate::analysis::Field;
 
 pub mod tags;
-pub mod xrefs;
 pub mod xref_kinds;
+pub mod xrefs;
 
 #[derive(Error, Debug)]
 pub enum CtagsAnalysisError {
@@ -43,40 +43,48 @@ impl Analyser for CtagsAnalyser {
 
         let mut index = HashMap::new();
         for xref in &xref_output.xrefs {
-            index.entry((&xref.name, &xref.kind)).or_insert_with(Vec::new).push(xref);
+            index
+                .entry((&xref.name, &xref.kind))
+                .or_insert_with(Vec::new)
+                .push(xref);
         }
 
         let mut res = Vec::new();
         for xref in &xref_output.xrefs {
             let span = xref.span(s);
-            let parent = if let (Some(parent), Some(parent_kind)) = (&xref.parent, &xref.parent_kind) {
-                index.get(&(parent, parent_kind))
-                    .iter()
-                    .filter_map(|i| i.iter().min_by_key(|&&i| {
-                        let m = i.span(s).midpoint();
-                        let sm = span.midpoint();
+            let parent =
+                if let (Some(parent), Some(parent_kind)) = (&xref.parent, &xref.parent_kind) {
+                    index
+                        .get(&(parent, parent_kind))
+                        .iter()
+                        .filter_map(|i| {
+                            i.iter()
+                                .min_by_key(|&&i| {
+                                    let m = i.span(s).midpoint();
+                                    let sm = span.midpoint();
 
-                        if sm > m {
-                            usize::MAX
-                        } else {
-                            m - sm
-                        }
-                    }).map(|i| i.span(s)))
-                    .next()
-            } else {
-                None
-            };
+                                    if sm > m {
+                                        usize::MAX
+                                    } else {
+                                        m - sm
+                                    }
+                                })
+                                .map(|i| i.span(s))
+                        })
+                        .next()
+                } else {
+                    None
+                };
 
             res.push((
                 span,
                 Field::Outline {
                     description: Some(xref.kind.as_ref().to_string()),
                     parent,
-                }
+                },
             ));
         }
 
         Ok(Analysis::new(s, res))
     }
 }
-

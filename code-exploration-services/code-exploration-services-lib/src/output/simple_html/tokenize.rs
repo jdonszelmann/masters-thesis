@@ -1,7 +1,7 @@
-use itertools::Itertools;
-use crate::Analysis;
 use crate::analysis::Field;
 use crate::output::simple_html::{Classes, FieldIndex};
+use crate::Analysis;
+use itertools::Itertools;
 
 pub fn tokenize_string(s: &str, offset: usize, field_index: &FieldIndex) -> Vec<(String, Classes)> {
     let mut tokens = Vec::new();
@@ -12,11 +12,11 @@ pub fn tokenize_string(s: &str, offset: usize, field_index: &FieldIndex) -> Vec<
 
     for (index, byte) in s.bytes().enumerate() {
         let mut new_active_colour_spans = Vec::new();
-        for (start, len, len_left, c)  in active_colour_spans {
+        for (start, len, len_left, c) in active_colour_spans {
             if len_left != 1 {
                 new_active_colour_spans.push((start, len, len_left - 1, c))
             }
-        };
+        }
         active_colour_spans = new_active_colour_spans;
 
         if let Some(possible_fields) = field_index.get(&(index + offset)) {
@@ -35,7 +35,10 @@ pub fn tokenize_string(s: &str, offset: usize, field_index: &FieldIndex) -> Vec<
             .cloned()
             .collect_vec();
         if active_names != prev_active_colour_spans {
-            tokens.push((String::from_utf8(curr).expect("valid utf8"), prev_active_colour_spans));
+            tokens.push((
+                String::from_utf8(curr).expect("valid utf8"),
+                prev_active_colour_spans,
+            ));
             curr = Vec::new();
         }
 
@@ -45,11 +48,11 @@ pub fn tokenize_string(s: &str, offset: usize, field_index: &FieldIndex) -> Vec<
     }
 
     let mut new_active_colour_spans = Vec::new();
-    for (start, len, len_left, c)  in active_colour_spans {
+    for (start, len, len_left, c) in active_colour_spans {
         if len_left != 1 {
             new_active_colour_spans.push((start, len, len_left - 1, c))
         }
-    };
+    }
     active_colour_spans = new_active_colour_spans;
 
     let active_names = active_colour_spans
@@ -58,8 +61,10 @@ pub fn tokenize_string(s: &str, offset: usize, field_index: &FieldIndex) -> Vec<
         .cloned()
         .collect_vec();
     if active_names != prev_active_colour_spans {
-        tokens.push((String::from_utf8(curr).expect("valid utf8"), prev_active_colour_spans));
-        curr = Vec::new();
+        tokens.push((
+            String::from_utf8(curr).expect("valid utf8"),
+            prev_active_colour_spans,
+        ));
     }
 
     tokens
@@ -68,7 +73,7 @@ pub fn tokenize_string(s: &str, offset: usize, field_index: &FieldIndex) -> Vec<
 pub fn index_analysis(a: &Analysis) -> FieldIndex {
     let mut fields = FieldIndex::new();
     for (s, f) in a.fields() {
-        fields.entry(s.start as usize).or_insert_with(Vec::new).push((s, f));
+        fields.entry(s.start).or_insert_with(Vec::new).push((s, f));
     }
 
     fields
