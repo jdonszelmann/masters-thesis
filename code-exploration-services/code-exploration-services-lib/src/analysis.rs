@@ -1,17 +1,40 @@
+use std::fmt::{Display, Formatter};
 use serde::{Deserialize, Serialize};
 use crate::sourcecode::SourceCodeHash;
 use std::io::Write;
 use thiserror::Error;
+use crate::SourceCode;
 
 #[derive(Debug, Error)]
 #[error("Can't merge two analyses generated from different source files (source hashes of analyses don't match)")]
 pub struct HashesDontMatch;
 
-#[derive(Serialize, Deserialize)]
+/// `start` and `len` are always in *bytes*, not in *chars*.
+/// With unicode, start and len always refer to starts of code points.
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Hash)]
 pub struct Span {
-    start: usize,
-    len: usize,
-    next: Option<Box<Span>>,
+    pub start: usize,
+    pub len: usize,
+    pub next: Option<Box<Span>>,
+}
+
+impl Span {
+    pub fn new(start: usize, len: usize) -> Self {
+        Self {
+            start,
+            len,
+            next: None,
+        }
+    }
+
+    pub fn midpoint(&self) -> usize {
+        self.start + self.len / 2
+    }
+
+    pub fn from_start_end(start: usize, end: usize) -> Self {
+        assert!(end >= start, "end should be after start");
+        Self::new(start, end - start)
+    }
 }
 
 impl Span {
@@ -29,10 +52,16 @@ impl Span {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+type FieldRef = Span;
+
+#[derive(Serialize, Deserialize, Debug)]
 pub enum Field {
-    Ref(Span),
-    Class(),
+    Ref(FieldRef),
+    SyntaxColour(String),
+    Outline {
+        description: Option<String>,
+        parent: Option<FieldRef>
+    }
 }
 
 impl Field {
@@ -42,12 +71,24 @@ impl Field {
     }
 }
 
+#[derive(Debug)]
 pub struct Analysis {
     hash: SourceCodeHash,
     fields: Vec<(Span, Field)>
 }
 
 impl Analysis {
+    pub fn new(s: &SourceCode, fields: Vec<(Span, Field)>) -> Self {
+        Self {
+            hash: s.hash().clone(),
+            fields,
+        }
+    }
+
+    pub fn fields(&self) -> impl Iterator<Item=&(Span, Field)> {
+        self.fields.iter()
+    }
+
     pub fn merge(self, other: Analysis) -> Result<Self, HashesDontMatch> {
         if self.hash != other.hash {
             return Err(HashesDontMatch)
@@ -59,8 +100,7 @@ impl Analysis {
         })
     }
 
-
-    fn serialize(&self) -> Vec<u8> {
+    pub fn serialize(&self) -> Vec<u8> {
         let mut w = Vec::new();
 
         let _ = writeln!(&mut w, "{}", self.hash);
@@ -74,8 +114,13 @@ impl Analysis {
         w
     }
 
-    fn deserialize(_data: &[u8]) -> Self {
+    pub fn deserialize(_data: &[u8]) -> Self {
         todo!()
     }
 }
 
+impl Display for Analysis {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", String::from_utf8(self.serialize()).expect("valid utf8"))
+    }
+}

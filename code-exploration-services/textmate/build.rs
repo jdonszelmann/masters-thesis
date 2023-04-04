@@ -4,7 +4,7 @@ use schemars::schema::Schema;
 use typify::{TypeSpace, TypeSpaceSettings};
 
 fn main() {
-    let content = std::fs::read_to_string("grammar.schema.json").unwrap();
+    let content = fs::read_to_string("grammar.schema.json").unwrap();
     let schema = serde_json::from_str::<schemars::schema::RootSchema>(&content).unwrap();
 
     let mut type_space = TypeSpace::new(&TypeSpaceSettings::default());

@@ -2,11 +2,12 @@
 name = "code-exploration-services-lib"
 version = "0.1.0"
 edition = "2021"
+build = "src/build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tera = "1.18.0"
+axohtml = "0.4.1"
 serde = {version="1.0.154", features=["derive"]}
 serde_json = "1.0.94"
 sha256 = "1.1.2"
@@ -14,6 +15,12 @@ tree-sitter = "0.20.9"
 thiserror = "1.0.39"
 once_cell = "1.17.1"
 textmate = {path="../textmate"}
+dashmap = "5.4.0"
+temp-file = "0.1.7"
+itertools = "0.10.5"
+strum = {version="0.24.1", features=["derive"]}
+typed-arena = "2.0.2"
 
 [build-dependencies]
 cc="1.0.79"
+convert_case = "0.6.0"

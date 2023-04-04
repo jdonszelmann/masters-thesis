@@ -132,7 +132,10 @@ This leads to a complicated problem, called the \ac{IDE} portability problem~\au
 The way every editor provides editor services is slightly different.
 This means that supporting $m$ languages in $n$ editors requires $m \times n$ editor plugins, one for each
 combination of a language and editor.
-This issue often manifests itself as a need for language authors to create different editor plugins for every major editor.
+
+The $m \times n$ problem often becomes an issue of responsibility.
+Creators of editors do not want to be responsible for supporting every language.
+On the flip side, language authors can't always support every editor there is.
 
 In ``Portable Editor Services'', Pelsmaeker~\autocite*{Pelsmaeker2018} investigates this issue, and proposes a solution: \ac{AESI}.
 \ac{AESI} is a system to create editor plugins.

@@ -1,6 +1,6 @@
 use crate::{Analysis, SourceCode};
 
-mod html;
+pub mod simple_html;
 
 
 pub trait Annotater {

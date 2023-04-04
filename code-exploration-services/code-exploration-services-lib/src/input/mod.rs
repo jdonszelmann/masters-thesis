@@ -1,12 +1,22 @@
+use thiserror::Error;
 use crate::{Analysis, SourceCode};
+use crate::input::subsystems::ctags::CtagsAnalysisError;
+use crate::input::subsystems::textmate::TextmateAnalysisError;
 
 pub mod subsystems;
 
+#[derive(Error, Debug)]
 pub enum AnalysisError {
     /// Returned when an operation is not implemented by an analyser.
     /// The next one is tried.
+    #[error("not implemented")]
     NotImplemented,
 
+    #[error("ctags: {0}")]
+    Ctags(#[from] CtagsAnalysisError),
+
+    #[error("textmate: {0}")]
+    TextMate(#[from] TextmateAnalysisError),
 }
 
 #[inline]
@@ -46,7 +56,7 @@ macro_rules! define_analysis_types {
     ($($name: ident),* $(,)?; for $($path: path),* $(,)? ) => {
         pub trait Analyser {
         $(
-            fn $name(&self, s: &SourceCode) -> Result<Analysis, AnalysisError> { Err(AnalysisError::NotImplemented) }
+            fn $name(&self, _s: &SourceCode) -> Result<Analysis, AnalysisError> { Err(AnalysisError::NotImplemented) }
         )*
         }
 
@@ -68,4 +78,5 @@ define_analysis_types!(
     for
     subsystems::lsp::LspAnalyser,
     subsystems::textmate::TextmateAnalyser,
+    subsystems::ctags::CtagsAnalyser,
 );

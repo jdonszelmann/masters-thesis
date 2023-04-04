@@ -12,8 +12,10 @@ serde_json = {version="1.0.94", optional=true}
 serde_yaml = {version="0.9.19", optional=true}
 plist-rs = {version="0.1.0", optional=true}
 thiserror = "1.0.39"
-regress = "0.4.1"
 itertools = "0.10.5"
+onig = "6.4.0"
+regress = "0.4.1"
+lines-inclusive = {version="0.1.0", path="../lines-inclusive"}
 
 [features]
 json = ["serde_json"]

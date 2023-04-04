@@ -1,13 +1,10 @@
-use std::collections::HashMap;
 use std::fs::File;
 use std::io;
-use std::io::{BufReader, Cursor, Read};
+use std::io::{Cursor, Read};
 use std::path::Path;
-use std::time::SystemTime;
 use plist::Plist;
-use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use crate::TextmateGrammar;
+use crate::grammar::TextmateGrammar;
 
 #[derive(Error, Debug)]
 pub enum FromFileError {

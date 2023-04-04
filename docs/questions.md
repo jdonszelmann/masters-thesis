@@ -13,7 +13,26 @@ LSP proxy (caching for the next run)
 open code map (openstreetmap)
 highlighting spans and linking
 
+Pandoc
+Recursive information/services
+implicit conversions and coercions
+scala worksheets
+coq proof interaction state
+
 Filters / Layers
+
+* Notes:
+  * Define code exploration services explicitly
+  * EVCS stack-graphs paper
+  * Split chap 4:
+    * Motivation why the project is interesting
+    * Problems I'm going to solve
+  * Hoogle, agda html
+  * choose very different tools
+  * Link between repositories?
+  * Stackoverflow survey
+  * Do a similar survey on generators
+  * Sörin Johnson writing
 
 ## Applications for code exploration services
 
