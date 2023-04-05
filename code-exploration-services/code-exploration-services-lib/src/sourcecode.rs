@@ -107,11 +107,12 @@ impl SourceCode {
 mod tests {
     use crate::SourceCode;
     use std::io;
+    use std::str::FromStr;
 
     #[test]
     fn test_temp() -> io::Result<()> {
         let input = "test\n\ntest test";
-        let s = SourceCode::from_str(input);
+        let s = SourceCode::from_str(input).unwrap();
         let t = s.temp()?;
         assert_eq!(std::fs::read_to_string(t.path())?, input);
 

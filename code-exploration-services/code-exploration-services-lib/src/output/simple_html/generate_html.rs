@@ -1,17 +1,18 @@
 use crate::output::simple_html::sanitize_theme_name;
-use crate::output::simple_html::{themes, Classes, SimpleHtmlError};
+use crate::output::simple_html::tokenize::Token;
+use crate::output::simple_html::{themes, SimpleHtmlError};
 use axohtml::dom::DOMTree;
 use axohtml::elements::PhrasingContent;
-use axohtml::types::{Class, SpacedSet};
+use axohtml::types::{Class, Id, SpacedSet};
 use axohtml::{html, text, unsafe_text};
 use textmate::theme::TextmateThemeManager;
 
 pub fn generate_html_from_tokens(
-    tokens: Vec<(String, Vec<String>)>,
+    tokens: Vec<Token>,
 ) -> impl IntoIterator<Item = Box<dyn PhrasingContent<String>>> {
-    tokens.into_iter().map(|(s, tags)| {
+    tokens.into_iter().map(|Token { text, classes, id }| {
         let mut class = SpacedSet::new();
-        for i in tags {
+        for i in classes.classes {
             let mut res = String::new();
             for i in i.split_inclusive('.') {
                 res.push_str(i);
@@ -22,8 +23,10 @@ pub fn generate_html_from_tokens(
             }
         }
 
+        let id = Id::new(id.unwrap_or_else(|| "".to_string()));
+
         let res: Box<dyn PhrasingContent<String>> = html! {
-            <span class=class>{text!("{}", s)}</span>
+            <span class=class id=id>{text!("{}", text)}</span>
         };
 
         res
@@ -32,7 +35,7 @@ pub fn generate_html_from_tokens(
 
 pub fn generate_html(
     themes: TextmateThemeManager,
-    tokens: Vec<(String, Classes)>,
+    tokens: Vec<Token>,
     outline: DOMTree<String>,
     style: &str,
     script: &str,

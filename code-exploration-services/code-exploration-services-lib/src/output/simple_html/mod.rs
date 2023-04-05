@@ -21,7 +21,6 @@ pub enum SimpleHtmlError {
 }
 
 type FieldIndex<'a> = HashMap<usize, Vec<(&'a Span, &'a Field)>>;
-type Classes = Vec<String>;
 
 impl Annotater for SimpleHtml {
     type Output = Result<String, SimpleHtmlError>;
