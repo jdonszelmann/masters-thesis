@@ -17,6 +17,7 @@ pre {
 
 #main {
     display: grid;
+    gap: 1em;
     grid-template-columns: 1fr 4fr;
     grid-template-rows: 2em auto;
     grid-template-areas:
@@ -24,6 +25,12 @@ pre {
         "outline code";
     width: 100%;
     height: 100%;
+}
+
+.line-numbers {
+    grid-area: nums;
+    display: flex;
+    flex-direction: column;
 }
 
 .theme {
@@ -49,8 +56,12 @@ pre {
     height: 2em;
 }
 
+.outline .outline-header:hover {
+    box-shadow: inset 0 0 500px 500px rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+}
 
-.outline .outline-header pre {
+.outline .outline-item .code-line {
     padding: 0;
     display: flex;
     flex-direction: row;
@@ -65,4 +76,45 @@ pre {
     grid-area: code;
     overflow-y: scroll;
     max-height: 100vh;
+    display: grid;
+    grid-template-columns: 3em auto;
+}
+
+.line-numbers {
+    display: flex;
+    flex-direction: column;
+    font-family: monospace;
+}
+
+.line-numbers span {
+    height: 1.8em;
+    display: flex;
+    padding-right: 0.2em;
+    flex-direction: row;
+    align-items: center;
+    justify-content: right;
+}
+
+.code-view {
+    font-family: monospace;
+}
+
+.code-line {
+    margin: 0;
+    padding: 0;
+    height: 1.8em;
+    width: 100%;
+    white-space: pre;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.code-line:hover {
+    box-shadow: inset 0 0 500px 500px rgba(255, 255, 255, 0.1);
+}
+
+.code-line div {
+    display: inline-block;
 }

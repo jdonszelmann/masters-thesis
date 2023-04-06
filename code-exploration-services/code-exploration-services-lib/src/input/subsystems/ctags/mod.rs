@@ -63,10 +63,10 @@ impl Analyser for CtagsAnalyser {
                                     let m = i.span(s).midpoint();
                                     let sm = span.midpoint();
 
-                                    if sm > m {
+                                    if sm < m {
                                         usize::MAX
                                     } else {
-                                        m - sm
+                                        sm - m
                                     }
                                 })
                                 .map(|i| i.span(s))

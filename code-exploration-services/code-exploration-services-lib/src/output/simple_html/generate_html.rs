@@ -2,35 +2,63 @@ use crate::output::simple_html::sanitize_theme_name;
 use crate::output::simple_html::tokenize::Token;
 use crate::output::simple_html::{themes, SimpleHtmlError};
 use axohtml::dom::DOMTree;
-use axohtml::elements::PhrasingContent;
-use axohtml::types::{Class, Id, SpacedSet};
+use axohtml::elements::FlowContent;
+use axohtml::types::{Class, SpacedSet};
 use axohtml::{html, text, unsafe_text};
 use textmate::theme::TextmateThemeManager;
 
+fn generate_line_from_tokens(tokens: &[Token], line_num: usize) -> Box<dyn FlowContent<String>> {
+    let mut spans = Vec::new();
+
+    for token in tokens {
+        if let Token::Token { text, classes } = token {
+            let mut class = SpacedSet::new();
+            for i in &classes.classes {
+                let mut res = String::new();
+                for i in i.split_inclusive('.') {
+                    res.push_str(i);
+
+                    class.add(Class::new(themes::sanitize_classname(
+                        res.trim_matches('.'),
+                    )));
+                }
+            }
+
+            let res: Box<dyn FlowContent<String>> = html! {
+                <span class=class data-line={line_num.to_string()}>{text!("{}", text)}</span>
+            };
+
+            spans.push(res);
+        }
+    }
+
+    html! {
+        <div class="code-line">{spans}</div>
+    }
+}
+
 pub fn generate_html_from_tokens(
     tokens: Vec<Token>,
-) -> impl IntoIterator<Item = Box<dyn PhrasingContent<String>>> {
-    tokens.into_iter().map(|Token { text, classes, id }| {
-        let mut class = SpacedSet::new();
-        for i in classes.classes {
-            let mut res = String::new();
-            for i in i.split_inclusive('.') {
-                res.push_str(i);
-
-                class.add(Class::new(themes::sanitize_classname(
-                    res.trim_matches('.'),
-                )));
-            }
+) -> Box<dyn FlowContent<String>> {
+    let mut lines = Vec::new();
+    let mut line = Vec::new();
+    let mut line_num = 1;
+    for i in tokens {
+        if let Token::Newline = i {
+            lines.push(generate_line_from_tokens(&line, line_num));
+            line_num += 1;
+            line = Vec::new();
+        } else {
+            line.push(i);
         }
+    }
+    lines.push(generate_line_from_tokens(&line, line_num));
 
-        let id = Id::new(id.unwrap_or_else(|| "".to_string()));
-
-        let res: Box<dyn PhrasingContent<String>> = html! {
-            <span class=class id=id>{text!("{}", text)}</span>
-        };
-
-        res
-    })
+    html! {
+        <div class="code-view">
+            {lines}
+        </div>
+    }
 }
 
 pub fn generate_html(
@@ -45,7 +73,13 @@ pub fn generate_html(
         "change-theme",
         sanitize_theme_name(&themes.iter().next().unwrap().name).as_str(),
     ])
-    .unwrap();
+        .unwrap();
+
+    let lines = tokens.iter().filter(|i| matches!(i, Token::Newline)).count() + if tokens.is_empty() {
+        0
+    } else {
+        1
+    };
 
     let doc: DOMTree<String> = html! {
         <html>
@@ -72,11 +106,14 @@ pub fn generate_html(
                         </pre>
                     </div>
                     <div class="code">
-                        <pre>
-                            {
-                                generate_html_from_tokens(tokens)
-                            }
-                        </pre>
+                        <div class="nums">
+                            <div class="line-numbers">
+                                {(1..lines).map(|i| html!{<span>{text!("{}", i)}</span>})}
+                            </div>
+                        </div>
+                        <div class="source">
+                            {generate_html_from_tokens(tokens)}
+                        </div>
                     </div>
                     <script>
                         {unsafe_text!("{}", script)}

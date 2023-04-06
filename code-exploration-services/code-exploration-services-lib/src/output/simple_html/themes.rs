@@ -40,6 +40,19 @@ fn generate_theme_style(theme: &TextmateTheme) -> Result<String, SimpleHtmlError
     res.push_str(
         format!(
             "
+.{} .highlighted {{
+    background: {} !important;
+}}
+    ",
+            sanitize_theme_name(&theme.name),
+            global_settings.selection
+        )
+            .as_str(),
+    );
+
+    res.push_str(
+        format!(
+            "
 .{} {{
     background: {};
 }}
@@ -91,7 +104,7 @@ fn generate_theme_style(theme: &TextmateTheme) -> Result<String, SimpleHtmlError
                 res.push_str(
                     format!(
                         "
-.{} span{} {{
+.{} {} {{
     color: {};
     background: {};
     {}

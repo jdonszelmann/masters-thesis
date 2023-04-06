@@ -10,6 +10,7 @@ use std::process::Command;
 
 fn generate_xref_kinds() -> Result<(), Box<dyn Error>> {
     let mut cmd = Command::new("ctags");
+    println!("cargo:rerun-if-changed=Cargo.toml");
     cmd.arg("--list-kinds-full");
 
     let output = cmd.output()?;

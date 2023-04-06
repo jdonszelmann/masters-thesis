@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use textmate::theme::TextmateThemeManager;
 use themes::ScopeSelectorFromStrError;
 use thiserror::Error;
+use crate::output::simple_html::tokenize::OutlineSetting::GenerateOutline;
 
 mod generate_html;
 mod outline;
@@ -29,7 +30,7 @@ impl Annotater for SimpleHtml {
         let themes = TextmateThemeManager::default();
 
         let field_index = tokenize::index_analysis(&a);
-        let tokens = tokenize::tokenize_string(source.as_str(), 0, &field_index);
+        let tokens = tokenize::tokenize_string(source.as_str(), 0, &field_index, GenerateOutline);
         let outline = outline::generate_outline(&a, &field_index, source)?;
 
         let style = include_str!("./style.css");

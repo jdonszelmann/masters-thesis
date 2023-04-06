@@ -47,6 +47,7 @@ impl Options {
     pub fn add_str(mut self, value: impl AsRef<str>) -> Self {
         self.options.insert(value.as_ref().to_string());
         self
+        // THIS IS JUST A VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY LONG LINE
     }
 }
 

@@ -4,6 +4,7 @@ use std::{env, fs};
 use typify::{TypeSpace, TypeSpaceSettings};
 
 fn main() {
+    println!("cargo:rerun-if-changed=grammar.schema.json");
     let content = fs::read_to_string("grammar.schema.json").unwrap();
     let schema = serde_json::from_str::<schemars::schema::RootSchema>(&content).unwrap();
 

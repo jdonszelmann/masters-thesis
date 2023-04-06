@@ -5,6 +5,7 @@ use crate::{Analysis, SourceCode};
 use axohtml::dom::DOMTree;
 use axohtml::{html, text, unsafe_text};
 use std::collections::VecDeque;
+use crate::output::simple_html::tokenize::OutlineSetting::DontGenerateOutline;
 
 #[derive(Debug)]
 struct OutlineItem<'a> {
@@ -52,19 +53,20 @@ fn generate_outline_html(
         .collect::<Result<Vec<_>, _>>()?;
 
     let source_text = source.slice(parent.span);
-    let tokens = tokenize::tokenize_string(source_text, parent.span.start, index);
+    let tokens = tokenize::tokenize_string(source_text, parent.span.start, index, DontGenerateOutline);
 
     let heading = if let Some(description) = parent.description {
         text!("{}: ", description)
     } else {
         text!("")
     };
+    let outline_class = span_to_class(parent.span);
 
     let doc: DOMTree<String> = html! {
         <div class="outline-item">
-            <div class="outline-header">
+            <div class="outline-header" data-outline-class=outline_class>
                 <span>{heading}</span>
-                <pre>{generate_html_from_tokens(tokens)}</pre>
+                {generate_html_from_tokens(tokens)}
             </div>
             {
                 contents
@@ -134,4 +136,16 @@ pub fn generate_outline(
     };
 
     Ok(doc)
+}
+
+pub fn span_to_class(span: &Span) -> String {
+    fn span_to_class_helper(span: &Span) -> String {
+        if let Some(ref i) = span.next {
+            format!("{}-{}-{}", span.start, span.len, span_to_class_helper(i))
+        } else {
+            format!("{}-{}", span.start, span.len)
+        }
+    }
+
+    format!("outline-{}", span_to_class_helper(span))
 }
