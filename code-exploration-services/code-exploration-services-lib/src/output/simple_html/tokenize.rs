@@ -26,15 +26,30 @@ pub enum OutlineSetting {
     DontGenerateOutline
 }
 
-pub fn tokenize_string(s: &str, offset: usize, field_index: &FieldIndex, outline_setting: OutlineSetting) -> Vec<Token> {
-    let mut tokens = Vec::new();
+fn active_at_offset<'a>(field_index: &'a FieldIndex, offset: usize) -> impl Iterator<Item=ActiveClass> + 'a {
+    field_index.values()
+        .flatten()
+        .filter_map(move |(span, field)| if offset >= span.start && offset < span.start + span.len {
+            if let Field::SyntaxColour(c) = field {
+                Some(ActiveClass::from_span(span, c))
+            } else {
+                None
+            }
+        } else {
+            None
+        })
+}
 
+pub fn tokenize_string(s: &str, offset: usize, field_index: &FieldIndex, outline_setting: OutlineSetting) -> Vec<Token> { let mut tokens = Vec::new();
     // the current token
     let mut curr_token = Vec::new();
     // what classes are active for the current character
     let mut active_classes = ActiveClasses::new();
     // what classes were active for the previous character
     let mut previous_classes = Classes::new();
+
+    // initialize with all classes which should already be active at this offset
+    active_classes.extend(active_at_offset(&field_index, offset));
 
     for (index, byte) in s.bytes().enumerate() {
         // classes are always valid for a certain length (its span)
@@ -82,15 +97,10 @@ pub fn tokenize_string(s: &str, offset: usize, field_index: &FieldIndex, outline
         previous_classes = classes;
     }
 
-    active_classes = decrement_active_classes(active_classes);
-
-    let classes = Classes::from(active_classes.as_ref());
-    if classes != previous_classes {
-        tokens.push(Token::Token {
-            text: String::from_utf8(curr_token).expect("valid utf8"),
-            classes: previous_classes,
-        });
-    }
+    tokens.push(Token::Token {
+        text: String::from_utf8(curr_token).expect("valid utf8"),
+        classes: previous_classes,
+    });
 
     tokens
 }
