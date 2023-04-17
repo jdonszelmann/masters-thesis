@@ -1,8 +1,11 @@
 use crate::sourcecode::SourceCodeHash;
 use crate::SourceCode;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::{Display, Formatter};
 use std::io::Write;
+use std::str::FromStr;
+use itertools::Itertools;
+use serde::de::Error;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -11,7 +14,7 @@ pub struct HashesDontMatch;
 
 /// `start` and `len` are always in *bytes*, not in *chars*.
 /// With unicode, start and len always refer to starts of code points.
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Hash)]
+#[derive(Debug, Eq, PartialEq, Hash)]
 pub struct Span {
     pub start: usize,
     pub len: usize,
@@ -35,15 +38,54 @@ impl Span {
         assert!(end >= start, "end should be after start");
         Self::new(start, end - start)
     }
+
+    fn from_parts(parts: &[(usize, usize)]) -> Option<Self> {
+        match parts {
+            &[] => None,
+            &[(start, len), ref rest@..] => {
+                let mut res = Self::new(start, len);
+                res.next = Self::from_parts(rest).map(Box::new);
+                Some(res)
+            }
+        }
+    }
 }
 
-impl Span {
-    pub fn serialize(&self, w: &mut Vec<u8>) {
-        let _ = write!(w, "{}+{}", self.start, self.len);
-        if let Some(ref i) = self.next {
-            let _ = write!(w, "&");
-            Span::serialize(i, w);
+impl Serialize for Span {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        let mut res = Vec::new();
+        let mut curr = self;
+        let mut fmt = |part: &Self| {
+            res.push(format!("{}+{}", self.start, self.len))
+        };
+
+        fmt(curr);
+        while let Some(i) = &curr.next {
+            fmt(i);
+            curr = i;
         }
+
+        res.join("&").serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for Span {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+        let s = String::deserialize(deserializer)?;
+        let mut parts = Vec::new();
+        for part in s.split("&") {
+            let &[start, end] = part.split("+")
+                .map(usize::from_str)
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|e| D::Error::custom(format!("couldn't parse integer: {e}")))?
+                .as_slice() else {
+                return Err(D::Error::custom(format!("span part has unexpected format: {part}")));
+            };
+
+            parts.push((start, end));
+        }
+
+        Self::from_parts(&parts).ok_or_else(|| D::Error::custom(format!("zero part span: {s}")))
     }
 }
 
@@ -98,11 +140,8 @@ impl Analysis {
         let mut w = Vec::new();
 
         let _ = writeln!(&mut w, "{}", self.hash);
-        for (span, field) in &self.fields {
-            span.serialize(&mut w);
-            let _ = write!(&mut w, ";");
-            field.serialize(&mut w);
-            let _ = writeln!(&mut w);
+        for f in &self.fields {
+            serde_json::to_writer(&mut w, f).unwrap();
         }
 
         w

@@ -8,6 +8,7 @@ build = "src/build.rs"
 
 [dependencies]
 axohtml = "0.4.1"
+html = "0.1.1"
 serde = {version="1.0.154", features=["derive"]}
 serde_json = "1.0.94"
 sha256 = "1.1.2"

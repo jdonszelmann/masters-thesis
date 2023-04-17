@@ -244,6 +244,7 @@ dependencies = [
  "cc",
  "convert_case",
  "dashmap",
+ "html",
  "itertools",
  "once_cell",
  "serde",
@@ -483,6 +484,12 @@ checksum = "747309b4b440c06d57b0b25f2aee03ee9b5e5397d288c60e21fc709bb98a7408"
 dependencies = [
  "winapi",
 ]
+
+[[package]]
+name = "html"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e0eaf5b0716605bec43f6557bb09e026e510659a400ba344e298e93a72f87be0"
 
 [[package]]
 name = "htmlescape"

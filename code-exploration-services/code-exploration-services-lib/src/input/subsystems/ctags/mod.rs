@@ -43,6 +43,7 @@ impl Analyser for CtagsAnalyser {
 
         let mut index = HashMap::new();
         for xref in &xref_output.xrefs {
+            // println!("{:?}", xref);
             index
                 .entry((&xref.name, &xref.kind))
                 .or_insert_with(Vec::new)
