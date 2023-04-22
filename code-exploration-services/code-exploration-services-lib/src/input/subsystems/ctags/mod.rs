@@ -13,20 +13,20 @@ pub mod xrefs;
 
 #[derive(Error, Debug)]
 pub enum CtagsAnalysisError {
-    #[error("runnning ctags command: {0}")]
-    RunCtagsCommand(io::Error),
+    #[error("runnning ctags command")]
+    RunCtagsCommand(#[source] io::Error),
 
-    #[error("ctags error: {0}")]
+    #[error("ctags error")]
     Ctags(String),
 
-    #[error("parse tag: {0}")]
+    #[error("parse tag")]
     Deserialize(#[from] serde_json::Error),
 
-    #[error("parse xref: {0}")]
+    #[error("parse xref")]
     ParseXref(String),
 
-    #[error("can't parse '{1}' as Xref kind: {0}")]
-    ParseXrefKind(ParseError, String),
+    #[error("can't parse '{1}' as Xref kind")]
+    ParseXrefKind(#[source] ParseError, String),
 
     #[error("can't parse as int")]
     ParseInt(#[from] ParseIntError),

@@ -2,6 +2,7 @@ use crate::input::subsystems::ctags::CtagsAnalysisError;
 use crate::input::subsystems::textmate::TextmateAnalysisError;
 use crate::{Analysis, SourceCode};
 use thiserror::Error;
+use crate::input::subsystems::lsp::LanguageServerError;
 
 pub mod subsystems;
 
@@ -12,11 +13,14 @@ pub enum AnalysisError {
     #[error("not implemented")]
     NotImplemented,
 
-    #[error("ctags: {0}")]
+    #[error("ctags")]
     Ctags(#[from] CtagsAnalysisError),
 
-    #[error("textmate: {0}")]
+    #[error("textmate")]
     TextMate(#[from] TextmateAnalysisError),
+
+    #[error("language server")]
+    Lsp(#[from] LanguageServerError)
 }
 
 #[inline]

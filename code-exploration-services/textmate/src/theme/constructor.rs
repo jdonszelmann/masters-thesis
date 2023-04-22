@@ -12,15 +12,15 @@ pub enum FromFileError {
     Io(#[from] io::Error),
 
     #[cfg(feature = "json")]
-    #[error("json deserialization: {0}")]
+    #[error("json deserialization")]
     Json(#[from] serde_json::Error),
 
     #[cfg(feature = "yaml")]
-    #[error("yaml deserialization: {0}")]
+    #[error("yaml deserialization")]
     Yaml(#[from] serde_yaml::Error),
 
     #[cfg(feature = "xml")]
-    #[error("xml deserialization: {0}")]
+    #[error("xml deserialization")]
     Plist(#[from] plist::Error),
 }
 
@@ -30,15 +30,15 @@ pub enum FromPathError {
     Io(#[from] io::Error),
 
     #[cfg(feature = "json")]
-    #[error("json deserialization: {0}")]
+    #[error("json deserialization")]
     Json(#[from] serde_json::Error),
 
     #[cfg(feature = "yaml")]
-    #[error("yaml deserialization: {0}")]
+    #[error("yaml deserialization")]
     Yaml(#[from] serde_yaml::Error),
 
     #[cfg(feature = "xml")]
-    #[error("xml deserialization: {0}")]
+    #[error("xml deserialization")]
     Xml(#[from] plist::Error),
 
     #[error("{0}")]

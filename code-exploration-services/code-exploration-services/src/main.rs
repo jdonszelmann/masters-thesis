@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+
 use clap::{Parser, Subcommand, ValueEnum};
 use code_exploration_services_lib::output::simple_html::SimpleHtml;
 use code_exploration_services_lib::{Analysis, Annotater, SourceCode};
@@ -45,7 +45,11 @@ enum Commands {
     },
 }
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> color_eyre::Result<()> {
+    color_eyre::install()?;
+    // install global collector configured based on RUST_LOG env var.
+    tracing_subscriber::fmt::init();
+
     let c: Cli = Cli::parse();
     match c.command {
         Commands::Analyse { file, output } => {

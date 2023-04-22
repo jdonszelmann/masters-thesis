@@ -1,2 +1,2 @@
 [workspace]
-members = ["code-exploration-services", "code-exploration-services-lib", "textmate", "lines-inclusive"]
+members = ["code-exploration-services", "code-exploration-services-lib", "textmate", "lines-inclusive", "sources"]

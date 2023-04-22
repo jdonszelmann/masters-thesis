@@ -55,7 +55,7 @@ impl Serialize for Span {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
         let mut res = Vec::new();
         let mut curr = self;
-        let mut fmt = |part: &Self| {
+        let mut fmt = |_part: &Self| {
             res.push(format!("{}+{}", self.start, self.len))
         };
 

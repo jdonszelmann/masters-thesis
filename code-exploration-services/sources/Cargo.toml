@@ -1,0 +1,11 @@
+[package]
+name = "sources"
+authors = ["Jonathan Dönszelmann <jonabent@gmail.com>"]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "utilities to deal with a directory of source files"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]

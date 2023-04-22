@@ -17,7 +17,7 @@ pub struct SimpleHtml;
 
 #[derive(Debug, Error)]
 pub enum SimpleHtmlError {
-    #[error("parsing scope selector: {0}")]
+    #[error("parsing scope selector")]
     ParseScopeSelector(#[from] ScopeSelectorFromStrError),
 }
 

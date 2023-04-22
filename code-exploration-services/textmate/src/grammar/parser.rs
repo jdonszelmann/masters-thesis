@@ -36,13 +36,13 @@ pub enum ParsePatternError {
     #[error("invalid name")]
     InvalidName,
 
-    #[error("couldn't parse int: {0}")]
+    #[error("couldn't parse int")]
     NotAnInt(#[from] ParseIntError),
 
     #[error("repository entry wasn't a single pattern: {0:?}")]
     InvalidRepositoryEntry(Pattern),
 
-    #[error("failed to compile regex '{1}': {0}")]
+    #[error("failed to compile regex '{1}'")]
     Regex(onig::Error, String),
 }
 
@@ -241,7 +241,7 @@ fn parse_pattern(pattern: &Pattern) -> Result<ParsedPattern, ParsePatternError> 
 
 #[derive(Debug, Error)]
 pub enum ParseError {
-    #[error("failed to parse pattern: {0}")]
+    #[error("failed to parse pattern")]
     Pattern(#[from] ParsePatternError),
 
     #[error("can't find rule '{0}' in repository")]

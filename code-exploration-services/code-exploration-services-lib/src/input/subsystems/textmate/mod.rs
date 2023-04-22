@@ -6,7 +6,7 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum TextmateAnalysisError {
-    #[error("parse textmate: {0}")]
+    #[error("parse textmate")]
     Textmate(#[from] textmate::ParseError),
 }
 
