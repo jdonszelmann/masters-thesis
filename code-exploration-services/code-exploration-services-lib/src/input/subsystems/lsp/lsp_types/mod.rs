@@ -1,3 +1,4 @@
+#![allow(unused)]
 /// Adapted from docs.rs/lsp
 /// copyright: https://github.com/intsuc
 
