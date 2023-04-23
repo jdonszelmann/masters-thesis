@@ -5,6 +5,7 @@ use std::sync::Arc;
 use crate::{Root, SourceDir, SourceFile};
 use crate::in_memory::InMemoryOps;
 use std::ops::Deref;
+use bumpalo::Bump;
 use crate::children::Children;
 use crate::path::Path;
 
@@ -24,25 +25,29 @@ macro_rules! forward {
     };
 }
 
-pub enum RefConcreteDireEntry<'children, 'refs, 'root> {
+pub enum RefConcreteDirEntry<'children, 'refs, 'root>
+    where 'root: 'refs, 'refs: 'children, 'root: 'children
+{
     Shared(&'children ConcreteDirEntry<'refs, 'root>),
     Ref(Ref<'children, ConcreteDirEntry<'refs, 'root>>),
 }
 
-impl<'localrefs, 'refs, 'root> Deref for RefConcreteDireEntry<'localrefs, 'refs, 'root> {
+impl<'children, 'refs, 'root> Deref for RefConcreteDirEntry<'children, 'refs, 'root> {
     type Target = ConcreteDirEntry<'refs, 'root>;
 
     fn deref(&self) -> &Self::Target {
         match self {
-            RefConcreteDireEntry::Shared(r) => r,
-            RefConcreteDireEntry::Ref(r) => r,
+            RefConcreteDirEntry::Shared(r) => r,
+            RefConcreteDirEntry::Ref(r) => r,
         }
     }
 }
 
-pub enum ConcreteDirEntry<'refs,'root> {
-    File(SourceFile<'refs, 'root>),
-    Dir(SourceDir<'refs, 'root>),
+pub enum ConcreteDirEntry<'refs,'root>
+    where 'root: 'refs
+{
+    File(&'root SourceFile<'refs, 'root>),
+    Dir(&'root SourceDir<'refs, 'root>),
 }
 
 impl<'refs, 'root> InMemoryOps<'refs, 'root> for ConcreteDirEntry<'refs, 'root> {
@@ -51,14 +56,14 @@ impl<'refs, 'root> InMemoryOps<'refs, 'root> for ConcreteDirEntry<'refs, 'root> 
 }
 
 pub enum MergeIter<'children, 'refs, 'root>
-    where 'root: 'children
+    where 'refs: 'children, 'root: 'children, 'root: 'refs, 'refs: 'root
 {
     Dir(<SourceDir<'refs, 'root> as Children<'refs, 'root>>::Iter<'children>),
     File(<SourceFile<'refs, 'root> as Children<'refs, 'root>>::Iter<'children>),
 }
 
 impl<'children, 'refs, 'root> Iterator for MergeIter<'children, 'refs, 'root> {
-    type Item = RefConcreteDireEntry<'children, 'refs, 'root>;
+    type Item = RefConcreteDirEntry<'children, 'refs, 'root>;
 
     fn next(&mut self) -> Option<Self::Item> {
         match self {
@@ -70,10 +75,10 @@ impl<'children, 'refs, 'root> Iterator for MergeIter<'children, 'refs, 'root> {
 
 impl<'refs, 'root> Children<'refs, 'root> for ConcreteDirEntry<'refs, 'root> {
     type Iter<'children> = MergeIter<'children, 'refs, 'root>
-        where Self: 'children, 'root: 'children
+        where Self: 'children, 'refs: 'children, 'root: 'children, 'root: 'refs, 'refs: 'root
     ;
 
-    fn children<'children>(&'children self) -> Self::Iter<'children> {
+    fn children<'children>(&'children self) -> Self::Iter<'children> where 'refs: 'children {
         match self {
             // ConcreteDirEntry::Ref(r) => r.children(),
             // ConcreteDirEntry::RefcellRef(r) => r.children(),
@@ -95,25 +100,23 @@ impl<'refs, 'root> DirEntry<'refs, 'root> for ConcreteDirEntry<'refs, 'root> {
         // Self::Ref(self)
     }
 
-    fn name<'a>(&'a self) -> &'a str where 'root: 'a {
-        match self {
-            ConcreteDirEntry::File(f) => f.name(),
-            ConcreteDirEntry::Dir(d) => d.name(),
-        }
-    }
-
     forward!(fn path(&self) -> &Path);
     forward!(fn root(&self) -> &Root<'refs, 'root>);
     forward!(call [fn pretty_print(&self, f: &mut Formatter<'_>, depth: usize) -> std::fmt::Result] with (f, depth));
 }
 
 
-pub trait DirEntry<'refs, 'root>: InMemoryOps<'refs, 'root> + Children<'refs, 'root> + Display {
+pub trait DirEntry<'refs, 'root>: InMemoryOps<'refs, 'root> + Children<'refs, 'root> + Display
+    where 'root: 'refs, 'refs: 'root
+{
     fn pretty_print(&self, f: &mut Formatter<'_>, depth: usize) -> std::fmt::Result;
 
     fn make_concrete(&'root self) -> ConcreteDirEntry<'refs, 'root>;
 
     fn root(&self) -> &Root<'refs, 'root>;
+    fn arena(&self) -> &Bump {
+        self.root().arena.deref()
+    }
 
     fn name<'a>(&'a self) -> &'a str where 'root: 'a {
         let path = self.path();
@@ -128,18 +131,19 @@ pub trait DirEntry<'refs, 'root>: InMemoryOps<'refs, 'root> + Children<'refs, 'r
 macro_rules! impl_smart_ptr {
     ($($ptr: ident),*) => {
         $(
-            impl<'root, T: DirEntry<'root> + ?Sized + 'root> DirEntry<'root> for $ptr<T> {
-                fn make_concrete(&'root self) -> ConcreteDirEntry<'root> {
+            impl<'refs, 'root, T: DirEntry<'refs, 'root> + ?Sized + 'refs + 'root> DirEntry<'refs, 'root> for $ptr<T>
+            {
+                fn make_concrete<'a>(&'a self) -> ConcreteDirEntry<'a, 'root> {
                     self.deref().make_concrete()
                 }
 
-                fn name<'a>(&'a self) -> &'a str where 'root: 'a {
+                fn name(&self) -> &str {
                     self.deref().name()
                 }
                 fn path(&self) -> &Path {
                     self.deref().path()
                 }
-                fn root(&self) -> &Root<'root> {
+                fn root(&self) -> &Root<'refs, 'root> {
                     self.deref().root()
                 }
                 fn pretty_print(&self, f: &mut Formatter<'_>, depth: usize) -> std::fmt::Result {

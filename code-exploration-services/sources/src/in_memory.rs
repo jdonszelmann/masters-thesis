@@ -9,7 +9,9 @@ pub enum MakeOnDiskStrategy {
     Temp,
 }
 
-pub trait InMemoryOps<'refs, 'root> {
+pub trait InMemoryOps<'refs, 'root>
+    where 'root: 'refs
+{
     fn is_in_memory(&self) -> bool;
     fn is_on_disk(&self) -> bool;
 
@@ -30,7 +32,9 @@ pub trait InMemoryOps<'refs, 'root> {
 macro_rules! impl_smart_ptr {
     ($($ptr: ident),*) => {
         $(
-            impl<'refs, 'root, T: InMemoryOps<'refs, 'root> + ?Sized> InMemoryOps<'refs, 'root> for $ptr<T> {
+            impl<'refs, 'root, T: InMemoryOps<'refs, 'root> + ?Sized> InMemoryOps<'refs, 'root> for $ptr<T>
+                where 'root: 'refs
+            {
                 fn is_in_memory(&self) -> bool {
                     self.deref().is_in_memory()
                 }

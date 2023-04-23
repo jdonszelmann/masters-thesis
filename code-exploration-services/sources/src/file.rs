@@ -3,17 +3,18 @@ use std::fmt::{Display, Formatter};
 use std::iter::Empty;
 use std::rc::Rc;
 // use crate::children::Children;
-use crate::dir_entry::{ConcreteDirEntry, RefConcreteDireEntry};
+use crate::dir_entry::{ConcreteDirEntry, RefConcreteDirEntry};
 use crate::{DirEntry, Root};
 use crate::children::Children;
 use crate::in_memory::InMemoryOps;
 use crate::path::Path;
 
-pub enum SourceFile<'refs, 'root> {
-    Ref(&'refs SourceFile<'refs, 'root>),
+pub enum SourceFile<'refs, 'root>
+    where 'root: 'refs
+{
     InMemory {
         root: &'root Root<'refs, 'root>,
-        name: String,
+        path: Path,
     },
     OnDisk {
         root: &'root Root<'refs, 'root>,
@@ -22,11 +23,13 @@ pub enum SourceFile<'refs, 'root> {
 }
 
 impl<'refs, 'root> Children<'refs, 'root> for SourceFile<'refs, 'root> {
-    type Iter<'children> = Empty<RefConcreteDireEntry<'children, 'refs, 'root>>
-        where Self: 'children, 'root: 'children
+    type Iter<'children> = Empty<RefConcreteDirEntry<'children, 'refs, 'root>>
+        where Self: 'children, 'refs: 'children, 'root: 'children, 'root: 'refs, 'refs: 'root
     ;
 
-    fn children<'children>(&'children self) -> Self::Iter<'children> {
+    fn children<'children>(&'children self) -> Self::Iter<'children>
+        where 'refs: 'children
+    {
         std::iter::empty()
     }
 
@@ -46,31 +49,28 @@ impl<'refs, 'root> DirEntry<'refs, 'root> for SourceFile<'refs, 'root> {
             write!(f, "(in memory)")?;
         }
         writeln!(f)?;
-        // for i in self.children() {
-        //     i.pretty_print(f, depth + 1);
-        // }
+        for i in self.children() {
+            i.pretty_print(f, depth + 1)?;
+        }
         Ok(())
     }
 
     fn make_concrete(&'root self) -> ConcreteDirEntry<'refs, 'root> {
-        // ConcreteDirEntry::File(Self::Ref(self))
-        todo!()
+        ConcreteDirEntry::File(self)
     }
 
     fn root(&self) -> &'root Root<'refs, 'root> {
         match self {
-            // SourceFile::Ref(r) => r.root(),
             SourceFile::InMemory { root, .. } => root,
             SourceFile::OnDisk { root, .. } => root,
         }
     }
 
-    fn name<'a>(&'a self) -> &'a str where 'root: 'a {
-        todo!()
-    }
-
     fn path(&self) -> &Path {
-        todo!()
+        match self {
+            SourceFile::InMemory { path, .. } => path,
+            SourceFile::OnDisk { path, .. } => path,
+        }
     }
 }
 impl<'refs, 'root> InMemoryOps<'refs, 'root> for SourceFile<'refs, 'root> {

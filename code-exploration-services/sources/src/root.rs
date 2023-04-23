@@ -16,7 +16,7 @@ pub struct Root<'refs, 'root> {
     /// Some when on disk, None when in memory
     path: Option<PathBuf>,
     name: String,
-    arena: ManuallyDrop<&'static Bump>,
+    pub(crate) arena: ManuallyDrop<&'static Bump>,
 }
 
 impl<'refs, 'root> Display for Root<'refs, 'root> {

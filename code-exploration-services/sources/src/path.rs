@@ -16,4 +16,10 @@ impl Path {
             elems: vec![],
         }
     }
+
+    pub fn add(&self, elem: &str) -> Self {
+        Self {
+            elems: self.elems.iter().cloned().chain(std::iter::once(elem.to_string())).collect(),
+        }
+    }
 }

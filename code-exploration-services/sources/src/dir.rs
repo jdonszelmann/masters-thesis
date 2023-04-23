@@ -1,19 +1,18 @@
-use std::alloc::alloc;
 use std::borrow::Cow;
 use std::cell::{Ref, RefCell};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
 use std::rc::Rc;
-// use crate::children::Children;
-use crate::dir_entry::{ConcreteDirEntry, RefConcreteDireEntry};
+use crate::dir_entry::{ConcreteDirEntry, RefConcreteDirEntry};
 use crate::{DirEntry, Root, SourceFile};
 use crate::children::Children;
 use crate::in_memory::InMemoryOps;
 use crate::path::Path;
 
-pub enum SourceDir<'refs, 'root> {
-    Ref(&'refs SourceDir<'refs, 'root>),
+pub enum SourceDir<'refs, 'root>
+    where 'root: 'refs
+{
     InMemory {
         root: &'root Root<'refs, 'root>,
         path: Path,
@@ -27,7 +26,21 @@ pub enum SourceDir<'refs, 'root> {
 
 impl<'refs, 'root> SourceDir<'refs, 'root> {
     pub fn create_dir(&self, name: &str) -> &'root SourceDir<'refs, 'root> {
-        todo!()
+        match self {
+            SourceDir::InMemory { entries, root, path } => {
+                let dir = SourceDir::InMemory {
+                    root: root,
+                    path: path.add(name),
+                    entries: RefCell::new(vec![]),
+                };
+                let dir_ref = &*root.arena.alloc(dir);
+                entries.borrow_mut().push(ConcreteDirEntry::Dir(dir_ref));
+                dir_ref
+            }
+            SourceDir::OnDisk { .. } => {
+                todo!()
+            }
+        }
     }
 
     pub fn create_file(&self, name: &str, contents: impl AsRef<str>) -> &'root SourceFile<'refs, 'root> {
@@ -55,21 +68,19 @@ impl<'refs, 'root> DirEntry<'refs, 'root> for SourceDir<'refs, 'root> {
         Ok(())
     }
 
-    fn make_concrete(&self) -> ConcreteDirEntry<'refs, 'root> {
-        ConcreteDirEntry::Dir(Self::Ref(self))
+    fn make_concrete<'a>(&'a self) -> ConcreteDirEntry<'a, 'root> {
+        ConcreteDirEntry::Dir(self)
     }
 
     fn root(&self) -> &Root<'refs, 'root> {
         match self {
             SourceDir::InMemory { root, .. } => root,
             SourceDir::OnDisk { root, .. } => root,
-            SourceDir::Ref(r) => r.root(),
         }
     }
 
     fn path(&self) -> &Path {
         match self {
-            // SourceDir::Ref(r) => r.path(),
             SourceDir::InMemory { path, ..  } => path,
             SourceDir::OnDisk { path, .. } => path
         }
@@ -88,10 +99,10 @@ impl<'refs, 'root> InMemoryOps<'refs, 'root> for SourceDir<'refs, 'root> {
 
 impl<'refs, 'root> Children<'refs, 'root> for SourceDir<'refs, 'root> {
     type Iter<'children> = Iter<'children, 'refs, 'root>
-        where Self: 'children, 'root: 'children
+        where Self: 'children, 'refs: 'children, 'root: 'children, 'root: 'refs, 'refs: 'root
     ;
 
-    fn children<'children>(&'children self) -> Self::Iter<'children> {
+    fn children<'children>(&'children self) -> Self::Iter<'children> where 'refs: 'children {
         match self {
             SourceDir::InMemory { entries, .. } => {
                 Iter {
@@ -101,7 +112,6 @@ impl<'refs, 'root> Children<'refs, 'root> for SourceDir<'refs, 'root> {
             SourceDir::OnDisk { .. } => {
                 todo!()
             }
-            // SourceDir::Ref(a) => a.children(),
         }
     }
 }
@@ -109,10 +119,10 @@ impl<'refs, 'root> Children<'refs, 'root> for SourceDir<'refs, 'root> {
 pub struct Iter<'children, 'refs, 'root> {
     inner: Option<Ref<'children, [ConcreteDirEntry<'refs, 'root>]>>,
 }
-impl<'children, 'refs, 'root> Iterator for Iter<'refs, 'children, 'root>
+impl<'children, 'refs, 'root> Iterator for Iter<'children, 'refs, 'root>
     where 'refs: 'children
 {
-    type Item = RefConcreteDireEntry<'children, 'refs, 'root>;
+    type Item = RefConcreteDirEntry<'children, 'refs, 'root>;
 
     fn next(&mut self) -> Option<Self::Item> {
         match self.inner.take() {
@@ -123,7 +133,7 @@ impl<'children, 'refs, 'root> Iterator for Iter<'refs, 'children, 'root>
                         (&slice[0], &slice[1..])
                     });
                     self.inner.replace(tail);
-                    Some(RefConcreteDireEntry::Ref(head))
+                    Some(RefConcreteDirEntry::Ref(head))
                 }
             },
             None => None,
