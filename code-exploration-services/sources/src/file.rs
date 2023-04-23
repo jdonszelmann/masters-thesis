@@ -14,11 +14,12 @@ pub enum SourceFile<'refs, 'root>
 {
     InMemory {
         root: &'root Root<'refs, 'root>,
-        path: Path,
+        path: Path<'root>,
+        contents: Cow<'root, str>,
     },
     OnDisk {
         root: &'root Root<'refs, 'root>,
-        path: Path,
+        path: Path<'root>,
     },
 }
 
@@ -45,8 +46,14 @@ impl<'refs, 'root> DirEntry<'refs, 'root> for SourceFile<'refs, 'root> {
     fn pretty_print(&self, f: &mut Formatter<'_>, depth: usize) -> std::fmt::Result {
         write!(f, "{:level$}", "", level = depth * 4)?;
         write!(f, "{}", self.name())?;
-        if self.is_in_memory() {
-            write!(f, "(in memory)")?;
+        if let Self::InMemory {contents, ..} = self {
+            writeln!(f, " (in memory)")?;
+            writeln!(f, "{:level$}```", "", level = (depth + 1) * 4)?;
+            for i in contents.lines() {
+                write!(f, "{:level$}", "", level = (depth + 1) * 4)?;
+                writeln!(f, "{i}")?;
+            }
+            write!(f, "{:level$}```", "", level = (depth + 1) * 4)?;
         }
         writeln!(f)?;
         for i in self.children() {

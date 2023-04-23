@@ -15,22 +15,22 @@ pub enum SourceDir<'refs, 'root>
 {
     InMemory {
         root: &'root Root<'refs, 'root>,
-        path: Path,
+        path: &'root Path<'root>,
         entries: RefCell<Vec<ConcreteDirEntry<'refs, 'root>>>,
     },
     OnDisk {
         root: &'root Root<'refs, 'root>,
-        path: Path,
+        path: &'root Path<'root>,
     }
 }
 
 impl<'refs, 'root> SourceDir<'refs, 'root> {
-    pub fn create_dir(&self, name: &str) -> &'root SourceDir<'refs, 'root> {
+    pub fn create_dir(&self, name: &'root str) -> &'root SourceDir<'refs, 'root> {
         match self {
             SourceDir::InMemory { entries, root, path } => {
                 let dir = SourceDir::InMemory {
-                    root: root,
-                    path: path.add(name),
+                    root,
+                    path: root.arena.alloc(path.add(name)),
                     entries: RefCell::new(vec![]),
                 };
                 let dir_ref = &*root.arena.alloc(dir);
@@ -43,8 +43,22 @@ impl<'refs, 'root> SourceDir<'refs, 'root> {
         }
     }
 
-    pub fn create_file(&self, name: &str, contents: impl AsRef<str>) -> &'root SourceFile<'refs, 'root> {
-        todo!()
+    pub fn create_file(&self, name: impl Into<Cow<'root, str>>, contents: impl Into<Cow<'root, str>>) -> &'root SourceFile<'refs, 'root> {
+        match self {
+            SourceDir::InMemory { entries, root, path } => {
+                let file = SourceFile::InMemory {
+                    root,
+                    path: path.add(name),
+                    contents: contents.into(),
+                };
+                let file_ref = &*root.arena.alloc(file);
+                entries.borrow_mut().push(ConcreteDirEntry::File(file_ref));
+                file_ref
+            }
+            SourceDir::OnDisk { .. } => {
+                todo!()
+            }
+        }
     }
 }
 
@@ -59,7 +73,7 @@ impl<'refs, 'root> DirEntry<'refs, 'root> for SourceDir<'refs, 'root> {
         write!(f, "{:level$}", "", level = depth * 4)?;
         write!(f, "{}", self.name())?;
         if self.is_in_memory() {
-            write!(f, "(in memory)")?;
+            write!(f, " (in memory)")?;
         }
         writeln!(f)?;
         for i in self.children() {

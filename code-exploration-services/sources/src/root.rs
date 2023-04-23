@@ -38,7 +38,7 @@ impl<'refs, 'root> Root<'refs, 'root> {
 
         root.dir.get_or_init(|| arena.alloc(SourceDir::InMemory {
             root,
-            path: Path::empty(),
+            path: root.arena.alloc(Path::empty()),
             entries: RefCell::new(vec![]),
         }));
 

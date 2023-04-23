@@ -56,7 +56,7 @@ macro_rules! root {
     (
         $parent:ident@$name: literal: #$contents: ident, $($rest: tt)*
     ) => {
-        let res = parent.create_file(stringify!($name), $contents);
+        let res = $parent.create_file(stringify!($name), $contents);
         root!($parent@$($rest)*);
     };
     (
@@ -105,12 +105,14 @@ macro_rules! root {
 mod tests {
     #[test]
     fn smoke() {
+        let b_contents = "Lorem Ipsum";
+
         let r = root!(
             test: [
                 "a.rs": "test",
                 "b.rs": "yeet",
                 yeet: [
-                    "x.rs": "something",
+                    "x.rs": #b_contents,
                 ],
             ],
         );
