@@ -28,7 +28,7 @@ $(OUTDIR):
 	mkdir -p $(OUTDIR)
 	sudo mount -t tmpfs -o size=1g tmpfs $(OUTDIR)
 
-$(OUTDIR)/$(DOCUMENT).pdf: .refresh $(SRCS) | $(OUTDIR) $(SRCBIB)
+$(OUTDIR)/$(DOCUMENT).pdf: $(SRCBIB) | $(OUTDIR)
 	cd $(SRCDIR)/ && \
 		$(LATEXMK) $(LATEXMKOPT) \
 			-output-directory=$(OUTDIR) \
