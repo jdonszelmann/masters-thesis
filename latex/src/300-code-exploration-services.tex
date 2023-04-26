@@ -173,14 +173,16 @@ Again, this would be $M$ media, which might want to support $N$ languages.
 
 To solve this problem, we hypothesize that we need a unifying interface, just like \ac{LSP} or \ac{AESI}, between code exploration media
 and sourcecode.
-This interface is not like a protocol though.
-Unlike the \ac{LSP}, there isn't a server that can dynamically communicate with the client.
-We established that for many media, such dynamic communication is not feasible.
+This interface cannot be like a protocol.
+As we established, unlike with the \ac{LSP}, it is often not feasible, nor necessary to have a server that can
+dynamically communicate with the client.
 
 Instead, we think that the solution is a kind of index format.
 A format that can be generated out of various sources, and that can be interpreted to generate various code exploration media
 with code exploration services embedded.
 A kind of intermediate format that can contain static analysis for any programming language.
+
+The rest of this thesis will look at all the considerations necessary to implement such an index format.
 
 \todo{Somewhere write about what such a format can actually be used for. I don't know what the best spot for that is, either
 after I introduced that we think a format is useful, or before as a motivation for such a format. Many applications will be
