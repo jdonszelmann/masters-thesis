@@ -3,60 +3,121 @@
 \chapter{Code Exploration Services}
 \label{chap:code-exploration-services}
 
+\todo{What are CES}
+
 As the name implies, a programmer's job generally involves writing programs.
-However, a vital part of writing code is also reading and exploring code.
+Programs are written in editors, where oftentimes, certain editor services are available.
+The goal of editor services, as discussed in chapter~\ref{chap:editor-services}, is to simplify
+creating programs by helping the writer in various ways. \todo{See if there are some refs for this, in chap 2}
+
+However, programming is not just writing programs.
+A large amount of time may be spent reading programs as well, to understand how they work and how they can be changed to suit ones needs.
 In the book ``Clean Code: A Handbook of Agile Software Craftsmanship''~\autocite{martin_reading_code_ratio},
 the author estimates that a programmer may spend up to ten hours reading code for every hour of time they spend writing code.
 
-Some examples of such tasks that do not necessarily involve writing code might be reading code from last week, or code written by colleagues.
-Especially in teams, programmers also commonly review code, which mainly involves reading code and verifying its correctness.
-Furthermore, programmers may read code on websites such as \url{https://stackoverflow.com} and \url{https://github.com},
-and in documentation, to learn from others about how to solve a problem.
-All these interactions programmers might have with code, that do not involve writing code, we will call code exploration from now on.
+From now on, we will define tasks a programmer might perform, which aren't writing programs, code exploration.
+Code exploration mainly involves reading code, but exploring documentation, or reviewing code can also be seen as code exploration.
+Crucially, it doesn't include writing code, and that means that code exploration can be done outside an editor.
+The place in which code is explored, we will from now on call the code exploration medium.
 
-% Reference https://www.informit.com/articles/article.aspx?p=1235624&seqNum=5?
-% Reference https://www.youtube.com/watch?v=QoZU2yN8caY
+\begin{definition}
+    Code Exploration are all tasks a programmer might perform when creating programs \textbf{besides writing} code.
+\end{definition}
 
-Exploring programs in an editor can be easier than in other places, because many editors provide editor services that simplify exploring and understanding code.
-Still, editors aren't the only places where programmers explore code.
-The main other locations being on websites, in PDFs (for example, a paper), and in books.
-Although these places are used for exploring code, they often provide few services that help programmers to do so like editors would.
-It might be that only syntax colouring is available, for example.
-However, we think that those services traditionally found in editors, might actually be useful when reading code in other places besides editors
-Those services, which are useful outside an editor, we call code exploration services.
+That does not mean that an editor is not a code exploration medium.
+Many other code exploration media exist besides editors, such websites, PDF files (papers), slides, books and videos, in
+all of which the main goal is not writing code, but exploring code.
 
-As an example, and a notable exception to websites only providing syntax colouring, there is Github\footnote{\url{https://github.com}}.
-GitHub, apart from being a git server where programmers store their code, is also a place where lots of code is read.
-For example, as a part of code reviews.
-To aid programmers, GitHub has been getting more and more features that make exploring code simpler such
-as more advanced search functionality, and recently code navigation.
-The latter is only supported for a few specific programming languages though\footnote{\url{https://docs.github.com/en/repositories/working-with-files/using-files/navigating-code-on-github}}.
+In editors, editor services can help exploring code.
+For example, services such as reference resolution, a structure outline and documentation can simplify exploring a program. \todo{expand on exactly how they can simplify this}
+But editor services are constrained to editors.
 
-This does raise the question: what other services might (in general) be useful code exploration services?
+Code exploration services are in a way a generalization of editor services.
+Many editor services are also code exploration services.
+However, code exploration only includes those services, which are useful when exploring code, and are thus applicable to any
+code exploration medium.
 
-\section{An overview of code exploration services}\label{sec:an-overview-of-code-exploration-services}
+\begin{definition}
+    Code Exploration Services are tools, which help programmers explore code.
+\end{definition}
 
-In chapter~\ref{chap:editor-services}, we discuss a list of important editor services.
-For each, we will discuss whether they might be useful as code exploration services as well.
-Before we can do that however, we first need to discuss when a code exploration service is useful.
-We think that a code exploration service is useful, if it has the potential to help a programmer understand the program they are reading quicker.
-With that definition, how useful is each the editor services as code exploration services?
+\section{A survey of existing code exploration services}\label{sec:a-survey-of-existing-code-exploration-services}
+
+Code exploration services exist, in various forms, for different kinds of code exploration media, although different parties might give them different names.
+For example, in editors they are often grouped together with editor services, and GitHub doesn't give the group of
+services a name, but has a few independent services such as ``Code Navigation''\todo{ref}.
+In this section, we made an overview of places, which provide code exploration services, and evaluate what those places do.
+
+We chose these places, not simply based on popularity, but also to highlight interesting or relevant examples of code exploration services in
+the field, to give a good overview of what options exist.
+
+\subsection{Github}
+\subsection{Rustdoc}
+\subsection{CBS (peter mosses)}
+\subsection{Various Code Colourers}
+
+\subsection{Evaluation}
+
+Conclusion: everyone is trying on their own, creating an MxN problem
+
+\section{Providing code exploration services}\label{sec:providing-code-exploration-services}
+
+Providing editor services is often a dynamic process.
+As a programmer navigates and interacts with code, requests are made to some kind of server, which gives a response to the request.
+We discussed this in depth in section~\ref{sec:language-servers}.
+For many media, such a dynamic system is simply out of the question.
+
+This is most apparent when targeting books or PDFs as exploration media, where providing anything dynamically is infeasible.
+Even on websites, where code can be run in real time, doing so for every user that explores the code can be costly and slow.
+Instead, one might want to analyze a source file (or group of source files) and output latex, or a static webpage with all the information in it.
+In the case of a webpage, where information could feasibly be calculated dynamically, a statically generated page might still prove faster and
+more efficient, as multiple users who might see a webpage can reuse the same analysis of the sourcecode.
+
+\subsection{Providing editor services statically}
+
+In section~\ref{sec:an-overview-of-editor-services}, we saw places, which provide certain code exploration services.
+To do this we saw that they gather information about sourcecode to statically provide information about that code later.
+There have been attempts at making editor services more statical than the very dynamic \ac{LSP}, applying techniques similar
+to the ones we saw with places that provide code exploration services.
+In this section we look at some of these attempts, and analyze how they work.
+
+\subsubsection{Language Server Index}
+\subsubsection{Jetbrains index format?}
+\subsubsection{More?}
+
+\section{Deriving code exploration services from editor services}
+
+We have seen that some media, among which various websites, provide certain code exploration services.
+However, none come farther than providing a search index, multiple levels of reference resolution to provide
+code navigation, and, of course, the ubiquitous code colouring.
+That is not even close to the list of thirteen editor services from chapter~\ref{chap:editor-services}.
+Instead of looking at what already exists, we can approach this problem from the side of editor services, and find the
+ones that are useful when exploring code.
+
+Therefore, for each of the thirteen editor services, we show our reasoning why it might be a useful code exploration service.
 
 \subsection*{Syntax colouring}
 
-The usefulness of syntax colouring for code comprehension has been extensively researched.
+Syntax colourers are ubiquitous.
+We already discussed a few in section~\ref{sec:a-survey-of-existing-code-exploration-services}.
+Even in many papers and books, coloured syntax is common.
+
+Multiple groups have researched the usefulness of syntax colouring.
+Interestingly however, its usefulness is rather dubious.
 Although one study, with a low sample size, seems to claim that colouring has a positive effect for novices, but not for
-more experienced programmers~\autocite{Sarkar15a-0}, there is also work that concludes that the effect is in fact minimal.
-In a study where eye movements of participants were tracked, no significant difference between black-and-white code and coloured code\autocite{beelders2016syntax}.
+more experienced programmers~\autocite{Sarkar15a-0}, there is also work concluding that the effect is in fact minimal.
+In a study where eye movements of participants were tracked, no significant difference between black-and-white code and coloured code~\autocite{beelders2016syntax}.
 Similarly, novice students would not perform better at programming tasks where syntax was coloured compared to tasks where syntax was not coloured~\autocite{HannebauerHG18}.
 
-Although there seems to be relatively little evidence that syntax colouring actually helps programmers, it is what many programmers will expect when reading code.
+Although there seems to be relatively little evidence that syntax colouring actually helps programmers,
+it is what many programmers expect to see when reading code.
 All editors evaluated by \citeauthor{Pelsmaeker2018} support syntax colouring to a certain extent~\autocite{Pelsmaeker2018},
-and one could argue that the coloured text distinguishes code from the surrounding content.
-Therefore, we would argue that syntax colouring can be useful when exploring code.
+and it is the one code exploration service supported widely on websites.
 
-\todo{do I want full cited explanations of each of this lke above, or is that not really important for the research on file formats and should I just state that
-these are the things we're going to look at}
+We think that in these media, coloured text may not help with code comprehension, but at least
+distinguishes code from the surrounding content like a webpage, or a book's text.
+A monospace font has a similar effect, and is quite normal as well to distinguish code.
+
 \subsection*{Code folding}
 
 \subsection*{Code completion}
@@ -66,6 +127,7 @@ Code completion only helps programmers write code, and has little to do with cod
 \subsection*{Structure outline}
 
 \subsection*{Reference resolution}
+\label{sec:reference-resolution}
 
 \subsection*{Documentation}
 
@@ -73,7 +135,12 @@ Code completion only helps programmers write code, and has little to do with cod
 
 \subsection*{Automatic formatting}
 
-\subsection*{Rename refactoring}
+\subsection*{Rename Refactoring}
+
+Similar to code completion, rename refactoring is really only useful when writing code.
+Inherently, a refactor is a change to code, and falls outside of the scope of code exploration services.
+The part of rename refactoring that is actually useful when exploring code, is the finding of related references that might
+need refactoring, which is just reference resolution from~\ref{sec:reference-resolution} \todo{make link instead of number, since section is unnumbered}
 
 \subsection*{Code actions}
 
@@ -81,15 +148,11 @@ Code completion only helps programmers write code, and has little to do with cod
 
 \subsection*{Debugging}
 
+\subsection{Conclusion}
 
+This analysis leads to eight editor services which
 
-\subsection*{Testing}
-
-%As demonstrated by Github, it certainly seems like it is possible to provide more services to the readers of programs.
-%One might call such services for code readers, code exploration services.
-%However, that's not quite
-
-\subsection{Code search}\label{subsec:code-search}
+\section{Code search}\label{subsec:code-search}
 
 Although the list of code exploration services has its roots in a list of editor services, which itself has its roots in
 frequently cited theory by \citeauthor{ErdwegSV13}, we actually think that one feature may be missing from the original list.
@@ -99,38 +162,27 @@ Even many websites, where we showed that often relatively few services are suppo
 
 So why is search missing?
 
+\section{Towards generic code exploration services}
 
-\section{Availability of code exploration services}\label{sec:availability-of-code-exploration-services}
+As we showed in section~\ref{sec:a-survey-of-existing-code-exploration-services}, many parties try to provide editor services
+at a limited capacity.
+This creates a $M \times N$ problem, where $M$ parties try to implement services for $N$ languages.
+Then, in section~\ref{sec:providing-code-exploration-services}, we talk about different kinds of code exploration media that might
+want to give outputs based on an analysis of sourcecode.
+Again, this would be $M$ media, which might want to support $N$ languages.
 
-\todo{Survey of other websites, showing that they pretty much only support syntax colouring}
+To solve this problem, we hypothesize that we need a unifying interface, just like \ac{LSP} or \ac{AESI}, between code exploration media
+and sourcecode.
+This interface is not like a protocol though.
+Unlike the \ac{LSP}, there isn't a server that can dynamically communicate with the client.
+We established that for many media, such dynamic communication is not feasible.
 
+Instead, we think that the solution is a kind of index format.
+A format that can be generated out of various sources, and that can be interpreted to generate various code exploration media
+with code exploration services embedded.
+A kind of intermediate format that can contain static analysis for any programming language.
 
-
-\subsection{Github}
-
-
-
-\subsection{Gitlab}
-\subsection{MdBook}
-\subsection{StackOverflow}
-\subsection{Reddit}
-\subsection{Latex and PDF}
-\subsection{Bootlin}
-\subsection{Monaco}
-
-
-%However, to take advantage of editor services, a programmer needs to download the sourcecode to their own computer and actually
-%open the program in an editor, which can be inconvenient.
-
-% Sometimes you look at code not in an IDE (like online, or in papers)
-% What services are available in those places?
-% Most places provide syntax colouring
-% Some places provide code navigation (Github, cross referencers)
-% However for very limited cases (only some languages)
-% What's different from IDEs to these places where code is read? Well,
-% What services could theoretically be provided?
-% We call these services code exploration services
-
-
-%jupyter
-%mdbook
+\todo{Somewhere write about what such a format can actually be used for. I don't know what the best spot for that is, either
+after I introduced that we think a format is useful, or before as a motivation for such a format. Many applications will be
+the existing CES mentioned in the survey, but we can also be more broad and relate it to educative purposes for example.
+}

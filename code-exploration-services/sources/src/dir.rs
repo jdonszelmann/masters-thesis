@@ -21,6 +21,7 @@ pub enum SourceDir<'refs, 'root>
     OnDisk {
         root: &'root Root<'refs, 'root>,
         path: &'root Path<'root>,
+        on_disk_path: PathBuf,
     }
 }
 

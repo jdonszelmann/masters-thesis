@@ -43,6 +43,7 @@ impl<'children, 'refs, 'root> Deref for RefConcreteDirEntry<'children, 'refs, 'r
     }
 }
 
+#[derive(Copy, Clone)]
 pub enum ConcreteDirEntry<'refs,'root>
     where 'root: 'refs
 {
@@ -80,8 +81,6 @@ impl<'refs, 'root> Children<'refs, 'root> for ConcreteDirEntry<'refs, 'root> {
 
     fn children<'children>(&'children self) -> Self::Iter<'children> where 'refs: 'children {
         match self {
-            // ConcreteDirEntry::Ref(r) => r.children(),
-            // ConcreteDirEntry::RefcellRef(r) => r.children(),
             ConcreteDirEntry::File(f) => MergeIter::File(f.children()),
             ConcreteDirEntry::Dir(d) => MergeIter::Dir(d.children())
         }
@@ -96,8 +95,7 @@ impl<'refs, 'root> Display for ConcreteDirEntry<'refs, 'root> {
 
 impl<'refs, 'root> DirEntry<'refs, 'root> for ConcreteDirEntry<'refs, 'root> {
     fn make_concrete(&'root self) -> ConcreteDirEntry<'refs, 'root> {
-        todo!()
-        // Self::Ref(self)
+        *self
     }
 
     forward!(fn path(&self) -> &Path);

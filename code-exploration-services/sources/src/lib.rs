@@ -103,11 +103,16 @@ macro_rules! root {
 
 #[cfg(test)]
 mod tests {
+    use crate::children::Children;
+    use crate::root::MakeOnDiskStrategy;
+
     #[test]
-    fn smoke() {
+    fn samoke() -> color_eyre::Result<()> {
+        color_eyre::install()?;
+
         let b_contents = "Lorem Ipsum";
 
-        let r = root!(
+        let mut r = root!(
             test: [
                 "a.rs": "test",
                 "b.rs": "yeet",
@@ -118,6 +123,10 @@ mod tests {
         );
 
         println!("{}", r);
+
+        r.make_on_disk(MakeOnDiskStrategy::Temp)?;
+
+        Ok(())
     }
 }
 

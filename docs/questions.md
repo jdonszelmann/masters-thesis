@@ -244,7 +244,7 @@ enum Class {
     // etc
 }
 
-struct Entry {
+struct Entry https://cese.ewi.tudelft.nl{
     span: Span,
     data: Data,
 }

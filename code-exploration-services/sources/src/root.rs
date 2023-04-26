@@ -1,14 +1,20 @@
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::fmt::{Display, Formatter};
+use std::fs::write;
+use std::io;
 use std::mem::ManuallyDrop;
 use std::ops::Deref;
 use std::path::PathBuf;
 use bumpalo::Bump;
 use once_cell::sync::OnceCell;
+use tempdir::TempDir;
 use crate::dir::SourceDir;
-use crate::DirEntry;
+use crate::{DirEntry, SourceFile};
+use crate::in_memory::InMemoryOps;
 use crate::path::Path;
+use thiserror::Error;
+use crate::dir_entry::ConcreteDirEntry;
 
 #[derive()]
 pub struct Root<'refs, 'root> {
@@ -17,6 +23,23 @@ pub struct Root<'refs, 'root> {
     path: Option<PathBuf>,
     name: String,
     pub(crate) arena: ManuallyDrop<&'static Bump>,
+}
+
+#[derive(Debug, Error)]
+pub enum MakeOnDiskError {
+    /// returned when [`MakeOnDiskStrategy`] is Temp, and creating
+    /// the temp directory fails
+    #[error("create temp directory")]
+    CreateTempDir(#[source] io::Error)
+}
+
+#[derive(Debug, Error)]
+pub enum MakeInMemoryError {}
+
+#[derive(Clone)]
+pub enum MakeOnDiskStrategy {
+    Path(PathBuf),
+    Temp,
 }
 
 impl<'refs, 'root> Display for Root<'refs, 'root> {
@@ -43,6 +66,43 @@ impl<'refs, 'root> Root<'refs, 'root> {
         }));
 
         root
+    }
+
+    pub fn make_in_memory(&self) {}
+
+    pub fn make_on_disk(&mut self, strategy: MakeOnDiskStrategy) -> Result<(), MakeOnDiskError> where Self: DirEntry<'refs, 'root> {
+        // no need to do anything
+        if self.is_on_disk_recursive() {
+            return Ok(())
+        }
+
+        let (path, cleanup) = match strategy {
+            MakeOnDiskStrategy::Path(p) => {
+                (p, None)
+            }
+            MakeOnDiskStrategy::Temp => {
+                let dir = TempDir::new(".sources")
+                    .map_err(MakeOnDiskError::CreateTempDir)?;
+                (
+                    dir.path().to_path_buf(),
+                    Some(
+                        self.arena().alloc(move || {
+                            drop(dir);
+                        })
+                    )
+                )
+            }
+        };
+
+        match self.make_concrete() {
+            ConcreteDirEntry::File(SourceFile::InMemory {contents, ..}) => {
+                write(path, contents.as_bytes()).unwrap();
+            }
+            ConcreteDirEntry::Dir(SourceDir::InMemory {..}) => {}
+            _ => unreachable!("must be in memory because of recursive check above")
+        }
+
+        Ok(())
     }
 }
 
