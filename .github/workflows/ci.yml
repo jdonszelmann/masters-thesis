@@ -25,7 +25,7 @@ jobs:
         with:
           packages: texlive-latex-recommended texlive-xetex latexmk texlive-fonts-extra texlive-bibtex-extra biber
           version: 1.0
-#      - run: sudo apt-get install --reinstall texlive-latex-recommended texlive-xetex latexmk texlive-fonts-extra texlive-bibtex-extra biber
+      - run: sudo apt-get install --reinstall texlive-xetex
 
       - run: make clean; make -B
 
