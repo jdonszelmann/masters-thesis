@@ -1,9 +1,9 @@
 use crate::input::subsystems::ctags::CtagsAnalysisError;
 use crate::input::subsystems::ctags::CtagsAnalysisError::RunCtagsCommand;
-use crate::SourceCode;
 use serde::{Deserialize, Serialize};
 use std::io::BufRead;
 use std::process::Command;
+use crate::sources::dir::SourceFile;
 
 #[derive(Clone)]
 pub struct CtagsAnalysis {
@@ -40,12 +40,11 @@ fn parse_json_tag(json: &str) -> Result<Tag, CtagsAnalysisError> {
     Ok(serde_json::from_str(json)?)
 }
 
-pub fn run_ctags(s: &SourceCode) -> Result<CtagsAnalysis, CtagsAnalysisError> {
+pub fn run_ctags(s: SourceFile) -> Result<CtagsAnalysis, CtagsAnalysisError> {
     let mut cmd = Command::new("ctags");
     cmd.arg("--output-format=json");
     cmd.args(["-o", "-"]);
-    let f = s.temp()?;
-    cmd.arg(f.path());
+    cmd.arg(s.path());
 
     let output = cmd.output().map_err(RunCtagsCommand)?;
     if !output.status.success() {

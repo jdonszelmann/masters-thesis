@@ -1,11 +1,16 @@
-use crate::analysis::Field;
 use crate::input::{Analyser, AnalysisError};
-use crate::{Analysis, SourceCode};
 use std::collections::HashMap;
 use std::io;
 use std::num::ParseIntError;
 use strum::ParseError;
 use thiserror::Error;
+use crate::analysis::dir::Analysis;
+use crate::analysis::field::{Field, FieldRef};
+use crate::analysis::file::FileAnalysis;
+use crate::input::subsystems::ctags::xref_kinds::XrefKind;
+use crate::input::subsystems::ctags::xrefs::Xref;
+use crate::sources::dir::{SourceDir, SourceFile};
+use crate::sources::span::Span;
 
 pub mod tags;
 pub mod xref_kinds;
@@ -35,57 +40,75 @@ pub enum CtagsAnalysisError {
     Io(#[from] io::Error),
 }
 
+type Index<'a> = HashMap<(&'a str, &'a XrefKind), Vec<&'a Xref>>;
+
+fn find_parent(parent: &str, parent_kind: &XrefKind, span: &Span, file: SourceFile, index: &Index) -> Result<Option<FieldRef>, AnalysisError> {
+    let Some(index_entry ) = index.get(&(parent, parent_kind)) else {
+        return Ok(None);
+    };
+
+    let span_midpoint = span.midpoint();
+
+    let mut min_ref = None;
+    let mut min_distance = usize::MAX;
+    for i in index_entry {
+        let midpoint = i.span(file)?.midpoint();
+        let distance = if span_midpoint < midpoint {
+            usize::MAX
+        } else {
+            span_midpoint - midpoint
+        };
+
+        if distance < min_distance {
+            min_distance = distance;
+            min_ref = Some(i);
+        }
+    }
+
+    if let Some(i) = min_ref {
+        Ok(Some(i.span(file)?))
+    } else {
+        Ok(None)
+    }
+}
+
 pub struct CtagsAnalyser;
 
 impl Analyser for CtagsAnalyser {
-    fn outline(&self, s: &SourceCode) -> Result<Analysis, AnalysisError> {
-        let xref_output = xrefs::run_xref(s)?;
+    fn outline(&self, s: &SourceDir) -> Result<Analysis, AnalysisError> {
+        s.map_analyze(|file| -> Result<FileAnalysis, AnalysisError> {
+            let xref_output = xrefs::run_xref(file)?;
 
-        let mut index = HashMap::new();
-        for xref in &xref_output.xrefs {
-            // println!("{:?}", xref);
-            index
-                .entry((&xref.name, &xref.kind))
-                .or_insert_with(Vec::new)
-                .push(xref);
-        }
+            let mut index: Index = HashMap::new();
+            for xref in &xref_output.xrefs {
+                // println!("{:?}", xref);
+                index
+                    .entry((&xref.name, &xref.kind))
+                    .or_insert_with(Vec::new)
+                    .push(xref);
+            }
 
-        let mut res = Vec::new();
-        for xref in &xref_output.xrefs {
-            let span = xref.span(s);
-            let parent =
-                if let (Some(parent), Some(parent_kind)) = (&xref.parent, &xref.parent_kind) {
-                    index
-                        .get(&(parent, parent_kind))
-                        .iter()
-                        .filter_map(|i| {
-                            i.iter()
-                                .min_by_key(|&&i| {
-                                    let m = i.span(s).midpoint();
-                                    let sm = span.midpoint();
+            let mut res = Vec::new();
+            for xref in &xref_output.xrefs {
+                let span = xref.span(file)?;
+                let parent =
+                    if let (Some(parent), Some(parent_kind)) = (&xref.parent, &xref.parent_kind) {
+                        find_parent(parent, parent_kind, &span, file, &index)?
+                    } else {
+                        None
+                    };
 
-                                    if sm < m {
-                                        usize::MAX
-                                    } else {
-                                        sm - m
-                                    }
-                                })
-                                .map(|i| i.span(s))
-                        })
-                        .next()
-                } else {
-                    None
-                };
+                res.push((
+                    span,
+                    Field::Outline {
+                        description: Some(xref.kind.as_ref().to_string()),
+                        parent,
+                    },
+                ));
+            }
 
-            res.push((
-                span,
-                Field::Outline {
-                    description: Some(xref.kind.as_ref().to_string()),
-                    parent,
-                },
-            ));
-        }
-
-        Ok(Analysis::new(s, res))
+            let analysis = FileAnalysis::new(file, res)?;
+            Ok(analysis)
+        })
     }
 }

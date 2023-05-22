@@ -100,7 +100,7 @@ pub enum XrefKind {
 	Constant,
 	#[strum(serialize="constraint")]
 	Constraint,
-	#[strum(serialize="constructor", serialize="Constructor")]
+	#[strum(serialize="Constructor", serialize="constructor")]
 	Constructor,
 	#[strum(serialize="context")]
 	Context,
@@ -160,7 +160,7 @@ pub enum XrefKind {
 	Error,
 	#[strum(serialize="event")]
 	Event,
-	#[strum(serialize="Exception", serialize="exception")]
+	#[strum(serialize="exception", serialize="Exception")]
 	Exception,
 	#[strum(serialize="face")]
 	Face,

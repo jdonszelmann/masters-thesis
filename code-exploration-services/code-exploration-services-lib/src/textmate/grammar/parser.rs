@@ -1,5 +1,5 @@
-use crate::grammar::grammar_definition::{Captures, Pattern};
-use crate::grammar::TextmateGrammar;
+use crate::textmate::grammar::grammar_definition::{Captures, Pattern};
+use crate::textmate::grammar::TextmateGrammar;
 use itertools::Itertools;
 use lines_inclusive::LinesInclusive;
 use std::collections::HashMap;

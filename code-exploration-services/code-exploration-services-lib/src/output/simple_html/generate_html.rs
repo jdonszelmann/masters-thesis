@@ -5,7 +5,7 @@ use axohtml::dom::DOMTree;
 use axohtml::elements::FlowContent;
 use axohtml::types::{Class, SpacedSet};
 use axohtml::{html, text, unsafe_text};
-use textmate::theme::TextmateThemeManager;
+use crate::textmate::theme::TextmateThemeManager;
 
 fn generate_line_from_tokens(tokens: &[Token], line_num: usize) -> Box<dyn FlowContent<String>> {
     let mut spans = Vec::new();

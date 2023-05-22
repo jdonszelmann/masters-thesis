@@ -11,7 +11,7 @@ use super::Position;
 ///     end : { line 6, character : 0 }
 /// }
 /// ```
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Range {
     /// The range's start position
     pub start: Position,

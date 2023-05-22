@@ -1,8 +1,11 @@
 use crate::input::subsystems::ctags::CtagsAnalysisError;
 use crate::input::subsystems::textmate::TextmateAnalysisError;
-use crate::{Analysis, SourceCode};
 use thiserror::Error;
 use crate::input::subsystems::lsp::LanguageServerError;
+use crate::textmate::grammar::FromLanguageError;
+use crate::sources::dir::{ContentsError, SourceDir};
+use crate::analysis::dir::Analysis;
+use crate::analysis::file::NewFileAnalysisError;
 
 pub mod subsystems;
 
@@ -13,6 +16,12 @@ pub enum AnalysisError {
     #[error("not implemented")]
     NotImplemented,
 
+    #[error("contents")]
+    Contents(#[from] ContentsError),
+
+    #[error("create file analysis structure")]
+    NewAnalysis(#[from] NewFileAnalysisError),
+
     #[error("ctags")]
     Ctags(#[from] CtagsAnalysisError),
 
@@ -20,7 +29,10 @@ pub enum AnalysisError {
     TextMate(#[from] TextmateAnalysisError),
 
     #[error("language server")]
-    Lsp(#[from] LanguageServerError)
+    Lsp(#[from] LanguageServerError),
+
+    #[error("parse grammar")]
+    ParseGrammar(#[from] FromLanguageError)
 }
 
 #[inline]
@@ -60,11 +72,11 @@ macro_rules! define_analysis_types {
     ($($name: ident),* $(,)?; for $($path: path),* $(,)? ) => {
         pub trait Analyser {
         $(
-            fn $name(&self, _s: &SourceCode) -> Result<Analysis, AnalysisError> { Err(AnalysisError::NotImplemented) }
+            fn $name<'a>(&self, _s: &SourceDir) -> Result<Analysis, AnalysisError> { Err(AnalysisError::NotImplemented) }
         )*
         }
 
-        pub fn analyse(s: &SourceCode) -> Result<Analysis, AnalysisError> {
+        pub fn analyse(s: &SourceDir) -> Result<Analysis, AnalysisError> {
             define_analysis_chain!(s, [$($name),*] for [$($path),*])
         }
     };

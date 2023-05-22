@@ -1,11 +1,13 @@
 
 use clap::{Parser, Subcommand, ValueEnum};
-use code_exploration_services_lib::output::simple_html::SimpleHtml;
-use code_exploration_services_lib::{Analysis, Annotater, SourceCode};
-use std::error::Error;
 use std::fs::File;
 use std::io::{stdin, stdout, Read, Write};
 use std::path::{Path, PathBuf};
+use code_exploration_services_lib::analysis::dir::Analysis;
+use code_exploration_services_lib::analysis::file::FileAnalysis;
+use code_exploration_services_lib::Annotater;
+use code_exploration_services_lib::output::simple_html::SimpleHtml;
+use code_exploration_services_lib::sources::dir::SourceDir;
 
 #[derive(Parser)]
 #[command(author, version, about)]
@@ -53,7 +55,7 @@ fn main() -> color_eyre::Result<()> {
     let c: Cli = Cli::parse();
     match c.command {
         Commands::Analyse { file, output } => {
-            let source = SourceCode::from_path(file)?;
+            let source = SourceDir::new(file)?;
             let result = code_exploration_services_lib::input::analyse(&source)?;
             let serialized = result.serialize();
 
@@ -69,7 +71,7 @@ fn main() -> color_eyre::Result<()> {
             output,
             output_type,
         } => {
-            let source = SourceCode::from_path(file)?;
+            let source = SourceDir::new(file)?;
 
             let analysis = if let Some(analysis) = analysis {
                 let string_analysis = if analysis == Path::new("-") {

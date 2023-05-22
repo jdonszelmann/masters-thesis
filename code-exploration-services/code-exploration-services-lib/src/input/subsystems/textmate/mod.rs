@@ -1,8 +1,11 @@
-use crate::analysis::Field;
-use crate::analysis::Span;
 use crate::input::{Analyser, AnalysisError};
-use crate::{Analysis, SourceCode};
 use thiserror::Error;
+use crate::analysis::dir::Analysis;
+use crate::analysis::field::Field;
+use crate::analysis::file::FileAnalysis;
+use crate::sources::dir::SourceDir;
+use crate::sources::span::Span;
+use crate::textmate;
 
 #[derive(Debug, Error)]
 pub enum TextmateAnalysisError {
@@ -13,26 +16,28 @@ pub enum TextmateAnalysisError {
 pub struct TextmateAnalyser;
 
 impl Analyser for TextmateAnalyser {
-    fn syntax_coloring(&self, s: &SourceCode) -> Result<Analysis, AnalysisError> {
-        let Some(ext) = s.extension() else {
-            return Err(AnalysisError::NotImplemented);
-        };
-        let Some(parser) = textmate::TextmateGrammar::from_language(ext) else {
-            return Err(AnalysisError::NotImplemented)
-        };
+    fn syntax_coloring<'a>(&self, s: &'a SourceDir) -> Result<Analysis, AnalysisError> {
+        s.map_analyze(|file| {
+            let Some(ext) = file.path().extension() else {
+                return Err(AnalysisError::NotImplemented);
+            };
+            let Some(parser) = textmate::TextmateGrammar::from_language(&ext.to_string_lossy())? else {
+                return Err(AnalysisError::NotImplemented)
+            };
 
-        let res = parser
-            .parse(s.as_str())
-            .map_err(TextmateAnalysisError::Textmate)?;
-        let mut fields = Vec::new();
+            let res = parser
+                .parse(file.contents()?.as_str())
+                .map_err(TextmateAnalysisError::Textmate)?;
+            let mut fields = Vec::new();
 
-        for (span, name) in res {
-            fields.push((
-                Span::new(span.start, span.len),
-                Field::SyntaxColour(name.to_string()),
-            ))
-        }
+            for (span, name) in res {
+                fields.push((
+                    Span::new(span.start, span.len),
+                    Field::SyntaxColour(name.to_string()),
+                ))
+            }
 
-        Ok(Analysis::new(s, fields))
+            Ok(FileAnalysis::new(file, fields)?)
+        })
     }
 }

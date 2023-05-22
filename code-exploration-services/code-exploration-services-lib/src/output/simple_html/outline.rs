@@ -1,11 +1,14 @@
-use crate::analysis::{Field, Span};
 use crate::output::simple_html::generate_html::generate_html_from_tokens;
 use crate::output::simple_html::{tokenize, FieldIndex, SimpleHtmlError};
-use crate::{Analysis, SourceCode};
 use axohtml::dom::DOMTree;
 use axohtml::{html, text, unsafe_text};
 use std::collections::VecDeque;
+use axohtml::elements::s;
+use crate::analysis::field::Field;
+use crate::analysis::file::FileAnalysis;
 use crate::output::simple_html::tokenize::OutlineSetting::DontGenerateOutline;
+use crate::sources::dir::{SourceDir, SourceFile};
+use crate::sources::span::Span;
 
 #[derive(Debug)]
 struct OutlineItem<'a> {
@@ -42,8 +45,9 @@ fn generate_outline_html(
     outline: &[OutlineItem],
     parent: &OutlineItem,
     index: &FieldIndex,
-    source: &SourceCode,
+    source: SourceFile,
 ) -> Result<DOMTree<String>, SimpleHtmlError> {
+
     let contents = outline
         .iter()
         .map(|i| -> Result<_, SimpleHtmlError> {
@@ -52,8 +56,8 @@ fn generate_outline_html(
         })
         .collect::<Result<Vec<_>, _>>()?;
 
-    let source_text = source.slice(parent.span);
-    let tokens = tokenize::tokenize_string(source_text, parent.span.start, index, DontGenerateOutline);
+    let source_text = source.slice(parent.span)?;
+    let tokens = tokenize::tokenize_string(&source_text, parent.span.start, index, DontGenerateOutline);
 
     let heading = if let Some(description) = parent.description {
         text!("{}: ", description)
@@ -86,9 +90,9 @@ fn sort_outline(outline: &mut Vec<OutlineItem>) {
 }
 
 pub fn generate_outline(
-    analysis: &Analysis,
+    analysis: &FileAnalysis,
     index: &FieldIndex,
-    source: &SourceCode,
+    source: SourceFile,
 ) -> Result<DOMTree<String>, SimpleHtmlError> {
     let mut todo = VecDeque::new();
     let mut outline = Vec::new();

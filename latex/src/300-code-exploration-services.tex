@@ -3,87 +3,178 @@
 \chapter{Code Exploration Services}
 \label{chap:code-exploration-services}
 
-\todo{What are CES}
+In this chapter we introduce ``Code Exploration Services'', a subset of Editor Services.
+We explain the reasoning that leads towards Code Exploration Services, the status quo of Code Exploration Services,
+the possibility of more, different Code Exploration Services.
+We establish that with Code Exploration Services, a similar $M \times N$ problem can and does exist, and conclude with
+what we think is a possible solution for this problem.
+
+\section*{}
+\subsection*{Code Exploration}
 
 As the name implies, a programmer's job generally involves writing programs.
 Programs are written in editors, where oftentimes, certain editor services are available.
 The goal of editor services, as discussed in chapter~\ref{chap:editor-services}, is to simplify
-creating programs by helping the writer in various ways. \todo{See if there are some refs for this, in chap 2}
+creating programs by helping the writer in various ways.
 
 However, programming is not just writing programs.
-A large amount of time may be spent reading programs as well, to understand how they work and how they can be changed to suit ones needs.
-In the book ``Clean Code: A Handbook of Agile Software Craftsmanship''~\autocite{martin_reading_code_ratio},
-the author estimates that a programmer may spend up to ten hours reading code for every hour of time they spend writing code.
+Reading and understanding programs can be a time consuming process as well, especially code written by other people.
+In fact, in the book ``Clean Code: A Handbook of Agile Software Craftsmanship''~\autocite{martin_reading_code_ratio},
+\citeauthor{martin_reading_code_ratio} estimates that a programmer may spend up to ten hours reading code for
+every hour of time they spend writing code.
 
-From now on, we will define tasks a programmer might perform, which aren't writing programs, code exploration.
-Code exploration mainly involves reading code, but exploring documentation, or reviewing code can also be seen as code exploration.
-Crucially, it doesn't include writing code, and that means that code exploration can be done outside an editor.
-The place in which code is explored, we will from now on call the code exploration medium.
+There is a difference between reading code and reading an article.
+Although small sections of programs might be linear, the entire program often is not.
+Function calls, imports and external resources such as online documentation all mean that
+reading code requires frequent shifts in focus between sources of information.
+Therefore, a more descriptive name for interpreting and understanding a program might be
+\textit{exploring}, not \textit{reading}.
+
+Interestingly, that reading code is different to reading natural language has also been observed in \ac{AI}.
+In \ac{AI} research there is something called the ``Naturalness Hypothesis''~\autocite{AllamanisBDS18}, which says
+that programs and natural languages are not so different.
+Therefore natural language models (which, for example, can summarise written texts) should also work well on programs.
+This hypothesis seems to hold well on a small scale, \citeauthor{Ben-NunJH18} claim that on a large scale it does not hold.
+Because natural language models often work linearly, processing tokens sequentially, they are not well adapted to switching
+focus like interpreting code requires.
+In their paper, \citeauthor{Ben-NunJH18} present their approach, which can deal with this problem
+better~\autocite*{Ben-NunJH18}.
 
 \begin{definition}
-    Code Exploration are all tasks a programmer might perform when creating programs \textbf{besides writing} code.
+    \textbf{Code Exploration} is the process of interpreting a program, to understand how it works.
 \end{definition}
 
-That does not mean that an editor is not a code exploration medium.
-Many other code exploration media exist besides editors, such websites, PDF files (papers), slides, books and videos, in
-all of which the main goal is not writing code, but exploring code.
+This definition of Code exploration is very broad.
+For example, attaching a debugger to a running program, and observing the program's behavior can also be considered
+code exploration.
+Similarly, a program could be better understood by simply running it, and testing different inputs.
+
+This form of code exploration more interactive than simply browsing a program's source code.
+It requires a programmer to interact with the program at runtime to learn more about the program.
+For the rest of this thesis, this is difference will be important.
+Therefore, to make the distinction between these forms of code exploration clearer, we will use the words `active' and `passive'.
+
+\begin{definition}
+    \textbf{Active Code Exploration} is code exploration that involves interacting with the program as it executes.
+\end{definition}
+\begin{definition}
+    \textbf{Passive Code Exploration} is all non-active code exploration.
+    It does not involve an interaction with an executing program.
+\end{definition}
+
+\subsection*{Code exploration in an editor}
 
 In editors, editor services can help exploring code.
-For example, services such as reference resolution, a structure outline and documentation can simplify exploring a program. \todo{expand on exactly how they can simplify this}
-But editor services are constrained to editors.
+Some editor services specifically help with passive code exploration, such as reference resolution, a structure outline and documentation.
+These services make navigation between various sources of information in and around the program quicker.
+There are also editor services that make active code exploration easier, like integrated debugging and testing.
 
-Code exploration services are in a way a generalization of editor services.
-Many editor services are also code exploration services.
-However, code exploration only includes those services, which are useful when exploring code, and are thus applicable to any
-code exploration medium.
+Diagnostic messages are an interesting service.
+Do they help a programmer explore a program actively or passively?
+One way to gather diagnostic messages is by running for example a compiler of a language, and seeing what errors it gives.
+There are languages have turing complete type systems, allow arbitrary code to run at compile time, or lack a clear distinction between runtime and compile time.
+This might mean that using diagnostic messages to aid code exploration, would make the exploration active.
+
+We, however, would not consider code exploration with the support of diagnostic messages active code exploration.
+The reason being that gathering diagnostic messages does not involve any interaction from the programmer.
+Diagnostic messages are solely based on the source code, and while the diagnostic messages are generated,
+the programmer does not have to provide any inputs to the program.
+
+Although many editor services are useful for code exploration, some are not.
+For example, code completion is specifically aimed at writing code.
+Similarly, although formatted code might be easier to explore, the service of automatically formatting source code
+is not meant to make code exploration any quicker.
+
+The set of editor services which help with code exploration, we will from now on call code exploration services.
+Code exploration services form a subset of editor services, since any useful code exploration service can be useful in an editor,
+making that service also an editor service.
 
 \begin{definition}
-    Code Exploration Services are tools, which help programmers explore code.
+    \textbf{Code Exploration Services} are services which make code exploration easier
 \end{definition}
 
-\section{A survey of existing code exploration services}\label{sec:a-survey-of-existing-code-exploration-services}
+Similar to the definition of code exploration, we can distinguish between passive and active code exploration services.
+Passive and active here refer to the kind of exploration the services help with, not necessarily the service itself.
+
+\begin{definition}
+    \textbf{Active Code Exploration Services} are code exploration services which make active code exploration easier
+\end{definition}
+\begin{definition}
+    \textbf{Passive Code Exploration Services} are code exploration services which make passive code exploration easier
+\end{definition}
+
+
+\section*{code exploration services in other media}
+
+Code exploration is always done in some context, we will call the code exploration medium from now on.
+For example, code can be explored in an editor, maybe even while writing code.
+However, it is common to switch to a different medium when exploring code.
+Most obvious of all, the internet.
+\url{https://github.com}, \url{https://stackoverflow.com} and a plethora of other websites might come to mind.
+Apart from websites, PDF files (papers for example), slides, books and videos might all be considered code exploration media.
+
+As the name, `editor services' implies, editor services are meant to be used in an editor.
+In an editor, editor services can help with code exploration.
+This raises the question, can editor services work in other code exploration media to make code exploration richer in those places as well?
+In that case, we might call the subset of editor services that are useful in other code exploration media as well, `code exploration services'.
+
+% you can write code to explore other code. active vs passive code exploration
+% maakt passieve code exploration services "richer"!
+% passief: Als onderdeel van exploration hoef je niet het programma uit te voeren
+
+\subsection{Limitations of code exploration media}\label{subsec:limitations-of-code-exploration-media}
+
+Providing editor services is often a dynamic process.
+As a programmer navigates and interacts with code, requests are made to some kind of server, which gives a response to the request.
+We discussed this in depth in section~\ref{subsec:language-servers}.
+For many media, such a dynamic system is simply out of the question.
+
+This is most apparent when targeting books or PDFs as exploration media, where providing anything dynamically is infeasible.
+Even on websites, where code can be run in real time, doing so for every user that explores the code can be costly and slow.
+Instead, one might want to analyze a source file (or group of source files) and output latex, or a static webpage with all the information in it.
+Even on a webpage, where information could feasibly be calculated dynamically, a statically generated page might still be beneficial.
+Multiple users who might see a webpage can then reuse the same analysis of the sourcecode.
+
+
+\subsection{Making editor services more static}\label{subsec:work-towards-making-editor-services-more-static}
+
+In section~\ref{sec:an-overview-of-editor-services}, we saw places, which provide certain code exploration services.
+To do this we saw that they gather information about sourcecode to statically provide information about that code later.
+There have been attempts at making editor services more static than the very dynamic \ac{LSP}.
+In this section we look at some of these attempts, and analyze how they work.
+
+\paragraph{Language Server Index}
+\paragraph{Jetbrains index format (PSI)}
+
+\section{A survey of existing code exploration services outside of editors}\label{sec:a-survey-of-existing-code-exploration-services}
 
 Code exploration services exist, in various forms, for different kinds of code exploration media, although different parties might give them different names.
-For example, in editors they are often grouped together with editor services, and GitHub doesn't give the group of
+For example, in editors they are often grouped together with editor services, and GitHub does not give the group of
 services a name, but has a few independent services such as ``Code Navigation''\todo{ref}.
 In this section, we made an overview of places, which provide code exploration services, and evaluate what those places do.
 
 We chose these places, not simply based on popularity, but also to highlight interesting or relevant examples of code exploration services in
 the field, to give a good overview of what options exist.
 
-\subsection{Github}
-\subsection{Rustdoc}
-\subsection{CBS (peter mosses)}
-\subsection{Various Code Colourers}
+\subsection{Documentation displayers}
+\paragraph{Rustdoc}
+\paragraph{CBS (peter mosses)}
+\paragraph{Agda HTML output}
+
+\subsection{Cross referencers}
+\paragraph{Bootlin}
+
+\subsection{Education and Collaboration}
+\paragraph{Github}
+\paragraph{Gitlab}
+\paragraph{StackOverflow}
+
+\subsection{Single exploration services}
+\paragraph{Various Code Colourers}
 
 \subsection{Evaluation}
 
 Conclusion: everyone is trying on their own, creating an MxN problem
-
-\section{Providing code exploration services}\label{sec:providing-code-exploration-services}
-
-Providing editor services is often a dynamic process.
-As a programmer navigates and interacts with code, requests are made to some kind of server, which gives a response to the request.
-We discussed this in depth in section~\ref{sec:language-servers}.
-For many media, such a dynamic system is simply out of the question.
-
-This is most apparent when targeting books or PDFs as exploration media, where providing anything dynamically is infeasible.
-Even on websites, where code can be run in real time, doing so for every user that explores the code can be costly and slow.
-Instead, one might want to analyze a source file (or group of source files) and output latex, or a static webpage with all the information in it.
-In the case of a webpage, where information could feasibly be calculated dynamically, a statically generated page might still prove faster and
-more efficient, as multiple users who might see a webpage can reuse the same analysis of the sourcecode.
-
-\subsection{Providing editor services statically}
-
-In section~\ref{sec:an-overview-of-editor-services}, we saw places, which provide certain code exploration services.
-To do this we saw that they gather information about sourcecode to statically provide information about that code later.
-There have been attempts at making editor services more statical than the very dynamic \ac{LSP}, applying techniques similar
-to the ones we saw with places that provide code exploration services.
-In this section we look at some of these attempts, and analyze how they work.
-
-\subsubsection{Language Server Index}
-\subsubsection{Jetbrains index format?}
-\subsubsection{More?}
 
 \section{Deriving code exploration services from editor services}
 
@@ -95,8 +186,11 @@ Instead of looking at what already exists, we can approach this problem from the
 ones that are useful when exploring code.
 
 Therefore, for each of the thirteen editor services, we show our reasoning why it might be a useful code exploration service.
+Code completion, automatic formatting, refactorings, testing and debugging can immediately be discarded as these five only help
+when writing code.
+Only testing might be useful, in the form of diagnostic information about the status of tests.
 
-\subsection*{Syntax colouring}
+\paragraph{Syntax colouring}
 
 Syntax colourers are ubiquitous.
 We already discussed a few in section~\ref{sec:a-survey-of-existing-code-exploration-services}.
@@ -118,73 +212,69 @@ We think that in these media, coloured text may not help with code comprehension
 distinguishes code from the surrounding content like a webpage, or a book's text.
 A monospace font has a similar effect, and is quite normal as well to distinguish code.
 
-\subsection*{Code folding}
+\paragraph{Code folding}
 
-\subsection*{Code completion}
+\paragraph{Structure outline}
 
-Code completion only helps programmers write code, and has little to do with code exploration.
+\paragraph{Reference resolution}
 
-\subsection*{Structure outline}
+\paragraph{Documentation}
 
-\subsection*{Reference resolution}
-\label{sec:reference-resolution}
-
-\subsection*{Documentation}
-
-\subsection*{Signature help}
-
-\subsection*{Automatic formatting}
-
-\subsection*{Rename Refactoring}
-
-Similar to code completion, rename refactoring is really only useful when writing code.
-Inherently, a refactor is a change to code, and falls outside of the scope of code exploration services.
-The part of rename refactoring that is actually useful when exploring code, is the finding of related references that might
-need refactoring, which is just reference resolution from~\ref{sec:reference-resolution} \todo{make link instead of number, since section is unnumbered}
+\paragraph{Signature help}
 
 \subsection*{Code actions}
 
 \subsection*{Diagnostic messages}
 
-\subsection*{Debugging}
-
-\subsection{Conclusion}
-
 This analysis leads to eight editor services which
 
-\section{Code search}\label{subsec:code-search}
+\section{Code search}\label{sec:code-search}
 
 Although the list of code exploration services has its roots in a list of editor services, which itself has its roots in
-frequently cited theory by \citeauthor{ErdwegSV13}, we actually think that one feature may be missing from the original list.
+frequently cited theory by \textcite{ErdwegSV13}, we actually think that one feature may be missing from the original list.
 That feature is search.
 That search is missing is interesting, because the feature is pretty much universally supported by editors, even `dumb' ones.
 Even many websites, where we showed that often relatively few services are supported, offer advanced search options.
 
 So why is search missing?
+Search doesn't create an $m \times n$ problem
 
 \section{Towards generic code exploration services}
 
 As we showed in section~\ref{sec:a-survey-of-existing-code-exploration-services}, many parties try to provide editor services
 at a limited capacity.
-This creates a $M \times N$ problem, where $M$ parties try to implement services for $N$ languages.
-Then, in section~\ref{sec:providing-code-exploration-services}, we talk about different kinds of code exploration media that might
+This creates a $m \times n$ problem, where $m$ parties try to implement services for $n$ languages.
+Then, in section~\ref{sec:}, we mentioned different kinds of code exploration media that might
 want to give outputs based on an analysis of sourcecode.
 Again, this would be $M$ media, which might want to support $N$ languages.
 
-To solve this problem, we hypothesize that we need a unifying interface, just like \ac{LSP} or \ac{AESI}, between code exploration media
+To solve this problem, we hypothesise that we need a unifying interface, just like the \ac{LSP} or \ac{AESI}, between code exploration media
 and sourcecode.
 This interface cannot be like a protocol.
 As we established, unlike with the \ac{LSP}, it is often not feasible, nor necessary to have a server that can
 dynamically communicate with the client.
 
-Instead, we think that the solution is a kind of index format.
+Instead, we think that the solution is a kind of index format, in a sense a static version of the \ac{LSP}.
 A format that can be generated out of various sources, and that can be interpreted to generate various code exploration media
 with code exploration services embedded.
-A kind of intermediate format that can contain static analysis for any programming language.
+A kind of intermediate format that can contain static analyses for any programming language.
 
-The rest of this thesis will look at all the considerations necessary to implement such an index format.
+To actually create such a format, and to find out whether or not such a data format is really the best solution to the problem we discussed,
+we aim to find answers to the following questions:
 
-\todo{Somewhere write about what such a format can actually be used for. I don't know what the best spot for that is, either
-after I introduced that we think a format is useful, or before as a motivation for such a format. Many applications will be
-the existing CES mentioned in the survey, but we can also be more broad and relate it to educative purposes for example.
-}
+% what is a good index format for ...
+% Specific about contributions, base questions on these
+
+\begin{itemize}
+    \item Can we create an index format for language-parametric code exploration services.
+    \item How can an index format for language-parametric code exploration services be created.
+    \item (What considerations should be taken when creating an index format for language-parametric code exploration services.)
+    \item What are alternatives to an index format for language-parametric code exploration services, and how do the alternatives compare to an index format.
+\end{itemize}
+
+%\todo[inline]{Somewhere write about what such a format can actually be used for. I don't know what the best spot for that is, either
+%after I introduced that we think a format is useful, or before as a motivation for such a format. Many applications will be
+%the existing CES mentioned in the survey, but we can also be more broad and relate it to educative purposes for example.
+%
+%--> Introduction
+%}

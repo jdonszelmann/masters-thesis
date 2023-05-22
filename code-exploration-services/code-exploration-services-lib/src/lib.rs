@@ -1,13 +1,12 @@
-mod sourcecode;
-
-pub mod analysis;
 pub mod input;
 pub mod output;
 pub mod parse;
+pub mod languages;
+pub mod textmate;
 
-pub use analysis::Analysis;
 pub use output::Annotater;
-pub use sourcecode::SourceCode;
 
 #[cfg(test)]
 mod tests;
+pub mod sources;
+pub mod analysis;

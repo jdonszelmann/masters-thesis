@@ -1,155 +1,284 @@
-use std::cell::Ref;
-use std::fmt::{Display, Formatter};
-use std::rc::Rc;
-use std::sync::Arc;
-use crate::{Root, SourceDir, SourceFile};
-use crate::in_memory::InMemoryOps;
+use std::borrow::Cow;
+use std::fmt::Formatter;
+use std::io;
 use std::ops::Deref;
-use bumpalo::Bump;
-use crate::children::Children;
-use crate::path::Path;
+use std::path::PathBuf;
+use std::rc::Rc;
+use thiserror::Error;
+use crate::{Root, SourceDir, SourceFile};
+use crate::dir::WithChildrenError;
+use crate::path::RootPath;
+use crate::root::CreateIntermediateOption;
 
-macro_rules! forward {
-    (call [fn $name: ident $(<$($generic: lifetime)*>)? (&$($life:lifetime)?self $($signature: tt)*) $($ret: tt)*] with $($call: tt)*) => {
-        fn $name$(<$($generic),*>)?(&$($life)?self $($signature)*) $($ret)* {
-            match self {
-                // ConcreteDirEntry::Ref(r) => r.$name$($call)*,
-                // ConcreteDirEntry::RefcellRef(r) => r.$name$($call)*,
-                ConcreteDirEntry::File(f) => f.$name$($call)*,
-                ConcreteDirEntry::Dir(d) => d.$name$($call)*,
-            }
-        }
-    };
-    (fn $name: ident $(<$($generic: lifetime)*>)? (&$($life:lifetime)?self $($signature: tt)*) $($ret: tt)*) => {
-        forward!(call [fn $name $(<$($generic)*>)? (&$($life)?self $($signature)*) $($ret)*] with ());
-    };
+#[derive(Debug, Error)]
+pub enum NewOnDiskError {
+    #[error("{0} doesn't exist")]
+    DoesntExist(PathBuf),
 }
 
-pub enum RefConcreteDirEntry<'children, 'refs, 'root>
-    where 'root: 'refs, 'refs: 'children, 'root: 'children
-{
-    Shared(&'children ConcreteDirEntry<'refs, 'root>),
-    Ref(Ref<'children, ConcreteDirEntry<'refs, 'root>>),
+#[derive(Debug, Error)]
+pub enum CreateOnDiskError {
+    #[error(transparent)]
+    Io(#[from] io::Error)
 }
 
-impl<'children, 'refs, 'root> Deref for RefConcreteDirEntry<'children, 'refs, 'root> {
-    type Target = ConcreteDirEntry<'refs, 'root>;
 
-    fn deref(&self) -> &Self::Target {
-        match self {
-            RefConcreteDirEntry::Shared(r) => r,
-            RefConcreteDirEntry::Ref(r) => r,
-        }
-    }
+#[derive(Clone)]
+pub enum Children<'a> {
+    Values(std::collections::hash_map::Values<'a, String, ConcreteDirEntry>),
+    Slice(std::slice::Iter<'a, ConcreteDirEntry>),
+    Vec(<Vec<ConcreteDirEntry> as IntoIterator>::IntoIter)
 }
 
-#[derive(Copy, Clone)]
-pub enum ConcreteDirEntry<'refs,'root>
-    where 'root: 'refs
-{
-    File(&'root SourceFile<'refs, 'root>),
-    Dir(&'root SourceDir<'refs, 'root>),
-}
-
-impl<'refs, 'root> InMemoryOps<'refs, 'root> for ConcreteDirEntry<'refs, 'root> {
-    forward!(fn is_in_memory(&self) -> bool);
-    forward!(fn is_on_disk(&self) -> bool);
-}
-
-pub enum MergeIter<'children, 'refs, 'root>
-    where 'refs: 'children, 'root: 'children, 'root: 'refs, 'refs: 'root
-{
-    Dir(<SourceDir<'refs, 'root> as Children<'refs, 'root>>::Iter<'children>),
-    File(<SourceFile<'refs, 'root> as Children<'refs, 'root>>::Iter<'children>),
-}
-
-impl<'children, 'refs, 'root> Iterator for MergeIter<'children, 'refs, 'root> {
-    type Item = RefConcreteDirEntry<'children, 'refs, 'root>;
+impl<'a> Iterator for Children<'a> {
+    type Item = ConcreteDirEntry;
 
     fn next(&mut self) -> Option<Self::Item> {
         match self {
-            MergeIter::Dir(d) => d.next(),
-            MergeIter::File(f) => f.next(),
+            Children::Slice(i) => i.next().cloned(),
+            Children::Vec(d) => d.next(),
+            Children::Values(v) => v.next().cloned(),
         }
     }
-}
 
-impl<'refs, 'root> Children<'refs, 'root> for ConcreteDirEntry<'refs, 'root> {
-    type Iter<'children> = MergeIter<'children, 'refs, 'root>
-        where Self: 'children, 'refs: 'children, 'root: 'children, 'root: 'refs, 'refs: 'root
-    ;
-
-    fn children<'children>(&'children self) -> Self::Iter<'children> where 'refs: 'children {
+    fn size_hint(&self) -> (usize, Option<usize>) {
         match self {
-            ConcreteDirEntry::File(f) => MergeIter::File(f.children()),
-            ConcreteDirEntry::Dir(d) => MergeIter::Dir(d.children())
+            Children::Values(v) => (v.len(), Some(v.len())),
+            Children::Slice(s) => (s.len(), Some(s.len())),
+            Children::Vec(v) => (v.len(), Some(v.len())),
         }
     }
 }
 
-impl<'refs, 'root> Display for ConcreteDirEntry<'refs, 'root> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        self.pretty_print(f, 0)
-    }
-}
+impl<'a> ExactSizeIterator for Children<'a> {}
 
-impl<'refs, 'root> DirEntry<'refs, 'root> for ConcreteDirEntry<'refs, 'root> {
-    fn make_concrete(&'root self) -> ConcreteDirEntry<'refs, 'root> {
-        *self
-    }
+#[derive(Debug, Error)]
+pub enum ChildrenError {
+    #[error("failed to read directory")]
+    ReadDir(#[source] io::Error),
 
-    forward!(fn path(&self) -> &Path);
-    forward!(fn root(&self) -> &Root<'refs, 'root>);
-    forward!(call [fn pretty_print(&self, f: &mut Formatter<'_>, depth: usize) -> std::fmt::Result] with (f, depth));
+    #[error("failed to read directory entry while iterating over a directory")]
+    ReadDirEntry(#[source] io::Error),
 }
 
 
-pub trait DirEntry<'refs, 'root>: InMemoryOps<'refs, 'root> + Children<'refs, 'root> + Display
-    where 'root: 'refs, 'refs: 'root
-{
+#[derive(Debug, Error)]
+pub enum FindError {
+    #[error("can't map file since intermediate directory {0} doesn't exist.")]
+    IntermediateDirDoesntExist(String),
+
+    #[error("create intermediate")]
+    // todo: can't be fired when not creating intermediates (make unrepresentable)
+    CreateIntermediate(#[from] CreateOnDiskError),
+
+    #[error("can't find path {0} in file {1} (can only traverse directories, not files)")]
+    TraverseFile(RootPath, String),
+
+    #[error("can't find children of directory")]
+    Children(#[from] ChildrenError),
+
+    #[error(transparent)]
+    WithChildren(#[from] WithChildrenError),
+}
+
+/// A file or directory
+pub trait DirEntry {
+    fn name(&self) -> Cow<str>;
+    fn children(&self) -> Result<Children, ChildrenError>;
+
+    fn make_concrete(self) -> ConcreteDirEntry;
+
+    fn find(&self, path: RootPath) -> Result<ConcreteDirEntry, FindError>;
+    fn find_map(self, path: RootPath, f: impl FnOnce(ConcreteDirEntry) -> ConcreteDirEntry, create_intermediate: CreateIntermediateOption) -> (ConcreteDirEntry, Result<(), FindError>) where Self: Sized;
+
     fn pretty_print(&self, f: &mut Formatter<'_>, depth: usize) -> std::fmt::Result;
 
-    fn make_concrete(&'root self) -> ConcreteDirEntry<'refs, 'root>;
+    fn is_in_memory(&self) -> bool;
 
-    fn root(&self) -> &Root<'refs, 'root>;
-    fn arena(&self) -> &Bump {
-        self.root().arena.deref()
-    }
-
-    fn name<'a>(&'a self) -> &'a str where 'root: 'a {
-        let path = self.path();
-        let filename = path.file_name();
-        let root_name = self.root().name();
-
-        filename.unwrap_or(root_name)
-    }
-    fn path(&self) -> &Path;
+    fn set_name(self, name: impl AsRef<str>) -> Result<Self, RenameError> where Self: Sized;
 }
 
-macro_rules! impl_smart_ptr {
-    ($($ptr: ident),*) => {
-        $(
-            impl<'refs, 'root, T: DirEntry<'refs, 'root> + ?Sized + 'refs + 'root> DirEntry<'refs, 'root> for $ptr<T>
-            {
-                fn make_concrete<'a>(&'a self) -> ConcreteDirEntry<'a, 'root> {
-                    self.deref().make_concrete()
-                }
+impl<T: DirEntry + Clone> DirEntry for Rc<T> {
+    fn name(&self) -> Cow<str> {
+        T::name(self)
+    }
 
-                fn name(&self) -> &str {
-                    self.deref().name()
-                }
-                fn path(&self) -> &Path {
-                    self.deref().path()
-                }
-                fn root(&self) -> &Root<'refs, 'root> {
-                    self.deref().root()
-                }
-                fn pretty_print(&self, f: &mut Formatter<'_>, depth: usize) -> std::fmt::Result {
-                    self.deref().pretty_print(f, depth)
-                }
-            }
-        )*
-    };
+    fn children(&self) -> Result<Children, ChildrenError> {
+        T::children(self)
+    }
+
+    fn make_concrete(self) -> ConcreteDirEntry {
+        T::make_concrete(self.deref().clone())
+    }
+
+    fn find(&self, path: RootPath) -> Result<ConcreteDirEntry, FindError> {
+        T::find(self, path)
+    }
+
+    fn find_map(self, path: RootPath, f: impl FnOnce(ConcreteDirEntry) -> ConcreteDirEntry, create_intermediate: CreateIntermediateOption) -> (ConcreteDirEntry, Result<(), FindError>) {
+        T::find_map(self.deref().clone(), path, f, create_intermediate)
+    }
+
+    fn pretty_print(&self, f: &mut Formatter<'_>, depth: usize) -> std::fmt::Result {
+        T::pretty_print(self, f, depth)
+    }
+
+    fn is_in_memory(&self) -> bool {
+        T::is_in_memory(self)
+    }
+
+    fn set_name(self, name: impl AsRef<str>) -> Result<Self, RenameError> {
+        T::set_name(self.deref().clone(), name).map(Into::into)
+    }
 }
 
-// impl_smart_ptr!(Box, Arc, Rc);
+#[derive(Debug, Error)]
+#[error("not a file")]
+pub struct NotAFile;
+
+#[derive(Debug, Error)]
+#[error("not a directory")]
+pub struct NotADir;
+
+#[derive(Clone, Debug)]
+pub enum ConcreteDirEntry {
+    Dir(SourceDir),
+    File(SourceFile),
+}
+
+impl ConcreteDirEntry {
+    pub fn cast_file(&self) -> Result<SourceFile, NotAFile> {
+        match self.clone() {
+            ConcreteDirEntry::Dir(_) => Err(NotAFile),
+            ConcreteDirEntry::File(f) => Ok(f),
+        }
+    }
+
+    pub fn cast_dir(&self) -> Result<SourceDir, NotADir> {
+        match self.clone() {
+            ConcreteDirEntry::File(_) => Err(NotADir),
+            ConcreteDirEntry::Dir(d) => Ok(d),
+        }
+    }
+}
+
+impl PartialEq for ConcreteDirEntry {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (ConcreteDirEntry::Dir(a), ConcreteDirEntry::Dir(b)) => a == b,
+            (ConcreteDirEntry::File(a), ConcreteDirEntry::File(b)) => a == b,
+            _ => false,
+        }
+    }
+}
+
+impl PartialEq<SourceDir> for ConcreteDirEntry {
+    fn eq(&self, other: &SourceDir) -> bool {
+        if let ConcreteDirEntry::Dir(d) = self {
+            d == other
+        } else {
+            false
+        }
+    }
+}
+
+impl PartialEq<Root> for ConcreteDirEntry {
+    fn eq(&self, other: &Root) -> bool {
+        if let ConcreteDirEntry::Dir(d) = self {
+            d == other
+        } else {
+            false
+        }
+    }
+}
+
+impl PartialEq<SourceFile> for ConcreteDirEntry {
+    fn eq(&self, other: &SourceFile) -> bool {
+        if let ConcreteDirEntry::File(f) = self {
+            f == other
+        } else {
+            false
+        }
+    }
+}
+
+
+impl From<SourceDir> for ConcreteDirEntry {
+    fn from(value: SourceDir) -> Self {
+        Self::Dir(value)
+    }
+}
+
+
+impl From<SourceFile> for ConcreteDirEntry {
+    fn from(value: SourceFile) -> Self {
+        Self::File(value)
+    }
+}
+
+impl DirEntry for ConcreteDirEntry {
+    fn name(&self) -> Cow<str> {
+        match self {
+            ConcreteDirEntry::Dir(d) => d.name(),
+            ConcreteDirEntry::File(f) => f.name(),
+        }
+    }
+
+    fn children(&self) -> Result<Children, ChildrenError> {
+        match self {
+            ConcreteDirEntry::Dir(d) => d.children(),
+            ConcreteDirEntry::File(f) => f.children(),
+        }
+    }
+
+    fn make_concrete(self) -> ConcreteDirEntry {
+        self
+    }
+
+    fn find(&self, path: RootPath) -> Result<ConcreteDirEntry, FindError> {
+        match self {
+            ConcreteDirEntry::Dir(d) => d.find(path),
+            ConcreteDirEntry::File(sf) => sf.find(path)
+        }
+    }
+
+    fn find_map(self, path: RootPath, f: impl FnOnce(ConcreteDirEntry) -> ConcreteDirEntry, create_intermediate: CreateIntermediateOption) -> (Self, Result<(), FindError>) where Self: Sized {
+        match self {
+            ConcreteDirEntry::Dir(d) => {
+                let (res, err) = d.find_map(path, f, create_intermediate);
+                (res, err)
+            },
+            ConcreteDirEntry::File(sf) => {
+                let (res, err) = sf.find_map(path, f, create_intermediate);
+                (res, err)
+            },
+        }
+    }
+
+    fn pretty_print(&self, f: &mut Formatter<'_>, depth: usize) -> std::fmt::Result {
+        match self {
+            ConcreteDirEntry::Dir(d) => d.pretty_print(f, depth),
+            ConcreteDirEntry::File(sf) => sf.pretty_print(f, depth),
+        }
+    }
+
+    fn is_in_memory(&self) -> bool {
+        match self {
+            ConcreteDirEntry::Dir(d) => d.is_in_memory(),
+            ConcreteDirEntry::File(f) => f.is_in_memory(),
+        }
+    }
+
+    fn set_name(self, name: impl AsRef<str>) -> Result<Self, RenameError> {
+        Ok(match self {
+            ConcreteDirEntry::Dir(d) => ConcreteDirEntry::Dir(d.set_name(name)?),
+            ConcreteDirEntry::File(f) => ConcreteDirEntry::File(f.set_name(name)?),
+        })
+    }
+}
+
+#[derive(Debug, Error)]
+pub enum RenameError {
+    #[error("io error")]
+    Io(#[from] io::Error)
+}

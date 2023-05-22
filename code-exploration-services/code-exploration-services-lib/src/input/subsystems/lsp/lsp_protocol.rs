@@ -1,6 +1,6 @@
 use std::io::{BufRead, BufReader, Write};
 use std::process::{Child, ChildStdin, ChildStdout, ExitStatus};
-use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
+use std::sync::atomic::{AtomicI32, Ordering};
 use std::sync::mpsc::{channel, Receiver, Sender, TryRecvError};
 use std::thread;
 use std::thread::JoinHandle;
@@ -10,6 +10,9 @@ use thiserror::Error;
 use crate::input::subsystems::lsp::lsp_types::jsonrpc::{NotificationMessage, NotificationType, Nullable, RequestType, Union};
 use std::io::Read;
 use std::sync::{Arc, Mutex};
+use serde_json::Value;
+use tracing::info;
+use crate::sources::dir::ContentsError;
 
 // TODO: make my own lsp types, this sucks
 type Response = super::lsp_types::jsonrpc::ResponseMessage;
@@ -74,6 +77,7 @@ fn receiver(responses_tx: Sender<Result<Response, RequestError>>, stdout: ChildS
             data_buf.resize(l, 0);
             error!(reader.read_exact(&mut data_buf));
 
+            info!("incoming msg: {:?}", String::from_utf8_lossy(&data_buf));
             responses_tx.send(serde_json::from_slice(&data_buf).map_err(RequestError::DeserializeResponse)).unwrap();
 
             expecting_header = true;
@@ -103,6 +107,9 @@ pub enum RequestError {
     #[error("failed to send request to lsp")]
     WriteRequest(#[from] std::io::Error),
 
+    #[error("contents")]
+    Contents(#[from] ContentsError),
+
     #[error("failed to read response")]
     ReadResponse(#[source] std::io::Error),
 
@@ -121,7 +128,7 @@ pub enum RequestError {
     #[error("failed to get response from lsp in time (wrong response id)")]
     Id,
 
-    #[error("failed to get response from lsp in time ({0}): {1}")]
+    #[error("lsp error: ({0}): {1}")]
     Lsp(i32, String, String),
 }
 
@@ -155,17 +162,17 @@ impl Lsp {
             loop {
                 match local_process.lock().unwrap().try_wait() {
                     Ok(Some(i)) => {
-                        tracing::info!("lsp exited");
+                        info!("lsp exited");
                         exit_tx.send(RequestError::ExitedCode(i)).unwrap();
                     }
                     Err(e) => {
-                        tracing::info!("lsp exited");
+                        info!("lsp exited");
                         exit_tx.send(RequestError::ExitedBecause(e)).unwrap();
                         return;
                     }
                     Ok(None) => {}
                 }
-                thread::sleep(Duration::from_millis(500));
+                thread::sleep(Duration::from_millis(200));
             }
         });
 
@@ -205,7 +212,7 @@ impl Lsp {
     }
 
     /// A request to an LSP is guaranteed to get a response. Requests without responses are called notifications
-    pub fn request<Req: Serialize, Res: for<'de> Deserialize<'de>, Err>(&mut self, request: &Req, request_type: RequestType<Req, Res, Err, ()>) -> Result<Res, RequestError> {
+    pub fn request<Req: Serialize, Res: for<'de> Deserialize<'de>, Err, Opt>(&mut self, request: &Req, request_type: RequestType<Req, Res, Err, Opt>) -> Result<Res, RequestError> {
         self.closed()?;
 
         let id = self.ids.fetch_add(1, Ordering::SeqCst);
@@ -251,11 +258,19 @@ impl Lsp {
             return Err(RequestError::Lsp(i.code, i.message, data));
         }
 
-        Ok(serde_json::from_value(response.result.expect("no response and no error")).map_err(RequestError::DeserializeResponse)?)
+        if let Some(i) = response.result {
+            Ok(serde_json::from_value(i).map_err(RequestError::DeserializeResponse)?)
+        } else {
+            Ok(serde_json::from_value(Value::Null).map_err(RequestError::DeserializeResponse)?)
+        }
     }
 
     pub fn poll_notification(&mut self) -> Result<(), RequestError> {
         self.closed()?;
+
+        // if let Ok(i) = self.responses_rx.try_recv() {
+        //     println!("{:?}", i?);
+        // }
 
         Ok(())
     }
@@ -265,7 +280,7 @@ impl Drop for Lsp {
     fn drop(&mut self) {
         let mut process = self.process.lock().unwrap();
         if process.try_wait().expect("failed to find if child process has exited").is_none() {
-            self.process.lock().unwrap().kill().expect("kill language server");
+            process.kill().expect("kill language server");
         }
         self.receiver_thread.take().map(|i| i.join().expect("LSP receiver thread panicked"));
     }

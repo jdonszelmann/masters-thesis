@@ -1,8 +1,9 @@
-use crate::analysis::{Field, Span};
 use crate::output::simple_html::{FieldIndex, outline};
-use crate::Analysis;
 use std::collections::HashSet;
+use crate::analysis::field::Field;
+use crate::analysis::file::FileAnalysis;
 use crate::output::simple_html::tokenize::Token::Newline;
+use crate::sources::span::Span;
 
 #[derive(Debug)]
 pub enum Token {
@@ -105,7 +106,7 @@ pub fn tokenize_string(s: &str, offset: usize, field_index: &FieldIndex, outline
     tokens
 }
 
-pub fn index_analysis(a: &Analysis) -> FieldIndex {
+pub fn index_analysis(a: &FileAnalysis) -> FieldIndex {
     let mut fields = FieldIndex::new();
     for (s, f) in a.fields() {
         fields.entry(s.start).or_insert_with(Vec::new).push((s, f));

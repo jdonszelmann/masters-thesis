@@ -2,7 +2,7 @@ use super::Range;
 
 /// Represents a location inside a resource, such as a line
 /// inside a text file.
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct Location {
     pub uri: String,
 

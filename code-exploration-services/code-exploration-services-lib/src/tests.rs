@@ -1,20 +1,40 @@
 use crate::input::analyse;
-use crate::SourceCode;
+use code_exploration_services_tests::{color_eyre, install_eyre};
+use crate::sources::dir::SourceDir;
 
 #[test]
-fn test_example_rs() {
-    let file = SourceCode::from_path("../../examples/test.rs").unwrap();
-    let res = analyse(&file);
-    assert!(res.is_ok(), "{}", res.unwrap_err());
+fn test_example_rs() -> color_eyre::Result<()> {
+    install_eyre()?;
 
-    println!("{}", res.unwrap());
+    let file = SourceDir::new_single_file("../../examples/test.rs")?;
+    let res = analyse(&file)?;
+
+    println!("{}", res);
+
+    Ok(())
 }
 
 #[test]
-fn test_small_rs() {
-    let file = SourceCode::from_path("../../examples/small.rs").unwrap();
-    let res = analyse(&file);
-    assert!(res.is_ok(), "{}", res.unwrap_err());
+fn test_small_rs() -> color_eyre::Result<()> {
+    install_eyre()?;
 
-    println!("{}", res.unwrap());
+    let file = SourceDir::new_single_file("../../examples/small.rs")?;
+    let res = analyse(&file)?;
+
+    println!("{}", res);
+
+    Ok(())
+}
+
+
+
+#[test]
+fn test_unicode() -> color_eyre::Result<()> {
+    install_eyre()?;
+
+    let file = SourceDir::new_single_file("../../examples/unicode.rs")?;
+    let res = analyse(&file)?;
+    println!("{}", res);
+
+    Ok(())
 }

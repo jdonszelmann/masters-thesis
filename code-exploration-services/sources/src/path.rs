@@ -1,31 +1,48 @@
-use std::borrow::Cow;
-use crate::Root;
+use std::collections::VecDeque;
+use std::fmt::{Display, Formatter};
+use itertools::Itertools;
 
-#[derive(Clone)]
-pub enum Path<'root> {
-    Empty,
-    Elem {
-        extends: &'root Path<'root>,
-        elem: Cow<'root, str>,
+#[derive(Debug, Clone)]
+pub struct RootPath {
+    segments: VecDeque<String>,
+}
+
+impl From<String> for RootPath {
+    fn from(value: String) -> Self {
+        value.as_str().into()
     }
 }
 
-impl<'root> Path<'root> {
-    pub fn file_name(&self) -> Option<&str> {
-        match self {
-            Path::Empty => None,
-            Path::Elem { elem, .. } => Some(elem.as_ref())
+impl From<&str> for RootPath {
+    fn from(value: &str) -> Self {
+        let segments = value
+            .split("/")
+            .map(|i| i.to_string())
+            .collect::<VecDeque<_>>();
+
+        if let Some("") = segments.front().map(|i| i.as_str()) {
+            Self {segments: VecDeque::new()}
+        } else {
+            Self {segments}
         }
     }
+}
 
-    pub(crate) fn empty() -> Self {
-        Self::Empty
+impl Display for RootPath {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.segments.iter().join("/"))
+    }
+}
+
+impl RootPath {
+    pub fn is_empty(&self) -> bool {
+        self.segments.is_empty()
     }
 
-    pub fn add(&'root self, elem: impl Into<Cow<'root, str>>) -> Self {
-        Self::Elem {
-            extends: self,
-            elem: elem.into(),
-        }
+    pub fn split_first(mut self) -> (Option<String>, Self) {
+        let res = self.segments.pop_front();
+        (res, Self {
+            segments: self.segments,
+        })
     }
 }

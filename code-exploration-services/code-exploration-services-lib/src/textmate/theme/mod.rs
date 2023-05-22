@@ -177,28 +177,28 @@ impl Default for TextmateThemeManager {
         let mut res = Self::new();
         #[cfg(feature = "xml")]
         res.add(
-            TextmateTheme::from_xml(include_str!("../../textmate_themes/one-dark.tmTheme"))
+            TextmateTheme::from_xml(include_str!("../../../../textmate/textmate_themes/one-dark.tmTheme"))
                 .expect("theme to parse"),
         );
         #[cfg(feature = "xml")]
         res.add(
-            TextmateTheme::from_xml(include_str!("../../textmate_themes/cobalt.tmTheme"))
+            TextmateTheme::from_xml(include_str!("../../../../textmate/textmate_themes/cobalt.tmTheme"))
                 .expect("theme to parse"),
         );
         #[cfg(feature = "xml")]
         res.add(
-            TextmateTheme::from_xml(include_str!("../../textmate_themes/3024-day.tmTheme"))
+            TextmateTheme::from_xml(include_str!("../../../../textmate/textmate_themes/3024-day.tmTheme"))
                 .expect("theme to parse"),
         );
         #[cfg(feature = "xml")]
         res.add(
-            TextmateTheme::from_xml(include_str!("../../textmate_themes/solarized-dark.tmTheme"))
+            TextmateTheme::from_xml(include_str!("../../../../textmate/textmate_themes/solarized-dark.tmTheme"))
                 .expect("theme to parse"),
         );
         #[cfg(feature = "xml")]
         res.add(
             TextmateTheme::from_xml(include_str!(
-                "../../textmate_themes/solarized-light.tmTheme"
+                "../../../../textmate/textmate_themes/solarized-light.tmTheme"
             ))
             .expect("theme to parse"),
         );

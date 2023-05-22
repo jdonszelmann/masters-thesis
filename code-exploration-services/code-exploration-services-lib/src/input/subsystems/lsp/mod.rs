@@ -1,17 +1,17 @@
 mod lsp_types;
 mod lsp_protocol;
 
-use std::io::{Write};
 use std::path::Path;
 use std::process::{Command, id, Stdio};
-use lsp_types::jsonrpc::{Nullable};
 use crate::input::{Analyser, AnalysisError};
-use crate::{Analysis, SourceCode};
-use lsp_types::protocol::{ClientCapabilities, initialize_request, InitializeParams, InitialTraceSetting};
 use thiserror::Error;
+use crate::analysis::dir::Analysis;
+use crate::analysis::file::FileAnalysis;
 use crate::input::subsystems::lsp::lsp_protocol::{Lsp, NewLspError, RequestError};
-use crate::input::subsystems::lsp::lsp_types::protocol::{did_open_text_document_notification, DidOpenTextDocumentParams, initialized_notification, InitializedParams};
-use crate::input::subsystems::lsp::lsp_types::types::TextDocumentItem;
+use crate::input::subsystems::lsp::lsp_types::jsonrpc::Nullable;
+use crate::input::subsystems::lsp::lsp_types::protocol::{ClientCapabilities, definition_request, did_open_text_document_notification, DidOpenTextDocumentParams, initialize_request, initialized_notification, InitializedParams, InitializeParams, InitialTraceSetting, ReferencesCapabilities, SynchronizationCapabilities, TextDocumentClientCapabilities, TextDocumentPositionParams};
+use crate::input::subsystems::lsp::lsp_types::types::{Position, TextDocumentIdentifier, TextDocumentItem};
+use crate::sources::dir::SourceDir;
 
 pub struct LspAnalyser;
 
@@ -39,19 +39,45 @@ pub enum LanguageServerError {
 }
 
 struct LanguageServer {
-    lsp: Lsp
+    lsp: Lsp,
 }
 
-
 impl LanguageServer {
-    fn initialize(&mut self, parent_id: u32, lang_id: &str, source: &SourceCode, file: &Path) -> Result<(), RequestError> {
+    fn initialize(&mut self, parent_id: u32, lang_id: &str, source: &SourceDir) -> Result<(), RequestError> {
         let resp = self.lsp.request(&InitializeParams {
             process_id: parent_id as i32,
             root_path: None,
-            root_uri: Nullable::None,
+            root_uri: Nullable::Some(source.root().to_string_lossy().to_string()),
             capabilities: ClientCapabilities {
                 workspace: None,
-                text_document: None,
+                text_document: Some(TextDocumentClientCapabilities {
+                    synchronization: Some(SynchronizationCapabilities {
+                        dynamic_registration: None,
+                        will_save: None,
+                        will_save_wait_until: None,
+                        did_save: None,
+                    }),
+                    completion: None,
+                    hover: None,
+                    signature_help: None,
+                    references: Some(ReferencesCapabilities {
+                        dynamic_registration: Some(true),
+                    }),
+                    document_highlight: None,
+                    document_symbol: None,
+                    formatting: None,
+                    range_formatting: None,
+                    on_type_formatting: None,
+                    definition: None,
+                    type_definition: None,
+                    implementation: None,
+                    code_action: None,
+                    code_lens: None,
+                    document_link: None,
+                    color_provider: None,
+                    rename: None,
+                    publish_diagnostics: None,
+                }),
                 experimental: None,
             },
             initialization_options: None,
@@ -61,18 +87,35 @@ impl LanguageServer {
         tracing::debug!("{:?}", resp);
 
         self.lsp.notification(&InitializedParams {}, initialized_notification::TYPE)?;
-        self.lsp.notification(&DidOpenTextDocumentParams {
-            text_document: TextDocumentItem {
-                uri: file.to_string_lossy().to_string(),
-                language_id: lang_id.to_string(),
-                version: 0,
-                text: source.as_str().to_string(),
-            },
-        }, did_open_text_document_notification::TYPE)?;
+        for file in source.files() {
+            self.lsp.notification(&DidOpenTextDocumentParams {
+                text_document: TextDocumentItem {
+                    uri: format!("file://{}", file.path().to_string_lossy()),
+                    language_id: lang_id.to_string(),
+                    version: 0,
+                    text: file.contents()?.to_string(),
+                },
+            }, did_open_text_document_notification::TYPE)?;
+        }
+
         Ok(())
     }
 
-    fn start_from_path(path: &str, lang_id: &str, source: &SourceCode, file: &Path) -> Result<Self, NewLanguageServerError> {
+    fn get_definition(&mut self, file: &Path, line: usize, character: usize) -> Result<(), RequestError> {
+        let resp = self.lsp.request(&TextDocumentPositionParams {
+            text_document: TextDocumentIdentifier { uri: format!("file://{}", file.to_string_lossy()) },
+            position: Position {
+                line: line as i32,
+                character: character as i32,
+            },
+        }, definition_request::TYPE)?;
+
+        println!("{:?}", resp);
+
+        Ok(())
+    }
+
+    fn start_from_path(path: &str, lang_id: &str, source: &SourceDir) -> Result<Self, NewLanguageServerError> {
         let mut command = Command::new(path);
         command.stdin(Stdio::piped());
         command.stdout(Stdio::piped());
@@ -80,36 +123,50 @@ impl LanguageServer {
         let mut s = Self {
             lsp: Lsp::new(command.spawn()?)?,
         };
-        s.initialize(id(), lang_id, source, file)?;
+        s.initialize(id(), lang_id, source)?;
 
         Ok(s)
     }
 
-    pub fn new(ext: &str, file: &Path, source: &SourceCode) -> Result<Self, NewLanguageServerError> {
+    pub fn new(ext: &str, source: &SourceDir) -> Result<Self, NewLanguageServerError> {
         match ext {
-            "rs" => Self::start_from_path("rust-analyzer", "rust", source, file),
+            "rs" => Self::start_from_path("rust-analyzer", "rust", source),
             s => Err(NewLanguageServerError::LanguageNotSupported(s.to_string())),
         }
     }
 }
 
 impl Analyser for LspAnalyser {
-    fn hover_documentation(&self, s: &SourceCode) -> Result<Analysis, AnalysisError> {
-        tracing::info!("lsp hover documentation");
-
-        let file = s.temp().expect("temp file");
-
-        let mut lsp = s.extension()
-            .map(|i | LanguageServer::new(i, file.path(), s))
-            .ok_or(AnalysisError::NotImplemented)?
-            .map_err(LanguageServerError::New)?;
-
-        loop {
-            lsp.lsp.poll_notification().map_err(LanguageServerError::Request)?;
-        }
-
-        // lsp.lsp.request()
-
-        Ok(Analysis::new(s, Vec::new()))
+    fn hover_documentation<'a>(&self, s: &'a SourceDir) -> Result<Analysis, AnalysisError> {
+        return Err(AnalysisError::NotImplemented)
+        // tracing::info!("lsp hover documentation");
+        //
+        // let mut lsp = s.extension()
+        //     .map(|i| LanguageServer::new(i, s))
+        //     .ok_or(AnalysisError::NotImplemented)?
+        //     .map_err(LanguageServerError::New)?;
+        //
+        //
+        // let fields = Vec::new();
+        //
+        // let mut line = 0;
+        // let mut character = 0;
+        // for i in s.as_str().chars() {
+        //     let _resp = lsp.get_definition(&file.path(), line, character)
+        //         .map_err(LanguageServerError::Request)?;
+        //
+        //     character += i.len_utf16();
+        //     if i == '\n' {
+        //         line += 1;
+        //         character = 0;
+        //     }
+        // }
+        //
+        //
+        // // loop {
+        // //     lsp.lsp.poll_notification().map_err(LanguageServerError::Request)?;
+        // // }
+        //
+        // Ok(FileAnalysis::new(s, fields))
     }
 }

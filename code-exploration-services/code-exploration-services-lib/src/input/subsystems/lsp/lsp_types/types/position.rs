@@ -6,7 +6,7 @@
 ///
 /// Positions are line end character agnostic. So you can not specify a position that
 /// denotes `\r|\n` or `\n|` where `|` represents the character offset.
-#[derive(Copy, Clone, Debug, serde::Serialize)]
+#[derive(Copy, Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Position {
     /// Line position in a document (zero-based).
     /// If a line number is greater than the number of lines in a document, it defaults back to the number of lines in the document.

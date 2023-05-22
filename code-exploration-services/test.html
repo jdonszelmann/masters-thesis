@@ -1,0 +1,2135 @@
+<!DOCTYPE html>
+<html><head><title>CES</title></head><body><div class="change-theme theme-one-dark" id="main"><style>
+body, html {
+    padding: 0;
+    margin: 0;
+
+    width: 100%;
+    height: 100%;
+}
+
+pre {
+    margin: 0;
+    padding: 1em;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+}
+
+#main {
+    display: grid;
+    gap: 1em;
+    grid-template-columns: 1fr 4fr;
+    grid-template-rows: 2em auto;
+    grid-template-areas:
+        "theme   code"
+        "outline code";
+    width: 100%;
+    height: 100%;
+}
+
+.line-numbers {
+    grid-area: nums;
+    display: flex;
+    flex-direction: column;
+}
+
+.theme {
+    grid-area: theme;
+}
+.theme select {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    cursor: pointer;
+    background: inherit;
+    color: inherit;
+}
+
+.outline .outline-item {
+    margin-left: 1em;
+}
+
+.outline .outline-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 2em;
+}
+
+.outline .outline-header:hover {
+    box-shadow: inset 0 0 500px 500px rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+}
+
+.outline .outline-item .code-line {
+    padding: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.outline {
+    grid-area: outline;
+}
+
+.code {
+    grid-area: code;
+    overflow-y: scroll;
+    max-height: 100vh;
+    display: grid;
+    grid-template-columns: 3em auto;
+}
+
+.line-numbers {
+    display: flex;
+    flex-direction: column;
+    font-family: monospace;
+}
+
+.line-numbers span {
+    height: 1.8em;
+    display: flex;
+    padding-right: 0.2em;
+    flex-direction: row;
+    align-items: center;
+    justify-content: right;
+}
+
+.code-view {
+    font-family: monospace;
+}
+
+.code-line {
+    margin: 0;
+    padding: 0;
+    height: 1.8em;
+    width: 100%;
+    white-space: pre;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.code-line:hover {
+    box-shadow: inset 0 0 500px 500px rgba(255, 255, 255, 0.1);
+}
+
+.code-line div {
+    display: inline-block;
+}
+</style><style>
+.theme-one-dark {
+    color: #bfcae0ff;
+}
+    
+.theme-one-dark .highlighted {
+    background: #3d4350ff !important;
+}
+    
+.theme-one-dark {
+    background: #282c34ff;
+}
+    
+.theme-one-dark .comment {
+    color: #5c6370ff;
+    background: #282c34ff;
+    
+    font-style: italic;
+    
+}
+                
+.theme-one-dark .keyword-operator-class {
+    color: #b8cae8ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .constant-other {
+    color: #b8cae8ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .source-php-embedded-line {
+    color: #b8cae8ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .variable {
+    color: #fa6e7cff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .support-other-variable {
+    color: #fa6e7cff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .string-other-link {
+    color: #fa6e7cff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .string-regexp {
+    color: #fa6e7cff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .entity-name-tag {
+    color: #fa6e7cff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .entity-other-attribute-name {
+    color: #fa6e7cff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .meta-tag {
+    color: #fa6e7cff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .declaration-tag {
+    color: #fa6e7cff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .constant-numeric {
+    color: #eeb164ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .constant-language {
+    color: #eeb164ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .support-constant {
+    color: #eeb164ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .constant-character {
+    color: #eeb164ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .variable-parameter {
+    color: #eeb164ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .punctuation-section-embedded {
+    color: #eeb164ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .keyword-other-unit {
+    color: #eeb164ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .entity-name-class {
+    color: #eee280ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .entity-name-type-class {
+    color: #eee280ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .support-type {
+    color: #eee280ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .support-class {
+    color: #eee280ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .string {
+    color: #adee7aff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .entity-other-inherited-class {
+    color: #adee7aff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .markup-heading {
+    color: #adee7aff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .constant-other-color {
+    color: #b8cae8ff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .entity-name-function {
+    color: #61cbeeff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .meta-function-call {
+    color: #61cbeeff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .support-function {
+    color: #61cbeeff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .keyword-other-special-method {
+    color: #61cbeeff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .meta-block-level {
+    color: #61cbeeff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .keyword {
+    color: #ec7beeff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .storage {
+    color: #ec7beeff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .storage-type {
+    color: #ec7beeff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .entity-name-tag-css {
+    color: #ec7beeff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .keyword-operator {
+    color: #ec7beeff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .invalid {
+    color: #eeeeeeff;
+    background: #ee7c80ff;
+    
+    
+    
+}
+                
+.theme-one-dark .meta-separator {
+    color: #b8cae8ff;
+    background: #6b4f4fff;
+    
+    
+    
+}
+                
+.theme-one-dark .invalid-deprecated {
+    color: #243043ff;
+    background: #ee864dff;
+    
+    
+    
+}
+                
+.theme-one-dark .constant-character {
+    color: #4fe1eeff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-one-dark .constant-other {
+    color: #4fe1eeff;
+    background: #282c34ff;
+    
+    
+    
+}
+                
+.theme-cobalt {
+    color: #ffffffff;
+}
+    
+.theme-cobalt .highlighted {
+    background: #b36539bf !important;
+}
+    
+.theme-cobalt {
+    background: #002240ff;
+}
+    
+.theme-cobalt .punctuation.-.(punctuation-definition-string.||.punctuation-definition-comment) {
+    color: #e1efffff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .constant {
+    color: #ff628cff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .entity {
+    color: #ffdd00ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .keyword {
+    color: #ff9d00ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .storage {
+    color: #ffee80ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .string.-string-unquoted-old-plist.-string-unquoted-heredoc {
+    color: #3ad900ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .string-unquoted-heredoc string {
+    color: #3ad900ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .comment {
+    color: #0088ffff;
+    background: #002240ff;
+    
+    font-style: italic;
+    
+}
+                
+.theme-cobalt .support {
+    color: #80ffbbff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .variable {
+    color: #ccccccff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .variable-language {
+    color: #ff80e1ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-function-call {
+    color: #ffee80ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .invalid {
+    color: #f8f8f8ff;
+    background: #800f00ff;
+    
+    
+    
+}
+                
+.theme-cobalt .text.source {
+    color: #ffffffff;
+    background: #223545ff;
+    
+    
+    
+}
+                
+.theme-cobalt .string-unquoted-heredoc {
+    color: #ffffffff;
+    background: #223545ff;
+    
+    
+    
+}
+                
+.theme-cobalt .source source {
+    color: #ffffffff;
+    background: #223545ff;
+    
+    
+    
+}
+                
+.theme-cobalt .entity-other-inherited-class {
+    color: #80fcffff;
+    background: #002240ff;
+    
+    font-style: italic;
+    
+}
+                
+.theme-cobalt .string-quoted.source {
+    color: #9eff80ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .string.constant {
+    color: #80ff82ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .string-regexp {
+    color: #80ffc2ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .string.variable {
+    color: #edef7dff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .support-function {
+    color: #ffb054ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .support-constant {
+    color: #eb939aff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .support-type-exception {
+    color: #ff1e00ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-preprocessor-c {
+    color: #8996a8ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-preprocessor-c.keyword {
+    color: #afc4dbff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-sgml-html.meta-doctype {
+    color: #73817dff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-sgml-html meta-doctype entity {
+    color: #73817dff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-sgml-html meta-doctype string {
+    color: #73817dff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-xml-processing {
+    color: #73817dff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-xml-processing entity {
+    color: #73817dff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-xml-processing string {
+    color: #73817dff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-tag {
+    color: #9effffff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-tag entity {
+    color: #9effffff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-selector-css.entity-name-tag {
+    color: #9effffff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-selector-css.entity-other-attribute-name-id {
+    color: #ffb454ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-selector-css.entity-other-attribute-name-class {
+    color: #5fe461ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .support-type-property-name-css {
+    color: #9df39fff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-property-group.support-constant-property-value-css {
+    color: #f6f080ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-property-value support-constant-property-value-css {
+    color: #f6f080ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-preprocessor-at-rule.keyword-control-at-rule {
+    color: #f6aa11ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-property-value.support-constant-named-color-css {
+    color: #edf080ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-property-value constant {
+    color: #edf080ff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-constructor-argument-css {
+    color: #eb939aff;
+    background: #002240ff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-diff {
+    color: #f8f8f8ff;
+    background: #000e1aff;
+    
+    
+    
+}
+                
+.theme-cobalt .meta-diff-header {
+    color: #f8f8f8ff;
+    background: #000e1aff;
+    
+    
+    
+}
+                
+.theme-cobalt .markup-deleted {
+    color: #f8f8f8ff;
+    background: #4c0900ff;
+    
+    
+    
+}
+                
+.theme-cobalt .markup-changed {
+    color: #f8f8f8ff;
+    background: #806f00ff;
+    
+    
+    
+}
+                
+.theme-cobalt .markup-inserted {
+    color: #f8f8f8ff;
+    background: #154f00ff;
+    
+    
+    
+}
+                
+.theme-cobalt .markup-raw {
+    color: #ffffffff;
+    background: #8fddf630;
+    
+    
+    
+}
+                
+.theme-cobalt .markup-quote {
+    color: #ffffffff;
+    background: #004480ff;
+    
+    
+    
+}
+                
+.theme-cobalt .markup-list {
+    color: #ffffffff;
+    background: #130d26ff;
+    
+    
+    
+}
+                
+.theme-cobalt .markup-bold {
+    color: #c1afffff;
+    background: #002240ff;
+    
+    
+    font-weight: bold;
+}
+                
+.theme-cobalt .markup-italic {
+    color: #b8ffd9ff;
+    background: #002240ff;
+    
+    font-style: italic;
+    
+}
+                
+.theme-cobalt .markup-heading {
+    color: #c8e4fdff;
+    background: #001221ff;
+    
+    
+    font-weight: bold;
+}
+                
+.theme-3024-day {
+    color: #4a4543ff;
+}
+    
+.theme-3024-day .highlighted {
+    background: #d6d5d4ff !important;
+}
+    
+.theme-3024-day {
+    background: #f7f7f7ff;
+}
+    
+.theme-3024-day .variable-parameter-function {
+    color: #4a4543ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .comment {
+    color: #807d7cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .punctuation-definition-comment {
+    color: #807d7cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .punctuation-definition-string {
+    color: #4a4543ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .punctuation-definition-variable {
+    color: #4a4543ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .punctuation-definition-string {
+    color: #4a4543ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .punctuation-definition-parameters {
+    color: #4a4543ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .punctuation-definition-string {
+    color: #4a4543ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .punctuation-definition-array {
+    color: #4a4543ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .none {
+    color: #4a4543ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .keyword-operator {
+    color: #4a4543ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .keyword {
+    color: #a16a94ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .keyword-control {
+    color: #a16a94ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .variable {
+    color: #db2d20ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .entity-name-function {
+    color: #01a0e4ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .meta-require {
+    color: #01a0e4ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .support-function-any-method {
+    color: #01a0e4ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .meta-class {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .support-class {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .entity-name-class {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .entity-name-type-class {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .keyword-other-special-method {
+    color: #01a0e4ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .storage {
+    color: #a16a94ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .support-function {
+    color: #b5e4f4ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .string {
+    color: #01a252ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .constant-other-symbol {
+    color: #01a252ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .entity-other-inherited-class {
+    color: #01a252ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .constant-numeric {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .none {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .none {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .constant {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .entity-name-tag {
+    color: #db2d20ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .entity-other-attribute-name {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .entity-other-attribute-name-id {
+    color: #01a0e4ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .punctuation-definition-entity {
+    color: #01a0e4ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .meta-selector {
+    color: #a16a94ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .none {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .markup-heading.punctuation-definition-heading {
+    color: #01a0e4ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .entity-name-section {
+    color: #01a0e4ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .keyword-other-unit {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .markup-bold {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    font-weight: bold;
+}
+                
+.theme-3024-day .punctuation-definition-bold {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    font-weight: bold;
+}
+                
+.theme-3024-day .markup-italic {
+    color: #a16a94ff;
+    background: #f7f7f7ff;
+    
+    font-style: italic;
+    
+}
+                
+.theme-3024-day .punctuation-definition-italic {
+    color: #a16a94ff;
+    background: #f7f7f7ff;
+    
+    font-style: italic;
+    
+}
+                
+.theme-3024-day .markup-raw-inline {
+    color: #01a252ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .string-other-link {
+    color: #db2d20ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .meta-link {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .markup-list {
+    color: #db2d20ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .markup-quote {
+    color: #ed0c8cff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .meta-separator {
+    color: #4a4543ff;
+    background: #d6d5d4ff;
+    
+    
+    
+}
+                
+.theme-3024-day .markup-inserted {
+    color: #01a252ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .markup-deleted {
+    color: #db2d20ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .markup-changed {
+    color: #a16a94ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .constant-other-color {
+    color: #b5e4f4ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .string-regexp {
+    color: #b5e4f4ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .constant-character-escape {
+    color: #b5e4f4ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .punctuation-section-embedded {
+    color: #cdab53ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .variable-interpolation {
+    color: #cdab53ff;
+    background: #f7f7f7ff;
+    
+    
+    
+}
+                
+.theme-3024-day .invalid-illegal {
+    color: #f7f7f7ff;
+    background: #db2d20ff;
+    
+    
+    
+}
+                
+.theme-solarized {
+    color: #93a1a1ff;
+}
+    
+.theme-solarized .highlighted {
+    background: #073642ff !important;
+}
+    
+.theme-solarized {
+    background: #002b36ff;
+}
+    
+.theme-solarized .comment {
+    color: #657b83ff;
+    background: #002b36ff;
+    
+    font-style: italic;
+    
+}
+                
+.theme-solarized .string {
+    color: #2aa198ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .string-regexp {
+    color: #d30102ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .constant-numeric {
+    color: #d33682ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .variable-language {
+    color: #268bd2ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .variable-other {
+    color: #268bd2ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .keyword {
+    color: #859900ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .storage {
+    color: #93a1a1ff;
+    background: #002b36ff;
+    
+    
+    font-weight: bold;
+}
+                
+.theme-solarized .entity-name-class {
+    color: #cb4b16ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .entity-name-type {
+    color: #cb4b16ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .entity-name-function {
+    color: #268bd2ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .punctuation-definition-variable {
+    color: #859900ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .punctuation-section-embedded-begin {
+    color: #d30102ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .punctuation-section-embedded-end {
+    color: #d30102ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .constant-language {
+    color: #b58900ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .meta-preprocessor {
+    color: #b58900ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .support-function-construct {
+    color: #cb4b16ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .keyword-other-new {
+    color: #cb4b16ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .constant-character {
+    color: #cb4b16ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .constant-other {
+    color: #cb4b16ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .entity-other-inherited-class {
+    color: #6c71c4ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .variable-parameter {
+    color: #93a1a1ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .entity-name-tag {
+    color: #268bd2ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .punctuation-definition-tag {
+    color: #657b83ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .entity-other-attribute-name {
+    color: #93a1a1ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .support-function {
+    color: #268bd2ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .punctuation-separator-continuation {
+    color: #d30102ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .support-constant {
+    color: #93a1a1ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .support-type {
+    color: #859900ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .support-class {
+    color: #859900ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .support-type-exception {
+    color: #cb4b16ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .support-other-variable {
+    color: #93a1a1ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .invalid {
+    color: #93a1a1ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .markup-quote {
+    color: #859900ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .markup-list {
+    color: #b58900ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .markup-bold {
+    color: #d33682ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .markup-italic {
+    color: #d33682ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .markup-inline-raw {
+    color: #2aa198ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .markup-heading {
+    color: #268bd2ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized .markup-heading-setext {
+    color: #268bd2ff;
+    background: #002b36ff;
+    
+    
+    
+}
+                
+.theme-solarized-light {
+    color: #586e75ff;
+}
+    
+.theme-solarized-light .highlighted {
+    background: #073642ff !important;
+}
+    
+.theme-solarized-light {
+    background: #fdf6e3ff;
+}
+    
+.theme-solarized-light .comment {
+    color: #93a1a1ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .string {
+    color: #2aa198ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .string-regexp {
+    color: #d30102ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .constant-numeric {
+    color: #d33682ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .variable-language {
+    color: #268bd2ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .variable-other {
+    color: #268bd2ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .keyword {
+    color: #859900ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .storage {
+    color: #073642ff;
+    background: #fdf6e3ff;
+    
+    
+    font-weight: bold;
+}
+                
+.theme-solarized-light .entity-name-class {
+    color: #268bd2ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .entity-name-type {
+    color: #268bd2ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .entity-name-function {
+    color: #268bd2ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .punctuation-definition-variable {
+    color: #859900ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .punctuation-section-embedded-begin {
+    color: #d30102ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .punctuation-section-embedded-end {
+    color: #d30102ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .constant-language {
+    color: #b58900ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .meta-preprocessor {
+    color: #b58900ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .support-function-construct {
+    color: #d30102ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .keyword-other-new {
+    color: #d30102ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .constant-character {
+    color: #cb4b16ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .constant-other {
+    color: #cb4b16ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .entity-other-inherited-class {
+    color: #586e75ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .variable-parameter {
+    color: #586e75ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .entity-name-tag {
+    color: #268bd2ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .punctuation-definition-tag-begin {
+    color: #93a1a1ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .punctuation-definition-tag-end {
+    color: #93a1a1ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .entity-other-attribute-name {
+    color: #93a1a1ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .support-function {
+    color: #268bd2ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .punctuation-separator-continuation {
+    color: #d30102ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .support-constant {
+    color: #586e75ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .support-type {
+    color: #859900ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .support-class {
+    color: #859900ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .support-type-exception {
+    color: #cb4b16ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .support-other-variable {
+    color: #586e75ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .invalid {
+    color: #586e75ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .markup-quote {
+    color: #859900ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .markup-list {
+    color: #b58900ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .markup-bold {
+    color: #d33682ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .markup-italic {
+    color: #d33682ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .markup-inline-raw {
+    color: #2aa198ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .markup-heading {
+    color: #268bd2ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                
+.theme-solarized-light .markup-heading-setext {
+    color: #268bd2ff;
+    background: #fdf6e3ff;
+    
+    
+    
+}
+                </style><div class="theme"><select id="change-theme"><option value="theme-one-dark">One Dark</option><option value="theme-cobalt">Cobalt</option><option value="theme-3024-day">3024 day</option><option value="theme-solarized">Solarized</option><option value="theme-solarized-light">Solarized light</option></select></div><div class="outline"><pre><div class="outline-root"><div class="outline-item"><div class="outline-header" data-outline-class="outline-82-7"><span>struct: </span><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="entity entity-name entity-name-type entity-name-type-struct entity-name-type-struct-rust" data-line="1">Options</span></div></div></div><div class="outline-item"><div class="outline-header" data-outline-class="outline-96-7"><span>field: </span><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="variable variable-other variable-other-rust" data-line="1">options</span></div></div></div></div><div class="outline-item"><div class="outline-header" data-outline-class="outline-126-7"><span>field: </span><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="variable variable-other variable-other-rust" data-line="1">lastpos</span></div></div></div></div><div class="outline-item"><div class="outline-header" data-outline-class="outline-144-8"><span>field: </span><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="variable variable-other variable-other-rust" data-line="1">messages</span></div></div></div></div><div class="outline-item"><div class="outline-header" data-outline-class="outline-171-6"><span>field: </span><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="variable variable-other variable-other-rust" data-line="1">source</span></div></div></div></div></div><div class="outline-item"><div class="outline-header" data-outline-class="outline-195-7"><span>implementation: </span><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="entity entity-name entity-name-type entity-name-type-rust" data-line="1">Options</span></div></div></div><div class="outline-item"><div class="outline-header" data-outline-class="outline-216-3"><span>method: </span><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="1">new</span></div></div></div></div><div class="outline-item"><div class="outline-header" data-outline-class="outline-400-7"><span>method: </span><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="1">message</span></div></div></div></div><div class="outline-item"><div class="outline-header" data-outline-class="outline-535-3"><span>method: </span><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="1">pos</span></div></div></div></div><div class="outline-item"><div class="outline-header" data-outline-class="outline-674-5"><span>method: </span><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="1">merge</span></div></div></div></div><div class="outline-item"><div class="outline-header" data-outline-class="outline-827-3"><span>method: </span><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="1">add</span></div></div></div></div><div class="outline-item"><div class="outline-header" data-outline-class="outline-943-7"><span>method: </span><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="1">add_str</span></div></div></div></div></div><div class="outline-item"><div class="outline-header" data-outline-class="outline-1267-7"><span>implementation: </span><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="entity entity-name entity-name-type entity-name-type-rust" data-line="1">Options</span></div></div></div><div class="outline-item"><div class="outline-header" data-outline-class="outline-1284-3"><span>method: </span><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="1">fmt</span></div></div></div></div></div></div></pre></div><div class="code"><div class="nums"><div class="line-numbers"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span></div></div><div class="source"><div class="code-view"><div class="code-line"><span data-line="1"></span><span class="keyword keyword-other keyword-other-rust meta meta-use meta-use-rust" data-line="1">use</span><span class="meta meta-use meta-use-rust" data-line="1"> </span><span class="entity entity-name entity-name-namespace entity-name-namespace-rust meta meta-use meta-use-rust" data-line="1">core</span><span class="keyword keyword-operator keyword-operator-namespace keyword-operator-namespace-rust meta meta-use meta-use-rust" data-line="1">::</span><span class="meta meta-use meta-use-rust" data-line="1">fmt;</span></div><div class="code-line"><span data-line="2"></span><span class="keyword keyword-other keyword-other-rust meta meta-use meta-use-rust" data-line="2">use</span><span class="meta meta-use meta-use-rust" data-line="2"> </span><span class="entity entity-name entity-name-namespace entity-name-namespace-rust meta meta-use meta-use-rust" data-line="2">std</span><span class="keyword keyword-operator keyword-operator-namespace keyword-operator-namespace-rust meta meta-use meta-use-rust" data-line="2">::</span><span class="entity entity-name entity-name-namespace entity-name-namespace-rust meta meta-use meta-use-rust" data-line="2">collections</span><span class="keyword keyword-operator keyword-operator-namespace keyword-operator-namespace-rust meta meta-use meta-use-rust" data-line="2">::</span><span class="entity entity-name entity-name-type entity-name-type-rust meta meta-use meta-use-rust" data-line="2">HashSet</span><span class="meta meta-use meta-use-rust" data-line="2">;</span></div><div class="code-line"><span data-line="3"></span></div><div class="code-line"><span data-line="4"></span><span class="meta meta-attribute meta-attribute-rust punctuation punctuation-definition punctuation-definition-attribute punctuation-definition-attribute-rust" data-line="4">#</span><span class="meta meta-attribute meta-attribute-rust punctuation punctuation-brackets punctuation-brackets-attribute punctuation-brackets-attribute-rust" data-line="4">[</span><span class="meta meta-attribute meta-attribute-rust" data-line="4">derive</span><span class="meta meta-attribute meta-attribute-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="4">(</span><span class="entity entity-name entity-name-type entity-name-type-rust meta meta-attribute meta-attribute-rust" data-line="4">Debug</span><span class="meta meta-attribute meta-attribute-rust punctuation punctuation-comma punctuation-comma-rust" data-line="4">,</span><span class="meta meta-attribute meta-attribute-rust" data-line="4"> </span><span class="entity entity-name entity-name-type entity-name-type-rust meta meta-attribute meta-attribute-rust" data-line="4">Clone</span><span class="meta meta-attribute meta-attribute-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="4">)</span><span class="meta meta-attribute meta-attribute-rust" data-line="4">]</span></div><div class="code-line"><span data-line="5"></span><span class="keyword keyword-other keyword-other-rust" data-line="5">pub</span><span data-line="5"> </span><span class="keyword keyword-declaration keyword-declaration-struct keyword-declaration-struct-rust-storage keyword-declaration-struct-rust-storage-type keyword-declaration-struct-rust-storage-type-rust" data-line="5">struct</span><span data-line="5"> </span><span class="entity entity-name entity-name-type entity-name-type-struct entity-name-type-struct-rust outline-82-7" data-line="5">Options</span><span data-line="5"> </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="5">{</span></div><div class="code-line"><span data-line="6">    </span><span class="outline-96-7 variable variable-other variable-other-rust" data-line="6">options</span><span class="keyword keyword-operator keyword-operator-key-value keyword-operator-key-value-rust" data-line="6">:</span><span data-line="6"> </span><span class="entity entity-name entity-name-type entity-name-type-rust" data-line="6">HashSet</span><span class="punctuation punctuation-brackets punctuation-brackets-angle punctuation-brackets-angle-rust" data-line="6">&lt;</span><span class="entity entity-name entity-name-type entity-name-type-rust" data-line="6">String</span><span data-line="6">&gt;</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="6">,</span></div><div class="code-line"><span data-line="7">    </span><span class="outline-126-7 variable variable-other variable-other-rust" data-line="7">lastpos</span><span class="keyword keyword-operator keyword-operator-key-value keyword-operator-key-value-rust" data-line="7">:</span><span data-line="7"> </span><span class="entity entity-name entity-name-type entity-name-type-numeric entity-name-type-numeric-rust" data-line="7">u64</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="7">,</span></div><div class="code-line"><span data-line="8">    </span><span class="outline-144-8 variable variable-other variable-other-rust" data-line="8">messages</span><span class="keyword keyword-operator keyword-operator-key-value keyword-operator-key-value-rust" data-line="8">:</span><span data-line="8"> </span><span class="entity entity-name entity-name-type entity-name-type-rust" data-line="8">Vec</span><span class="punctuation punctuation-brackets punctuation-brackets-angle punctuation-brackets-angle-rust" data-line="8">&lt;</span><span class="entity entity-name entity-name-type entity-name-type-rust" data-line="8">String</span><span data-line="8">&gt;</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="8">,</span></div><div class="code-line"><span data-line="9">    </span><span class="outline-171-6 variable variable-other variable-other-rust" data-line="9">source</span><span class="keyword keyword-operator keyword-operator-key-value keyword-operator-key-value-rust" data-line="9">:</span><span data-line="9"> </span><span class="entity entity-name entity-name-type entity-name-type-rust" data-line="9">String</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="9">,</span></div><div class="code-line"><span data-line="10"></span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="10">}</span></div><div class="code-line"><span data-line="11"></span></div><div class="code-line"><span data-line="12"></span><span class="keyword keyword-other keyword-other-rust" data-line="12">impl</span><span data-line="12"> </span><span class="entity entity-name entity-name-type entity-name-type-rust outline-195-7" data-line="12">Options</span><span data-line="12"> </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="12">{</span></div><div class="code-line"><span data-line="13">    </span><span class="keyword keyword-other keyword-other-rust" data-line="13">pub</span><span data-line="13"> </span><span class="keyword keyword-other keyword-other-fn keyword-other-fn-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="13">fn</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="13"> </span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-definition meta-function-definition-rust outline-216-3" data-line="13">new</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="13">(</span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-other variable-other-rust" data-line="13">source</span><span class="keyword keyword-operator keyword-operator-key-value keyword-operator-key-value-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="13">:</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="13"> </span><span class="entity entity-name entity-name-type entity-name-type-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="13">String</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="13">)</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="13"> </span><span class="keyword keyword-operator keyword-operator-arrow keyword-operator-arrow-skinny keyword-operator-arrow-skinny-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="13">-&gt;</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="13"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-language variable-language-self variable-language-self-rust" data-line="13">Self</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="13"> {</span></div><div class="code-line"><span data-line="14">        </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="14">Self</span><span data-line="14"> </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="14">{</span></div><div class="code-line"><span data-line="15">            </span><span class="variable variable-other variable-other-rust" data-line="15">options</span><span class="keyword keyword-operator keyword-operator-key-value keyword-operator-key-value-rust" data-line="15">:</span><span data-line="15"> </span><span class="entity entity-name entity-name-type entity-name-type-rust" data-line="15">HashSet</span><span class="keyword keyword-operator keyword-operator-namespace keyword-operator-namespace-rust" data-line="15">::</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="15">new</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="15">(</span><span class="meta meta-function meta-function-call meta-function-call-rust" data-line="15">)</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="15">,</span></div><div class="code-line"><span data-line="16">            </span><span class="variable variable-other variable-other-rust" data-line="16">lastpos</span><span class="keyword keyword-operator keyword-operator-key-value keyword-operator-key-value-rust" data-line="16">:</span><span data-line="16"> </span><span class="constant constant-numeric constant-numeric-decimal constant-numeric-decimal-rust" data-line="16">0</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="16">,</span></div><div class="code-line"><span data-line="17">            </span><span class="variable variable-other variable-other-rust" data-line="17">messages</span><span class="keyword keyword-operator keyword-operator-key-value keyword-operator-key-value-rust" data-line="17">:</span><span data-line="17"> </span><span class="entity entity-name entity-name-function entity-name-function-macro entity-name-function-macro-rust meta meta-macro meta-macro-rust" data-line="17">vec!</span><span class="punctuation punctuation-brackets punctuation-brackets-square punctuation-brackets-square-rust" data-line="17">[]</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="17">,</span></div><div class="code-line"><span data-line="18">            </span><span class="variable variable-other variable-other-rust" data-line="18">source</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="18">,</span></div><div class="code-line"><span data-line="19">        </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="19">}</span></div><div class="code-line"><span data-line="20">    </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="20">}</span></div><div class="code-line"><span data-line="21"></span></div><div class="code-line"><span data-line="22">    </span><span class="keyword keyword-other keyword-other-rust" data-line="22">pub</span><span data-line="22"> </span><span class="keyword keyword-other keyword-other-fn keyword-other-fn-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="22">fn</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="22"> </span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-definition meta-function-definition-rust outline-400-7" data-line="22">message</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="22">(</span><span class="meta meta-function meta-function-definition meta-function-definition-rust storage storage-modifier storage-modifier-mut storage-modifier-mut-rust" data-line="22">mut</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="22"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-language variable-language-self variable-language-self-rust" data-line="22">self</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-comma punctuation-comma-rust" data-line="22">,</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="22"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-other variable-other-rust" data-line="22">msg</span><span class="keyword keyword-operator keyword-operator-key-value keyword-operator-key-value-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="22">:</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="22"> </span><span class="keyword keyword-other keyword-other-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="22">impl</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="22"> </span><span class="entity entity-name entity-name-type entity-name-type-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="22">AsRef</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-angle punctuation-brackets-angle-rust" data-line="22">&lt;</span><span class="entity entity-name entity-name-type entity-name-type-primitive entity-name-type-primitive-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="22">str</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="22">&gt;</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="22">)</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="22"> </span><span class="keyword keyword-operator keyword-operator-arrow keyword-operator-arrow-skinny keyword-operator-arrow-skinny-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="22">-&gt;</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="22"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-language variable-language-self variable-language-self-rust" data-line="22">Self</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="22"> {</span></div><div class="code-line"><span data-line="23">        </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="23">self</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="23">.</span><span class="variable variable-other variable-other-rust" data-line="23">messages</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="23">.</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="23">push</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="23">(</span><span class="meta meta-function meta-function-call meta-function-call-rust variable variable-other variable-other-rust" data-line="23">msg</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust meta meta-function meta-function-call meta-function-call-rust" data-line="23">.</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="23">as_ref</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="23">(</span><span class="meta meta-function meta-function-call meta-function-call-rust" data-line="23">)</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust meta meta-function meta-function-call meta-function-call-rust" data-line="23">.</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="23">to_string</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="23">(</span><span class="meta meta-function meta-function-call meta-function-call-rust" data-line="23">))</span><span class="punctuation punctuation-semi punctuation-semi-rust" data-line="23">;</span></div><div class="code-line"><span data-line="24">        </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="24">self</span></div><div class="code-line"><span data-line="25">    </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="25">}</span></div><div class="code-line"><span data-line="26"></span></div><div class="code-line"><span data-line="27">    </span><span class="keyword keyword-other keyword-other-rust" data-line="27">pub</span><span data-line="27"> </span><span class="keyword keyword-other keyword-other-fn keyword-other-fn-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="27">fn</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="27"> </span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-definition meta-function-definition-rust outline-535-3" data-line="27">pos</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="27">(</span><span class="meta meta-function meta-function-definition meta-function-definition-rust storage storage-modifier storage-modifier-mut storage-modifier-mut-rust" data-line="27">mut</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="27"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-language variable-language-self variable-language-self-rust" data-line="27">self</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-comma punctuation-comma-rust" data-line="27">,</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="27"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-other variable-other-rust" data-line="27">pos</span><span class="keyword keyword-operator keyword-operator-key-value keyword-operator-key-value-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="27">:</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="27"> </span><span class="entity entity-name entity-name-type entity-name-type-numeric entity-name-type-numeric-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="27">u64</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="27">)</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="27"> </span><span class="keyword keyword-operator keyword-operator-arrow keyword-operator-arrow-skinny keyword-operator-arrow-skinny-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="27">-&gt;</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="27"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-language variable-language-self variable-language-self-rust" data-line="27">Self</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="27"> {</span></div><div class="code-line"><span data-line="28">        </span><span class="keyword keyword-control keyword-control-rust" data-line="28">if</span><span data-line="28"> </span><span class="variable variable-other variable-other-rust" data-line="28">pos</span><span data-line="28"> </span><span class="punctuation punctuation-brackets punctuation-brackets-angle punctuation-brackets-angle-rust" data-line="28">&gt;</span><span data-line="28"> </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="28">self</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="28">.</span><span class="variable variable-other variable-other-rust" data-line="28">lastpos</span><span data-line="28"> </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="28">{</span></div><div class="code-line"><span data-line="29">            </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="29">self</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="29">.</span><span class="variable variable-other variable-other-rust" data-line="29">lastpos</span><span data-line="29"> </span><span class="keyword keyword-operator keyword-operator-assignment keyword-operator-assignment-equal keyword-operator-assignment-equal-rust" data-line="29">=</span><span data-line="29"> </span><span class="variable variable-other variable-other-rust" data-line="29">pos</span><span class="punctuation punctuation-semi punctuation-semi-rust" data-line="29">;</span></div><div class="code-line"><span data-line="30">        </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="30">}</span></div><div class="code-line"><span data-line="31">        </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="31">self</span></div><div class="code-line"><span data-line="32">    </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="32">}</span></div><div class="code-line"><span data-line="33"></span></div><div class="code-line"><span data-line="34">    </span><span class="keyword keyword-other keyword-other-rust" data-line="34">pub</span><span data-line="34"> </span><span class="keyword keyword-other keyword-other-fn keyword-other-fn-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="34">fn</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="34"> </span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-definition meta-function-definition-rust outline-674-5" data-line="34">merge</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="34">(</span><span class="meta meta-function meta-function-definition meta-function-definition-rust storage storage-modifier storage-modifier-mut storage-modifier-mut-rust" data-line="34">mut</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="34"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-language variable-language-self variable-language-self-rust" data-line="34">self</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-comma punctuation-comma-rust" data-line="34">,</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="34"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-other variable-other-rust" data-line="34">other</span><span class="keyword keyword-operator keyword-operator-key-value keyword-operator-key-value-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="34">:</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="34"> </span><span class="entity entity-name entity-name-type entity-name-type-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="34">Options</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="34">)</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="34"> </span><span class="keyword keyword-operator keyword-operator-arrow keyword-operator-arrow-skinny keyword-operator-arrow-skinny-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="34">-&gt;</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="34"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-language variable-language-self variable-language-self-rust" data-line="34">Self</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="34"> {</span></div><div class="code-line"><span data-line="35">        </span><span class="keyword keyword-control keyword-control-rust" data-line="35">for</span><span data-line="35"> </span><span class="variable variable-other variable-other-rust" data-line="35">i</span><span data-line="35"> </span><span class="keyword keyword-other keyword-other-rust" data-line="35">in</span><span data-line="35"> </span><span class="variable variable-other variable-other-rust" data-line="35">other</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="35">.</span><span class="variable variable-other variable-other-rust" data-line="35">options</span><span data-line="35"> </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="35">{</span></div><div class="code-line"><span data-line="36">            </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="36">self</span><span data-line="36"> </span><span class="keyword keyword-operator keyword-operator-assignment keyword-operator-assignment-equal keyword-operator-assignment-equal-rust" data-line="36">=</span><span data-line="36"> </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="36">self</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="36">.</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="36">add_str</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="36">(</span><span class="meta meta-function meta-function-call meta-function-call-rust variable variable-other variable-other-rust" data-line="36">i</span><span class="meta meta-function meta-function-call meta-function-call-rust" data-line="36">)</span><span class="punctuation punctuation-semi punctuation-semi-rust" data-line="36">;</span></div><div class="code-line"><span data-line="37">        </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="37">}</span></div><div class="code-line"><span data-line="38"></span></div><div class="code-line"><span data-line="39">        </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="39">self</span></div><div class="code-line"><span data-line="40">    </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="40">}</span></div><div class="code-line"><span data-line="41"></span></div><div class="code-line"><span data-line="42">    </span><span class="keyword keyword-other keyword-other-rust" data-line="42">pub</span><span data-line="42"> </span><span class="keyword keyword-other keyword-other-fn keyword-other-fn-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="42">fn</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="42"> </span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-definition meta-function-definition-rust outline-827-3" data-line="42">add</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="42">(</span><span class="meta meta-function meta-function-definition meta-function-definition-rust storage storage-modifier storage-modifier-mut storage-modifier-mut-rust" data-line="42">mut</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="42"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-language variable-language-self variable-language-self-rust" data-line="42">self</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-comma punctuation-comma-rust" data-line="42">,</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="42"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-other variable-other-rust" data-line="42">value</span><span class="keyword keyword-operator keyword-operator-key-value keyword-operator-key-value-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="42">:</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="42"> </span><span class="entity entity-name entity-name-type entity-name-type-primitive entity-name-type-primitive-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="42">char</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="42">)</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="42"> </span><span class="keyword keyword-operator keyword-operator-arrow keyword-operator-arrow-skinny keyword-operator-arrow-skinny-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="42">-&gt;</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="42"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-language variable-language-self variable-language-self-rust" data-line="42">Self</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="42"> {</span></div><div class="code-line"><span data-line="43">        </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="43">self</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="43">.</span><span class="variable variable-other variable-other-rust" data-line="43">options</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="43">.</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="43">insert</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="43">(</span><span class="meta meta-function meta-function-call meta-function-call-rust variable variable-other variable-other-rust" data-line="43">value</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust meta meta-function meta-function-call meta-function-call-rust" data-line="43">.</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="43">to_string</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="43">(</span><span class="meta meta-function meta-function-call meta-function-call-rust" data-line="43">))</span><span class="punctuation punctuation-semi punctuation-semi-rust" data-line="43">;</span></div><div class="code-line"><span data-line="44">        </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="44">self</span></div><div class="code-line"><span data-line="45">    </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="45">}</span></div><div class="code-line"><span data-line="46"></span></div><div class="code-line"><span data-line="47">    </span><span class="keyword keyword-other keyword-other-rust" data-line="47">pub</span><span data-line="47"> </span><span class="keyword keyword-other keyword-other-fn keyword-other-fn-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="47">fn</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="47"> </span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-definition meta-function-definition-rust outline-943-7" data-line="47">add_str</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="47">(</span><span class="meta meta-function meta-function-definition meta-function-definition-rust storage storage-modifier storage-modifier-mut storage-modifier-mut-rust" data-line="47">mut</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="47"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-language variable-language-self variable-language-self-rust" data-line="47">self</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-comma punctuation-comma-rust" data-line="47">,</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="47"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-other variable-other-rust" data-line="47">value</span><span class="keyword keyword-operator keyword-operator-key-value keyword-operator-key-value-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="47">:</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="47"> </span><span class="keyword keyword-other keyword-other-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="47">impl</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="47"> </span><span class="entity entity-name entity-name-type entity-name-type-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="47">AsRef</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-angle punctuation-brackets-angle-rust" data-line="47">&lt;</span><span class="entity entity-name entity-name-type entity-name-type-primitive entity-name-type-primitive-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="47">str</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="47">&gt;</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="47">)</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="47"> </span><span class="keyword keyword-operator keyword-operator-arrow keyword-operator-arrow-skinny keyword-operator-arrow-skinny-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="47">-&gt;</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="47"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-language variable-language-self variable-language-self-rust" data-line="47">Self</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="47"> {</span></div><div class="code-line"><span data-line="48">        </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="48">self</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="48">.</span><span class="variable variable-other variable-other-rust" data-line="48">options</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="48">.</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="48">insert</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="48">(</span><span class="meta meta-function meta-function-call meta-function-call-rust variable variable-other variable-other-rust" data-line="48">value</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust meta meta-function meta-function-call meta-function-call-rust" data-line="48">.</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="48">as_ref</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="48">(</span><span class="meta meta-function meta-function-call meta-function-call-rust" data-line="48">)</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust meta meta-function meta-function-call meta-function-call-rust" data-line="48">.</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="48">to_string</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="48">(</span><span class="meta meta-function meta-function-call meta-function-call-rust" data-line="48">))</span><span class="punctuation punctuation-semi punctuation-semi-rust" data-line="48">;</span></div><div class="code-line"><span data-line="49">        </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="49">self</span></div><div class="code-line"><span data-line="50"></span><span class="comment comment-line comment-line-double-slash comment-line-double-slash-rust" data-line="50">        // THIS IS JUST A VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY VERY LONG LINE</span></div><div class="code-line"><span data-line="51">    </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="51">}</span></div><div class="code-line"><span data-line="52"></span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="52">}</span></div><div class="code-line"><span data-line="53"></span></div><div class="code-line"><span data-line="54"></span><span class="keyword keyword-other keyword-other-rust" data-line="54">impl</span><span data-line="54"> </span><span class="entity entity-name entity-name-namespace entity-name-namespace-rust" data-line="54">fmt</span><span class="keyword keyword-operator keyword-operator-namespace keyword-operator-namespace-rust" data-line="54">::</span><span class="entity entity-name entity-name-type entity-name-type-rust" data-line="54">Display</span><span data-line="54"> </span><span class="keyword keyword-control keyword-control-rust" data-line="54">for</span><span data-line="54"> </span><span class="entity entity-name entity-name-type entity-name-type-rust outline-1267-7" data-line="54">Options</span><span data-line="54"> </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="54">{</span></div><div class="code-line"><span data-line="55">    </span><span class="keyword keyword-other keyword-other-fn keyword-other-fn-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="55">fn</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="55"> </span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-definition meta-function-definition-rust outline-1284-3" data-line="55">fmt</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="55">(</span><span class="keyword keyword-operator keyword-operator-borrow keyword-operator-borrow-and keyword-operator-borrow-and-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="55">&amp;</span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-language variable-language-self variable-language-self-rust" data-line="55">self</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-comma punctuation-comma-rust" data-line="55">,</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="55"> </span><span class="meta meta-function meta-function-definition meta-function-definition-rust variable variable-other variable-other-rust" data-line="55">f</span><span class="keyword keyword-operator keyword-operator-key-value keyword-operator-key-value-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="55">:</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="55"> </span><span class="keyword keyword-operator keyword-operator-borrow keyword-operator-borrow-and keyword-operator-borrow-and-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="55">&amp;</span><span class="meta meta-function meta-function-definition meta-function-definition-rust storage storage-modifier storage-modifier-mut storage-modifier-mut-rust" data-line="55">mut</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="55"> </span><span class="entity entity-name entity-name-namespace entity-name-namespace-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="55">fmt</span><span class="keyword keyword-operator keyword-operator-namespace keyword-operator-namespace-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="55">::</span><span class="entity entity-name entity-name-type entity-name-type-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="55">Formatter</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-angle punctuation-brackets-angle-rust" data-line="55">&lt;</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-definition punctuation-definition-lifetime punctuation-definition-lifetime-rust" data-line="55">&#x27;</span><span class="entity entity-name entity-name-type entity-name-type-lifetime entity-name-type-lifetime-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="55">_</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="55">&gt;</span><span class="meta meta-function meta-function-definition meta-function-definition-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="55">)</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="55"> </span><span class="keyword keyword-operator keyword-operator-arrow keyword-operator-arrow-skinny keyword-operator-arrow-skinny-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="55">-&gt;</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="55"> </span><span class="entity entity-name entity-name-namespace entity-name-namespace-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="55">fmt</span><span class="keyword keyword-operator keyword-operator-namespace keyword-operator-namespace-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="55">::</span><span class="entity entity-name entity-name-type entity-name-type-rust meta meta-function meta-function-definition meta-function-definition-rust" data-line="55">Result</span><span class="meta meta-function meta-function-definition meta-function-definition-rust" data-line="55"> {</span></div><div class="code-line"><span data-line="56">        </span><span class="entity entity-name entity-name-function entity-name-function-macro entity-name-function-macro-rust meta meta-macro meta-macro-rust" data-line="56">writeln!</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="56">(</span><span class="variable variable-other variable-other-rust" data-line="56">f</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="56">,</span><span data-line="56"> </span><span class="punctuation punctuation-definition punctuation-definition-string punctuation-definition-string-rust string string-quoted string-quoted-double string-quoted-double-rust" data-line="56">&quot;</span><span class="meta meta-interpolation meta-interpolation-rust punctuation punctuation-definition punctuation-definition-interpolation punctuation-definition-interpolation-rust string string-quoted string-quoted-double string-quoted-double-rust" data-line="56">{}</span><span class="string string-quoted string-quoted-double string-quoted-double-rust" data-line="56">&quot;</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="56">,</span><span data-line="56"> </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="56">self</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="56">.</span><span class="variable variable-other variable-other-rust" data-line="56">source</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="56">)</span><span class="keyword keyword-operator keyword-operator-question keyword-operator-question-rust" data-line="56">?</span><span class="punctuation punctuation-semi punctuation-semi-rust" data-line="56">;</span></div><div class="code-line"><span data-line="57">        </span><span class="entity entity-name entity-name-function entity-name-function-macro entity-name-function-macro-rust meta meta-macro meta-macro-rust" data-line="57">writeln!</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="57">(</span><span class="variable variable-other variable-other-rust" data-line="57">f</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="57">,</span><span data-line="57"> </span><span class="punctuation punctuation-definition punctuation-definition-string punctuation-definition-string-rust string string-quoted string-quoted-double string-quoted-double-rust" data-line="57">&quot;</span><span class="meta meta-interpolation meta-interpolation-rust punctuation punctuation-definition punctuation-definition-interpolation punctuation-definition-interpolation-rust string string-quoted string-quoted-double string-quoted-double-rust" data-line="57">{}</span><span class="string string-quoted string-quoted-double string-quoted-double-rust" data-line="57">^&quot;</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="57">,</span><span data-line="57"> </span><span class="punctuation punctuation-definition punctuation-definition-string punctuation-definition-string-rust string string-quoted string-quoted-double string-quoted-double-rust" data-line="57">&quot;</span><span class="string string-quoted string-quoted-double string-quoted-double-rust" data-line="57"> &quot;</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="57">.</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="57">repeat</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="57">(</span><span class="meta meta-function meta-function-call meta-function-call-rust variable variable-language variable-language-self variable-language-self-rust" data-line="57">self</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust meta meta-function meta-function-call meta-function-call-rust" data-line="57">.</span><span class="meta meta-function meta-function-call meta-function-call-rust variable variable-other variable-other-rust" data-line="57">lastpos</span><span class="meta meta-function meta-function-call meta-function-call-rust" data-line="57"> </span><span class="keyword keyword-other keyword-other-rust meta meta-function meta-function-call meta-function-call-rust" data-line="57">as</span><span class="meta meta-function meta-function-call meta-function-call-rust" data-line="57"> </span><span class="entity entity-name entity-name-type entity-name-type-numeric entity-name-type-numeric-rust meta meta-function meta-function-call meta-function-call-rust" data-line="57">usize</span><span class="meta meta-function meta-function-call meta-function-call-rust" data-line="57">)</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="57">)</span><span class="keyword keyword-operator keyword-operator-question keyword-operator-question-rust" data-line="57">?</span><span class="punctuation punctuation-semi punctuation-semi-rust" data-line="57">;</span></div><div class="code-line"><span data-line="58"></span></div><div class="code-line"><span data-line="59">        </span><span class="keyword keyword-control keyword-control-rust" data-line="59">if</span><span data-line="59"> </span><span class="keyword keyword-operator keyword-operator-logical keyword-operator-logical-rust" data-line="59">!</span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="59">self</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="59">.</span><span class="variable variable-other variable-other-rust" data-line="59">options</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="59">.</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="59">is_empty</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="59">(</span><span class="meta meta-function meta-function-call meta-function-call-rust" data-line="59">)</span><span data-line="59"> </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="59">{</span></div><div class="code-line"><span data-line="60">            </span><span class="entity entity-name entity-name-function entity-name-function-macro entity-name-function-macro-rust meta meta-macro meta-macro-rust" data-line="60">writeln!</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="60">(</span><span class="variable variable-other variable-other-rust" data-line="60">f</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="60">,</span><span data-line="60"> </span><span class="punctuation punctuation-definition punctuation-definition-string punctuation-definition-string-rust string string-quoted string-quoted-double string-quoted-double-rust" data-line="60">&quot;</span><span class="string string-quoted string-quoted-double string-quoted-double-rust" data-line="60">An error occurred: unexpected character.&quot;</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="60">)</span><span class="keyword keyword-operator keyword-operator-question keyword-operator-question-rust" data-line="60">?</span><span class="punctuation punctuation-semi punctuation-semi-rust" data-line="60">;</span></div><div class="code-line"><span data-line="61">            </span><span class="entity entity-name entity-name-function entity-name-function-macro entity-name-function-macro-rust meta meta-macro meta-macro-rust" data-line="61">write!</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="61">(</span><span class="variable variable-other variable-other-rust" data-line="61">f</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="61">,</span><span data-line="61"> </span><span class="punctuation punctuation-definition punctuation-definition-string punctuation-definition-string-rust string string-quoted string-quoted-double string-quoted-double-rust" data-line="61">&quot;</span><span class="string string-quoted string-quoted-double string-quoted-double-rust" data-line="61">Expected any of: [&quot;</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="61">)</span><span class="keyword keyword-operator keyword-operator-question keyword-operator-question-rust" data-line="61">?</span><span class="punctuation punctuation-semi punctuation-semi-rust" data-line="61">;</span></div><div class="code-line"><span data-line="62">            </span><span class="keyword keyword-control keyword-control-rust" data-line="62">for</span><span data-line="62"> </span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="62">(</span><span class="variable variable-other variable-other-rust" data-line="62">index</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="62">,</span><span data-line="62"> </span><span class="variable variable-other variable-other-rust" data-line="62">i</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="62">)</span><span data-line="62"> </span><span class="keyword keyword-other keyword-other-rust" data-line="62">in</span><span data-line="62"> </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="62">self</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="62">.</span><span class="variable variable-other variable-other-rust" data-line="62">options</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="62">.</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="62">iter</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="62">(</span><span class="meta meta-function meta-function-call meta-function-call-rust" data-line="62">)</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="62">.</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="62">enumerate</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="62">(</span><span class="meta meta-function meta-function-call meta-function-call-rust" data-line="62">)</span><span data-line="62"> </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="62">{</span></div><div class="code-line"><span data-line="63">                </span><span class="entity entity-name entity-name-function entity-name-function-macro entity-name-function-macro-rust meta meta-macro meta-macro-rust" data-line="63">write!</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="63">(</span><span class="variable variable-other variable-other-rust" data-line="63">f</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="63">,</span><span data-line="63"> </span><span class="punctuation punctuation-definition punctuation-definition-string punctuation-definition-string-rust string string-quoted string-quoted-double string-quoted-double-rust" data-line="63">&quot;</span><span class="meta meta-interpolation meta-interpolation-rust punctuation punctuation-definition punctuation-definition-interpolation punctuation-definition-interpolation-rust string string-quoted string-quoted-double string-quoted-double-rust" data-line="63">{}</span><span class="string string-quoted string-quoted-double string-quoted-double-rust" data-line="63">&quot;</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="63">,</span><span data-line="63"> </span><span class="variable variable-other variable-other-rust" data-line="63">i</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="63">)</span><span class="keyword keyword-operator keyword-operator-question keyword-operator-question-rust" data-line="63">?</span><span class="punctuation punctuation-semi punctuation-semi-rust" data-line="63">;</span></div><div class="code-line"><span data-line="64"></span></div><div class="code-line"><span data-line="65">                </span><span class="keyword keyword-control keyword-control-rust" data-line="65">if</span><span data-line="65"> </span><span class="variable variable-other variable-other-rust" data-line="65">index</span><span data-line="65"> </span><span class="keyword keyword-operator keyword-operator-comparison keyword-operator-comparison-rust" data-line="65">!=</span><span data-line="65"> </span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="65">self</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="65">.</span><span class="variable variable-other variable-other-rust" data-line="65">options</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="65">.</span><span class="entity entity-name entity-name-function entity-name-function-rust meta meta-function meta-function-call meta-function-call-rust" data-line="65">len</span><span class="meta meta-function meta-function-call meta-function-call-rust punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="65">(</span><span class="meta meta-function meta-function-call meta-function-call-rust" data-line="65">)</span><span data-line="65"> </span><span class="keyword keyword-operator keyword-operator-math keyword-operator-math-rust" data-line="65">-</span><span data-line="65"> </span><span class="constant constant-numeric constant-numeric-decimal constant-numeric-decimal-rust" data-line="65">1</span><span data-line="65"> </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="65">{</span></div><div class="code-line"><span data-line="66">                    </span><span class="entity entity-name entity-name-function entity-name-function-macro entity-name-function-macro-rust meta meta-macro meta-macro-rust" data-line="66">write!</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="66">(</span><span class="variable variable-other variable-other-rust" data-line="66">f</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="66">,</span><span data-line="66"> </span><span class="punctuation punctuation-definition punctuation-definition-string punctuation-definition-string-rust string string-quoted string-quoted-double string-quoted-double-rust" data-line="66">&quot;</span><span class="string string-quoted string-quoted-double string-quoted-double-rust" data-line="66">, &quot;</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="66">)</span><span class="keyword keyword-operator keyword-operator-question keyword-operator-question-rust" data-line="66">?</span><span class="punctuation punctuation-semi punctuation-semi-rust" data-line="66">;</span></div><div class="code-line"><span data-line="67">                </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="67">}</span></div><div class="code-line"><span data-line="68">            </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="68">}</span></div><div class="code-line"><span data-line="69">            </span><span class="entity entity-name entity-name-function entity-name-function-macro entity-name-function-macro-rust meta meta-macro meta-macro-rust" data-line="69">writeln!</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="69">(</span><span class="variable variable-other variable-other-rust" data-line="69">f</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="69">,</span><span data-line="69"> </span><span class="punctuation punctuation-definition punctuation-definition-string punctuation-definition-string-rust string string-quoted string-quoted-double string-quoted-double-rust" data-line="69">&quot;</span><span class="string string-quoted string-quoted-double string-quoted-double-rust" data-line="69">]&quot;</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="69">)</span><span class="keyword keyword-operator keyword-operator-question keyword-operator-question-rust" data-line="69">?</span><span class="punctuation punctuation-semi punctuation-semi-rust" data-line="69">;</span></div><div class="code-line"><span data-line="70">            </span><span class="entity entity-name entity-name-function entity-name-function-macro entity-name-function-macro-rust meta meta-macro meta-macro-rust" data-line="70">writeln!</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="70">(</span><span class="variable variable-other variable-other-rust" data-line="70">f</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="70">)</span><span class="keyword keyword-operator keyword-operator-question keyword-operator-question-rust" data-line="70">?</span><span class="punctuation punctuation-semi punctuation-semi-rust" data-line="70">;</span></div><div class="code-line"><span data-line="71">        </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="71">}</span></div><div class="code-line"><span data-line="72"></span></div><div class="code-line"><span data-line="73">        </span><span class="keyword keyword-control keyword-control-rust" data-line="73">for</span><span data-line="73"> </span><span class="variable variable-other variable-other-rust" data-line="73">i</span><span data-line="73"> </span><span class="keyword keyword-other keyword-other-rust" data-line="73">in</span><span data-line="73"> </span><span class="keyword keyword-operator keyword-operator-borrow keyword-operator-borrow-and keyword-operator-borrow-and-rust" data-line="73">&amp;</span><span class="variable variable-language variable-language-self variable-language-self-rust" data-line="73">self</span><span class="keyword keyword-operator keyword-operator-access keyword-operator-access-dot keyword-operator-access-dot-rust" data-line="73">.</span><span class="variable variable-other variable-other-rust" data-line="73">messages</span><span data-line="73"> </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="73">{</span></div><div class="code-line"><span data-line="74">            </span><span class="entity entity-name entity-name-function entity-name-function-macro entity-name-function-macro-rust meta meta-macro meta-macro-rust" data-line="74">writeln!</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="74">(</span><span class="variable variable-other variable-other-rust" data-line="74">f</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="74">,</span><span data-line="74"> </span><span class="punctuation punctuation-definition punctuation-definition-string punctuation-definition-string-rust string string-quoted string-quoted-double string-quoted-double-rust" data-line="74">&quot;</span><span class="meta meta-interpolation meta-interpolation-rust punctuation punctuation-definition punctuation-definition-interpolation punctuation-definition-interpolation-rust string string-quoted string-quoted-double string-quoted-double-rust" data-line="74">{}</span><span class="string string-quoted string-quoted-double string-quoted-double-rust" data-line="74">&quot;</span><span class="punctuation punctuation-comma punctuation-comma-rust" data-line="74">,</span><span data-line="74"> </span><span class="variable variable-other variable-other-rust" data-line="74">i</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="74">)</span><span class="keyword keyword-operator keyword-operator-question keyword-operator-question-rust" data-line="74">?</span><span class="punctuation punctuation-semi punctuation-semi-rust" data-line="74">;</span></div><div class="code-line"><span data-line="75">        </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="75">}</span></div><div class="code-line"><span data-line="76"></span></div><div class="code-line"><span data-line="77">        </span><span class="entity entity-name entity-name-type entity-name-type-result entity-name-type-result-rust" data-line="77">Ok</span><span class="punctuation punctuation-brackets punctuation-brackets-round punctuation-brackets-round-rust" data-line="77">(())</span></div><div class="code-line"><span data-line="78">    </span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="78">}</span></div><div class="code-line"><span data-line="79"></span><span class="punctuation punctuation-brackets punctuation-brackets-curly punctuation-brackets-curly-rust" data-line="79">}</span></div><div class="code-line"><span data-line="80"></span></div></div></div></div><script>function change_theme(new_theme) {
+    for (const i of document.getElementsByClassName("change-theme")) {
+        i.className = `change-theme ${new_theme}`;
+    }
+}
+
+const highlights = new Map();
+
+function register_highlight(location) {
+    for (const i of highlights.keys()) {
+        clearTimeout(highlights.get(i));
+        for (const el of document.getElementsByClassName(i)) {
+            el.classList.remove("highlighted")
+        }
+    }
+    highlights.clear()
+
+    for (const i of document.getElementsByClassName(location)) {
+        i.classList.add("highlighted")
+    }
+
+    const cancel = setTimeout(() => {
+        for (const i of document.getElementsByClassName(location)) {
+            i.classList.remove("highlighted")
+        }
+
+        highlights.delete(location);
+    }, 5000);
+
+    highlights.set(location, cancel);
+}
+
+function go_to(location) {
+    register_highlight(location);
+
+    const el = document.getElementsByClassName(location)[0];
+
+    el.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "nearest"
+    })
+}
+
+document.getElementById("change-theme").onchange = function () {
+    change_theme(this.value)
+};
+
+document.onreadystatechange = () => {
+    change_theme(document.getElementById("change-theme").value);
+
+    for (const i of document.getElementsByClassName("outline-header")) {
+        i.onclick = () => {
+            go_to(i.dataset.outlineClass);
+        }
+    }
+}
+</script></div></body></html>

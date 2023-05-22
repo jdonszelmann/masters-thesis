@@ -5,6 +5,7 @@ use crate::input::subsystems::lsp::lsp_types::types::{Position, TextDocumentIden
 #[derive(Debug, serde::Serialize)]
 pub struct TextDocumentPositionParams {
     /// The text document.
+    #[serde(rename="textDocument")]
     pub text_document: TextDocumentIdentifier,
 
     /// The position inside the text document.

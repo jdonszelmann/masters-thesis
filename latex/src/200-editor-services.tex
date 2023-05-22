@@ -4,142 +4,193 @@
 \chapter{Editor Services}
 \label{chap:editor-services}
 
+This chapter we go over important work related to the main matter of this thesis: `Code exploration services'.
+We define what editors, and editor services are, we talk about how editor services are commonly implemented,
+and explain problems are often encountered when implementing them.
+
+\section*{}
+
 Although programmers may have started out manually punching their programs into punchcards,
-or even changing the wiring of the computer just to program it, few people still do this nowadays.
-Instead, programmers write computer programs for a computer, on a computer.
+or even changing the wiring of a computer just to program it, clearly this is no longer common practice.
+Instead, programmers write computer programs for a computer, on a computer, using a program called an editor.
 The obvious advantage of that is of course that it is much easier to change the program after
 it was written the first time.
 
 Early on, there was \texttt{ed}~\autocite{ed}, short for `editor'.
 \texttt{ed} was one of the standard tools included on all unix operating systems, and can still be used on many modern computers.
-However, it has also been called ``the most user-hostile editor ever created'' (by Peter H. Salus) because of the
-minimal visual feedback it gives.
+However, `ed' was not very user-friendly, and is infamous for its error codes.
 For all kinds of different errors, \texttt{ed} simply prints a \texttt{?} without further context.
 
 Since then, a lot has changed, and editors have become significantly more advanced.
-Not just by actually allowing users to see the document they are editing, a feature which \texttt{ed} notably lacked,
-but also by actively helping programmers to write their program.
-For example, colouring different parts of a program based on their syntactical meaning, and completing words and lines based on context.
-To provide these features, te editor will have a certain amount of knowledge about the language that is being edited, such as the language's grammar.
+First with editors like \texttt{vi}, \texttt{vim} and \texttt{emacs}, which were an improvement in user experience, if only for the
+fact that these allow their users to see the document as they are editing it, a feature \texttt{ed} notably lacked.
+Still later, \ac{GUI} editors like \texttt{notepad++} and \texttt{sublime text} also entered the scene.
+Although these more modern editors might still be called `simple' by many, they often provide certain services to help their users,
+such as colour different parts of programs based on their syntactical meaning.
 
-However, some editors know a lot more about the language that is being written than just the grammar.
-A modern \ac{IDE} may know about different libraries you might want to use and their documentation,
-work for multiple programming languages in large projects, and even automatically generate whole pieces of code based on context.
+The reason editors like \texttt{vim} and \texttt{sublime text} might still be called `simple', is that some much more sophisticated editors exist as well now,
+like \texttt{Intellij} and the other jetbrains tools \footnote{\url{https://www.jetbrains.com/}}, \texttt{Eclipse} and \texttt{Visual Studio Code}.
+These often get the label \ac{IDE}, referring to the fact that they allow users to do much more than just edit sourcecode.
+\footnote{Of course, some `simple' editors like \texttt{vim} and \texttt{emacs} can be extended near endlessly by users to make them feel more like an \ac{IDE}}
+What makes then more sophisticated, is that they often know much more about the language that is being edited in them.
+
+A modern \ac{IDE} may know about different libraries you might want to use and their documentation.
+They work for multiple programming languages that can be structured in large projects,
+and can even automatically generate whole pieces of code based on context.
 As well as simplifying writing code, an \ac{IDE} can also help with compiling and running code, as well as provide tooling to interactively debug it.
-All these tools, which make it easier to write code, are called editor services, a term coined by \textcite{KatsKV08}
+All these tools, which make it easier to write code, are called editor services, a term first mentioned in literature by \textcite{KatsKV08}.
 
 \section{An overview of editor services}\label{sec:an-overview-of-editor-services}
 
 Different editors provide different editor services.
 Nevertheless, the kinds of services provided overlap significantly, meaning we can try to list the main classes of services.
-In ``The State of the Art in Language Workbenches'',~\autocite{ErdwegSV13} provides a feature model of language workbenches
-\footnote{More will be said about language workbenches in ...}.
+``The State of the Art in Language Workbenches'',~\autocite{ErdwegSV13} presents a feature model of language workbenches
+\footnote{More will be said about language workbenches in section~\ref{subsec:language-workbenches}}.
 When \citeauthor{Fowler2004} first wrote about language workbenches, the relation between language workbenches and \acp{IDE} was already discussed~\autocite{Fowler2004}.
 Hence, the feature model by \citeauthor{ErdwegSV13} also describes editor services as one of six main features of a language workbench.
-In the feature model, editor services are further subdivided into
-
-\begin{itemize}
-    \item Syntactic services
-    \begin{itemize}
-        \item Highlighting
-        \item Outline
-        \item Folding
-        \item Syntactic completion
-        \item Diff
-        \item Auto formatting
-    \end{itemize}
-    \item Semantic services
-    \begin{itemize}
-        \item Reference resolution
-        \item Semantic completion
-        \item Refactoring
-        \item Error marking
-        \item Quick fixes
-        \item Origin tracking
-        \item Live translation
-    \end{itemize}
-\end{itemize}
 
 The feature model by \citeauthor{ErdwegSV13} was adapted by \citeauthor{Pelsmaeker2018} into a list of just editor services~\autocite{Pelsmaeker2018}.
-This derived list further splits the services into more categories, as well as renaming a few to sound more intuitive.
+Their derived list further splits the services into categories, as well as renaming a few to sound more intuitive.
 For example, syntax highlighting was renamed to syntax colouring as highlighting would imply a change in background colour.
-We also annotated each service in this list with a short explanation, not present in the original list by \citeauthor{Pelsmaeker2018}:
 
-\begin{itemize}
-%    \setlength\itemsep{-1em}
-    \item Editor:
-    \begin{itemize}
-%        \vspace{-2\topsep}
-%        \setlength\itemsep{-0.3em}
-        \item Syntax colouring: giving different colours to different syntactical elements
-        \item Code folding: hiding blocks of related code to reduce visual clutter
-        \item Code completion: suggesting word and line completions based on context
-    \end{itemize}
-    \item Navigation and structure:
-    \begin{itemize}
-%        \vspace{-2\topsep}
-%        \setlength\itemsep{-0.3em}
-        \item Structure outline: visualizing the structure of code to quickly navigate it
-        \item Reference resolution: providing quick navigating between related code
-    \end{itemize}
-    \item Help and documentation:
-    \begin{itemize}
-%        \vspace{-2\topsep}
-%        \setlength\itemsep{-0.3em}
-        \item Documentation: showing documentation of written elements in-editor
-        \item Signature help: showing previews of an items parameters after typing the item
-    \end{itemize}
-    \item Actions and transformations:
-    \begin{itemize}
-%        \vspace{-2\topsep}
-%        \setlength\itemsep{-0.3em}
-        \item Automatic formatting: rewriting source code based on certain formatting rules
-        \item Rename refactoring: language and context aware search-and-replace.
-              May sometimes be called structural search and replace~\autocite{jetbrains_ssr}.
-        \item Code actions: language specific actions that typically fix or transform code~\autocite{lsp_code_actions}
-    \end{itemize}
-    \item Life cycle
-    \begin{itemize}
-%        \vspace{-2\topsep}
-%        \setlength\itemsep{-0.3em}
-        \item Diagnostic messages: showing warnings and errors in the source text
-        \item Debugging: stepping through code as it runs, allowing inspection of variables
-        \item Testing: running tests directly from the editor, showing their success or failure
-    \end{itemize}
-\end{itemize}
+Based on these sources, we compiled the following list of editor services, together with a short explanation of what they are.
 
-\section{Providing editor services}\label{sec:providing-editor-services}
+\paragraph{Syntax colouring}
+Assigning different parts of a program different colours based on their syntactical meaning.
+This depends on the language that is being written in, which can sometimes change within a document.
+For example, embedded SQL queries.
+A related concept is semantic highlighting\footnote{Which should maybe be called Semantic Colouring, just like Syntax Colouring},
+where colours are not assigned based on syntactical meaning, but based on semantic meaning.
+For example, giving all uses of a variable the same colour.
+
+\paragraph{Code folding}
+Hiding parts of a program to reduce visual clutter.
+Often this is presented to users as syntactically-defined collapsable blocks of text.
+
+\paragraph{Code completion}
+Suggesting ends of words and lines as a programmer is writing.
+Simple code completion can be based on occurrences of words in the same document, or project.
+This method can often find nonsensical completions.
+More sophisticated code completion can involve knowledge about a language's scoping and importing rules.
+Recently, AI-based code completion has also established itself, with programs such as Github Copilot~\autocite{copilot}.
+
+\paragraph{Outline}
+An overview of the high-level structure of a program, like an index.
+Such an overview often displays what function, class and interface names are defined in a file,
+and might allow quick navigation to the definition sites.
+
+\paragraph{Reference resolution}
+Resolving definition and usage sites of identifiers in programs.
+For example, finding all usages of a variable or a function.
+Often, this is paired with a system to allow quick navigation between these sites, allowing quick exploration of a program.
+
+\paragraph{Documentation}
+A broad range of services that attempt to match documentation with code, to make accessing documentation easier.
+Examples include showing documentation of items when interacting with item names, applying markup to documentation
+text embedded in code and linking to online documentation.
+
+\paragraph{Signature help}
+Especially in strongly typed languages, showing the types of an items definition while writing down a usage of that item.
+For example, while writing a function call, showing the expected parameter types.
+This can be related to documentation in more weakly typed languages, where types are sometimes part of comments.
+
+\paragraph{Automatic formatting}
+Rewriting source code to match certain style guides.
+Languages sometimes define standardised style guides, such as PEP8~\autocite*{pep8} and Rustfmt \footnote{\url{https://github.com/rust-lang/rustfmt}}
+
+\paragraph{Rename refactoring}
+Automatic renaming based on context and scoping rules of language.
+This is sometimes called structural search and replace~\autocite{jetbrains_ssr}.
+
+\paragraph{Code actions}
+A broad range of language-specific actions and transformations that can be applied to programs.
+Different languages might have different code actions that make sense.
+A language that has syntactical macros might allow users to expand macro usages.
+
+\paragraph{Diagnostic messages}
+Showing feedback, maybe from a compiler or linter, often as an overlay on source code.
+
+\paragraph{Debugging}
+Allowing a programmer to debug a program by showing the runtime state of that program together with the source text in the editor.
+For example, displaying the location in the source code that is currently being executed and overlaying the value of variables.
+
+\paragraph{Testing}
+Showing the status of tests, and allowing users to run tests by selecting them in the editor.
+
+\section{Implementing editor services in editors}\label{sec:implementing-editor-services-in-editors}
 
 To provide editor services, the editor needs some information about the language it is providing services for.
-The amount of information, depends on what services are provided.
-The way these features are provided differs per language and editor.
+Exactly what kind of information depends on the service.
+For example, for an editor to support syntax highlighting for a language, the editor needs knowledge about the language's syntax.
+This knowledge might come in the form of a grammar specification.
 
-\todo{
-    if relevant, provide an example of for example how rust-analyzer and maybe another editor service provide do this.
-    In any case mention how in many cases, editor services sort of integrate with a compiler since some services you want in an editor are also those you want in a compiler
-    Also talk about editor services being dynamic
-}
+In contrast to the relative simplicity of such a grammar, providing diagnostic messages or running reference
+resolution interactively might require constantly re-running a compiler on source code while a user is typing,
+which can become costly.
+In fact, this is where a challenge lies.
 
+To demonstrate this challenge, we will imagine a compiled language.
+A compiler is a program that turns valid source code into machine code.
+Compiling can be a slow process, especially on large programs.
+This means that compilers are optimised to process large batches of source code (whole projects, and their dependencies)
+quickly~\autocite{matkladlsp}.
+\citeauthor{matkladlsp} calls this a batch compiler.
 
-\section{Porting editor services}\label{sec:porting-editor-services}
+In editors, users mostly care about getting as much feedback, as quickly as possible after making small changes.
+Sometimes these small changes might even leave the program invalid, a case a compiler could simply reject, while in an editor
+a user still expects some feedback.
 
-Because editors need knowledge about a language to provide editor services for that language, not even the most advanced editor will support all languages.
-Especially \acp{DSL} often have very little native support.
+Therefore, our compiled language might have two compilers.
+One to provide editor support, and one to actually compile programs.
+This is a common strategy~\autocite{matkladlsp}, but can take a lot of time to create and maintain.
+
+\subsection{Language Workbenches}\label{subsec:language-workbenches}
+
+``Language workbenches are environments for simplifying the creation and use of com-
+puter languages''~\autocite{ErdwegSVTBCGH0L15}.
+A language workbench can simplify the problem of having a separate compiler implementation for editor services.
+For example, in Spoofax, a language can be declaratively described using various \acp{DSL}~\autocite{KatsV10a}.
+Based on a description of a language's syntax and semantics, Spoofax can derive both a compiler and editor services
+for that language.
+The advantage of this is that there is only one source of truth.
+The description of the language.
+
+\section{Reusing editor service implementations between editors}\label{sec:reusing-editor-services-between-editors}
+
+Because editors need knowledge about a language to provide editor services for that language, not even
+the most advanced editor will support all languages.
+Especially \acp{DSL} often have poor support by editors out of the box.
 That is why many editors provide a way to be extended by users, often in the form of a plugin system.
 That way, when a new language is created, users can add support for that language to the editor instead of the authors of the editor.
 
-This leads to a complicated problem, called the \ac{IDE} portability problem~\autocite{KeidelPE16}.
+This leads to a problem, called the \ac{IDE} portability problem~\autocite{KeidelPE16}.
 The way every editor provides editor services is slightly different.
 This means that supporting $m$ languages in $n$ editors requires $m \times n$ editor plugins, one for each
 combination of a language and editor.
 
 The $m \times n$ problem often becomes an issue of responsibility.
-Creators of editors do not want to be responsible for supporting every language.
-On the flip side, language authors can't always support every editor there is.
+Creators of editors cannot be responsible for supporting every programming language in their editor.
+On the flip side, language authors cannot support every editor there is.
 
 In ``Portable Editor Services'', Pelsmaeker~\autocite*{Pelsmaeker2018} investigates this issue, and proposes a solution: \ac{AESI}.
-\ac{AESI} is a system to create editor plugins.
-\todo{Briefly explain AESI, then talk about LSP itself trying to solve the problem, and language workbenches which generate editor services based on a language's definition}
+\ac{AESI} is a system to create editor plugins, motivated by the desire to separate concerns between the Spoofax language workbench,
+and the editors supported by Spoofax.
+They come up with a kind of common interface through which languages and editors can talk.
+If all editors only need to support one interface to talk to all languages, and if all languages only need to support one
+interface to talk to all editors, the $m \times n$ problem essentially disappears.
 
+What is still a problem with \ac{AESI}, is that it only works with enough adoption.
+Although a single interface solves the $m \times n$ problem in theory, it only does in practice when all editors and languages use it.
 
-\section{Language Servers}\label{sec:language-servers}
+\subsection{Language Servers}\label{subsec:language-servers}
+
+The idea of solving the $m \times n$ problem by providing a single standardised interface through which languages and editors can talk
+is also the basis for the \ac{LSP}~\autocite{lsp}.
+Although \ac{AESI} may have lacked some traction, the \ac{LSP} is actually doing very well in this regard, with support in many
+editors and languages~\autocite{lsp_support}.
+The \ac{LSP} defines an interface with \acs{JSON-RPC}, meaning small \acs{JSON} messages are exchanged to support the different editor services.
+
+Both the client (editor) and server (language implementation) can asynchronously stream new information to update one another.
+The client will send messages with changes the user makes in the file, while the server will respond with for example diagnostic
+information from the compiler.
+

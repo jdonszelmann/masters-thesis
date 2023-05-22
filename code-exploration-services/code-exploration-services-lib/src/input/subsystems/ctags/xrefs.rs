@@ -1,11 +1,11 @@
-use crate::analysis::Span;
 use crate::input::subsystems::ctags::xref_kinds::XrefKind;
 use crate::input::subsystems::ctags::CtagsAnalysisError;
 use crate::input::subsystems::ctags::CtagsAnalysisError::RunCtagsCommand;
 use crate::parse::ParseHelper;
-use crate::SourceCode;
 use std::io::BufRead;
 use std::process::Command;
+use crate::sources::dir::{ContentsError, SourceFile};
+use crate::sources::span::Span;
 
 #[derive(Clone, Debug)]
 pub struct XrefAnalysis {
@@ -26,13 +26,13 @@ pub struct Xref {
 }
 
 impl Xref {
-    pub fn span(&self, source: &SourceCode) -> Span {
+    pub fn span(&self, source: SourceFile) -> Result<Span, ContentsError> {
         // subtract two for the `/^` at the start of the pattern, but add one since columns are 1-based
         let column = self.pattern.find(&self.name).expect("name in pattern") - 1;
-        let start = source.offset_of_line_num(self.line_num).expect("in file") + column;
+        let start = source.offset_of_line_num(self.line_num)?.expect("in file") + column;
         let len = self.name.len();
 
-        Span::new(start, len)
+        Ok(Span::new(start, len))
     }
 }
 
@@ -83,13 +83,12 @@ fn parse_xref_line(xref: &str) -> Result<Xref, CtagsAnalysisError> {
     })
 }
 
-pub fn run_xref(s: &SourceCode) -> Result<XrefAnalysis, CtagsAnalysisError> {
+pub fn run_xref(s: SourceFile) -> Result<XrefAnalysis, CtagsAnalysisError> {
     let mut cmd = Command::new("ctags");
     cmd.arg("-x");
     cmd.arg(r#"--_xformat="[%N] [%{kind}] [%n] [%{input}] [%{scopeKind}] [%s] [%{pattern}]""#);
     cmd.args(["-o", "-"]);
-    let f = s.temp()?;
-    cmd.arg(f.path());
+    cmd.arg(s.path());
 
     let output = cmd.output().map_err(RunCtagsCommand)?;
     if !output.status.success() {

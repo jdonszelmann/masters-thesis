@@ -6,6 +6,7 @@ pub struct TextDocumentItem {
     pub uri: String,
 
     /// The text document's language identifier
+    #[serde(rename="languageId")]
     pub language_id: String,
 
     /// The version number of this document (it will increase after each
