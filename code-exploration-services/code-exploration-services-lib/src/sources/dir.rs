@@ -1,4 +1,4 @@
-use std::hash::{Hash, Hasher};
+
 use std::{fs, io};
 use std::cell::RefCell;
 use std::ops::Deref;
@@ -123,7 +123,7 @@ impl SourceDir {
         }
     }
 
-    pub fn map_analyze<'a>(&'a self, f: impl Fn(SourceFile) -> Result<FileAnalysis, AnalysisError>) -> Result<Analysis, AnalysisError> {
+    pub fn map_analyze<'a>(&'a self, mut f: impl FnMut(SourceFile) -> Result<FileAnalysis, AnalysisError>) -> Result<Analysis, AnalysisError> {
         let mut res = Analysis::new();
         for elem in self.files().map(|i| -> Result<(SourceFile, FileAnalysis), AnalysisError> {
             Ok((i, f(i)?))

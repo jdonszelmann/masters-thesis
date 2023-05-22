@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::{stdin, stdout, Read, Write};
 use std::path::{Path, PathBuf};
 use code_exploration_services_lib::analysis::dir::Analysis;
-use code_exploration_services_lib::analysis::file::FileAnalysis;
+
 use code_exploration_services_lib::Annotater;
 use code_exploration_services_lib::output::simple_html::SimpleHtml;
 use code_exploration_services_lib::sources::dir::SourceDir;

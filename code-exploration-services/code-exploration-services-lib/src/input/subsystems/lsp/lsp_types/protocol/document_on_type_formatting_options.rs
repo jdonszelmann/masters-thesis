@@ -1,5 +1,6 @@
 /// Format document on type options
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all="camelCase")]
 pub struct DocumentOnTypeFormattingOptions {
     /// A character on which formatting should be triggered, like `}`.
     pub first_trigger_character: String,

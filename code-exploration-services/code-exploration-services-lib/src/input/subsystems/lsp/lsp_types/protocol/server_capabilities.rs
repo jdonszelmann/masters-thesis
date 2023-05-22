@@ -7,10 +7,14 @@ use super::{
 use crate::input::subsystems::lsp::lsp_types::jsonrpc::{Intersection, Intersection3, Union, Union3, Value};
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all="camelCase")]
 pub struct ServerCapabilities {
     /// Defines how text documents are synced. Is either a detailed structure defining each notification or
     /// for backwards compatibility the TextDocumentSyncKind number. If omitted it defaults to `TextDocumentSyncKind.None`.
     pub text_document_sync: Option<Union<TextDocumentSyncOptions, TextDocumentSyncKind>>,
+
+    /// the position encoding used by the server
+    pub position_encoding: String,
 
     /// The server provides hover support.
     pub hover_provider: Option<bool>,

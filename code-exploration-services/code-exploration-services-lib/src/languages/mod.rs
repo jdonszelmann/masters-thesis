@@ -49,9 +49,10 @@ impl Language {
     }
 
     /// Where is the lsp for a language located? A language could simply not have an LSP, then None is returned
-    pub fn lsp(&self) -> Option<PathBuf> {
+    /// Also returns the lsp lang id for the language
+    pub fn lsp(&self) -> Option<(PathBuf, &'static str)> {
         match self {
-            Language::Rust => Some(PathBuf::from("/usr/bin/rust-analyzer")),
+            Language::Rust => Some((PathBuf::from("/usr/bin/rust-analyzer"), "rust")),
             Language::Json => None,
             Language::Html => None,
             Language::Cpp => None,
@@ -93,6 +94,7 @@ impl Language {
         let file_in_dir = match self {
             Self::Rust => {
                 let module_name = filename.replace(" ", "_").replace("-", "_").to_lowercase();
+                let (module_name_ident, _ext) = module_name.rsplit_once(".").expect("has extension");
 
                 let src = source_dir_path.path().join("src");
                 fs::create_dir_all(&src)?;
@@ -108,7 +110,7 @@ edition = "2021"
 
                 fs::write(src.join("main.rs"), format!(r#"
 mod {};
-                "#, module_name))?;
+                "#, module_name_ident))?;
                 let file_in_dir = src.join(module_name);
 
 

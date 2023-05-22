@@ -1,6 +1,6 @@
 use std::collections::hash_map::Entry;
 use std::path::PathBuf;
-use std::io::{BufRead, Write};
+use std::io::{Write};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 use thiserror::Error;
@@ -49,7 +49,7 @@ impl Analysis {
         let mut new_files = HashMap::new();
         for (path, analysis) in self.files.into_iter().chain(other.files) {
             match new_files.entry(path) {
-                Entry::Occupied(mut o) => {
+                Entry::Occupied(o) => {
                     let (path, other_analysis) = o.remove_entry();
                     new_files.insert(path, analysis.merge(other_analysis)?);
                 }
