@@ -175,33 +175,38 @@ impl TextmateThemeManager {
 impl Default for TextmateThemeManager {
     fn default() -> Self {
         let mut res = Self::new();
-        #[cfg(feature = "xml")]
         res.add(
-            TextmateTheme::from_xml(include_str!("../../../../textmate/textmate_themes/one-dark.tmTheme"))
+            TextmateTheme::from_xml(include_str!("../../../../textmate_themes/one-dark.tmTheme"))
                 .expect("theme to parse"),
         );
-        #[cfg(feature = "xml")]
         res.add(
-            TextmateTheme::from_xml(include_str!("../../../../textmate/textmate_themes/cobalt.tmTheme"))
+            TextmateTheme::from_xml(include_str!("../../../../textmate_themes/cobalt.tmTheme"))
                 .expect("theme to parse"),
         );
-        #[cfg(feature = "xml")]
         res.add(
-            TextmateTheme::from_xml(include_str!("../../../../textmate/textmate_themes/3024-day.tmTheme"))
+            TextmateTheme::from_xml(include_str!("../../../../textmate_themes/3024-day.tmTheme"))
                 .expect("theme to parse"),
         );
-        #[cfg(feature = "xml")]
         res.add(
-            TextmateTheme::from_xml(include_str!("../../../../textmate/textmate_themes/solarized-dark.tmTheme"))
+            TextmateTheme::from_xml(include_str!("../../../../textmate_themes/solarized-dark.tmTheme"))
                 .expect("theme to parse"),
         );
-        #[cfg(feature = "xml")]
         res.add(
             TextmateTheme::from_xml(include_str!(
-                "../../../../textmate/textmate_themes/solarized-light.tmTheme"
+                "../../../../textmate_themes/solarized-light.tmTheme"
             ))
             .expect("theme to parse"),
         );
         res
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::textmate::theme::TextmateThemeManager;
+
+    #[test]
+    fn parses() {
+        TextmateThemeManager::default();
     }
 }

@@ -6,7 +6,6 @@ use std::process::{Command, id, Stdio};
 use crate::input::{Analyser, AnalysisError};
 use thiserror::Error;
 use crate::analysis::dir::Analysis;
-use crate::analysis::file::FileAnalysis;
 use crate::input::subsystems::lsp::lsp_protocol::{Lsp, NewLspError, RequestError};
 use crate::input::subsystems::lsp::lsp_types::jsonrpc::Nullable;
 use crate::input::subsystems::lsp::lsp_types::protocol::{ClientCapabilities, definition_request, did_open_text_document_notification, DidOpenTextDocumentParams, initialize_request, initialized_notification, InitializedParams, InitializeParams, InitialTraceSetting, ReferencesCapabilities, SynchronizationCapabilities, TextDocumentClientCapabilities, TextDocumentPositionParams};

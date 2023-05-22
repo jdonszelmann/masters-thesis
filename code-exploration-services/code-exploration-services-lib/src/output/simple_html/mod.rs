@@ -6,7 +6,6 @@ use themes::ScopeSelectorFromStrError;
 use thiserror::Error;
 use crate::analysis::dir::{Analysis, GetAnalysisError};
 use crate::analysis::field::Field;
-use crate::analysis::file::FileAnalysis;
 use crate::output::simple_html::tokenize::OutlineSetting::GenerateOutline;
 use crate::sources::dir::{ContentsError, SourceDir};
 use crate::sources::span::Span;

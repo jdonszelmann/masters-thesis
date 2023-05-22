@@ -3,11 +3,10 @@ use crate::output::simple_html::{tokenize, FieldIndex, SimpleHtmlError};
 use axohtml::dom::DOMTree;
 use axohtml::{html, text, unsafe_text};
 use std::collections::VecDeque;
-use axohtml::elements::s;
 use crate::analysis::field::Field;
 use crate::analysis::file::FileAnalysis;
 use crate::output::simple_html::tokenize::OutlineSetting::DontGenerateOutline;
-use crate::sources::dir::{SourceDir, SourceFile};
+use crate::sources::dir::SourceFile;
 use crate::sources::span::Span;
 
 #[derive(Debug)]
