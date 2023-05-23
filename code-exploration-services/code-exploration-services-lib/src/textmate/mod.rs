@@ -7,8 +7,8 @@ pub use grammar::TextmateGrammar;
 
 #[cfg(test)]
 mod tests {
-    use code_exploration_services_tests::{color_eyre, install_eyre};
     use crate::textmate::TextmateGrammar;
+    use code_exploration_services_tests::{color_eyre, install_eyre};
 
     #[test]
     fn test_rust() -> color_eyre::Result<()> {
@@ -73,4 +73,3 @@ fn main() {
         Ok(())
     }
 }
-

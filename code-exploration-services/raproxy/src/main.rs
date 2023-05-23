@@ -1,15 +1,16 @@
+use color_eyre::eyre::ContextCompat;
 use std::fs::File;
 use std::io;
 use std::io::{copy, Read, Write};
-use std::process::{Command, exit, Stdio};
-use color_eyre::eyre::ContextCompat;
+use std::process::{exit, Command, Stdio};
 use tracing::info;
 use tracing_subscriber::util::SubscriberInitExt;
 
 fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
 
-    let mut log = File::create("/home/jonathan/src/thesis/code-exploration-services/raproxy/lsp.log")?;
+    let mut log =
+        File::create("/home/jonathan/src/thesis/code-exploration-services/raproxy/lsp.log")?;
 
     tracing_subscriber::fmt::fmt()
         .with_ansi(false)

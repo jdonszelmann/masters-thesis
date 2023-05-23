@@ -1,16 +1,16 @@
-use crate::input::{Analyser, AnalysisError};
-use std::collections::HashMap;
-use std::io;
-use std::num::ParseIntError;
-use strum::ParseError;
-use thiserror::Error;
 use crate::analysis::dir::Analysis;
 use crate::analysis::field::{Field, FieldRef};
 use crate::analysis::file::FileAnalysis;
 use crate::input::subsystems::ctags::xref_kinds::XrefKind;
 use crate::input::subsystems::ctags::xrefs::Xref;
+use crate::input::{Analyser, AnalysisError};
 use crate::sources::dir::{SourceDir, SourceFile};
 use crate::sources::span::Span;
+use std::collections::HashMap;
+use std::io;
+use std::num::ParseIntError;
+use strum::ParseError;
+use thiserror::Error;
 
 pub mod tags;
 pub mod xref_kinds;
@@ -42,7 +42,13 @@ pub enum CtagsAnalysisError {
 
 type Index<'a> = HashMap<(&'a str, &'a XrefKind), Vec<&'a Xref>>;
 
-fn find_parent(parent: &str, parent_kind: &XrefKind, span: &Span, file: SourceFile, index: &Index) -> Result<Option<FieldRef>, AnalysisError> {
+fn find_parent(
+    parent: &str,
+    parent_kind: &XrefKind,
+    span: &Span,
+    file: SourceFile,
+    index: &Index,
+) -> Result<Option<FieldRef>, AnalysisError> {
     let Some(index_entry ) = index.get(&(parent, parent_kind)) else {
         return Ok(None);
     };

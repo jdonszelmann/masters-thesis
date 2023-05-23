@@ -1,17 +1,14 @@
-use crate::output::simple_html::{FieldIndex, outline};
-use std::collections::HashSet;
 use crate::analysis::field::Field;
 use crate::analysis::file::FileAnalysis;
 use crate::output::simple_html::tokenize::Token::Newline;
+use crate::output::simple_html::{outline, FieldIndex};
 use crate::sources::span::Span;
+use std::collections::HashSet;
 
 #[derive(Debug)]
 pub enum Token {
-    Token {
-        text: String,
-        classes: Classes,
-    },
-    Newline
+    Token { text: String, classes: Classes },
+    Newline,
 }
 
 fn decrement_active_classes(classes: ActiveClasses) -> ActiveClasses {
@@ -24,24 +21,36 @@ fn decrement_active_classes(classes: ActiveClasses) -> ActiveClasses {
 #[derive(Debug, PartialEq)]
 pub enum OutlineSetting {
     GenerateOutline,
-    DontGenerateOutline
+    DontGenerateOutline,
 }
 
-fn active_at_offset<'a>(field_index: &'a FieldIndex, offset: usize) -> impl Iterator<Item=ActiveClass> + 'a {
-    field_index.values()
+fn active_at_offset<'a>(
+    field_index: &'a FieldIndex,
+    offset: usize,
+) -> impl Iterator<Item = ActiveClass> + 'a {
+    field_index
+        .values()
         .flatten()
-        .filter_map(move |(span, field)| if offset >= span.start && offset < span.start + span.len {
-            if let Field::SyntaxColour(c) = field {
-                Some(ActiveClass::from_span(span, c))
+        .filter_map(move |(span, field)| {
+            if offset >= span.start && offset < span.start + span.len {
+                if let Field::SyntaxColour(c) = field {
+                    Some(ActiveClass::from_span(span, c))
+                } else {
+                    None
+                }
             } else {
                 None
             }
-        } else {
-            None
         })
 }
 
-pub fn tokenize_string(s: &str, offset: usize, field_index: &FieldIndex, outline_setting: OutlineSetting) -> Vec<Token> { let mut tokens = Vec::new();
+pub fn tokenize_string(
+    s: &str,
+    offset: usize,
+    field_index: &FieldIndex,
+    outline_setting: OutlineSetting,
+) -> Vec<Token> {
+    let mut tokens = Vec::new();
     // the current token
     let mut curr_token = Vec::new();
     // what classes are active for the current character
@@ -66,11 +75,9 @@ pub fn tokenize_string(s: &str, offset: usize, field_index: &FieldIndex, outline
                     Field::SyntaxColour(c) if span.len != 0 => {
                         active_classes.push(ActiveClass::from_span(span, c));
                     }
-                    Field::Outline {..} if outline_setting == OutlineSetting::GenerateOutline => {
-                        active_classes.push(ActiveClass::from_span(
-                            span,
-                            outline::span_to_class(span)
-                        ));
+                    Field::Outline { .. } if outline_setting == OutlineSetting::GenerateOutline => {
+                        active_classes
+                            .push(ActiveClass::from_span(span, outline::span_to_class(span)));
                     }
                     _ => {}
                 }

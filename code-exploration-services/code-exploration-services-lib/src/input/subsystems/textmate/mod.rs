@@ -1,11 +1,11 @@
-use crate::input::{Analyser, AnalysisError};
-use thiserror::Error;
 use crate::analysis::dir::Analysis;
 use crate::analysis::field::Field;
 use crate::analysis::file::FileAnalysis;
+use crate::input::{Analyser, AnalysisError};
 use crate::sources::dir::SourceDir;
 use crate::sources::span::Span;
 use crate::textmate;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum TextmateAnalysisError {

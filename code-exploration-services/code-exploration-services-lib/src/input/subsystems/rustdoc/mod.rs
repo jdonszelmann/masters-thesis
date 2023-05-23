@@ -1,6 +1,4 @@
-
-use crate::input::{Analyser};
-
+use crate::input::Analyser;
 
 use std::io;
 use std::num::ParseIntError;
@@ -33,6 +31,4 @@ pub enum CtagsAnalysisError {
 
 pub struct RustdocAnalyser;
 
-impl Analyser for RustdocAnalyser {
-}
-
+impl Analyser for RustdocAnalyser {}

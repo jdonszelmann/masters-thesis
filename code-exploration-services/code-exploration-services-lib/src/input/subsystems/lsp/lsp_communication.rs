@@ -1,23 +1,28 @@
+use crate::input::subsystems::lsp::lsp_messages::{
+    NotificationMessage, Nullable, RequestMessage, ResponseMessage, Union,
+};
+use crate::sources::dir::ContentsError;
+use crossbeam::channel::{unbounded, Receiver, Sender, TryRecvError};
+use crossbeam::select;
+use lsp_types::notification::Notification;
+use lsp_types::request::{Request, WorkDoneProgressCreate};
+use lsp_types::{
+    ProgressParams, ProgressParamsValue, ProgressToken, WorkDoneProgress, WorkDoneProgressBegin,
+    WorkDoneProgressCreateParams, WorkDoneProgressEnd, WorkDoneProgressReport,
+};
+use serde_json::Value;
 use std::collections::HashMap;
+use std::io::Read;
 use std::io::{BufRead, BufReader, Write};
+use std::path::PathBuf;
 use std::process::{Child, ChildStdin, ChildStdout, ExitStatus};
 use std::sync::atomic::{AtomicI32, Ordering};
-use crossbeam::channel::{unbounded, Receiver, Sender, TryRecvError};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 use std::time::Duration;
-use lsp_types::request::{Request, WorkDoneProgressCreate};
 use thiserror::Error;
-use std::io::Read;
-use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
-use crossbeam::select;
-use lsp_types::notification::Notification;
-use lsp_types::{ProgressParams, ProgressParamsValue, ProgressToken, WorkDoneProgress, WorkDoneProgressBegin, WorkDoneProgressCreateParams, WorkDoneProgressEnd, WorkDoneProgressReport};
-use serde_json::Value;
 use tracing::{debug, info};
-use crate::input::subsystems::lsp::lsp_messages::{NotificationMessage, Nullable, ResponseMessage, RequestMessage, Union};
-use crate::sources::dir::ContentsError;
 
 pub enum Header {
     ContentType,
@@ -27,7 +32,9 @@ pub enum Header {
 fn parse_header(maybe_header: &str) -> Option<Header> {
     let maybe_header = maybe_header.trim();
     if let Some(rest) = maybe_header.strip_prefix("Content-Length:") {
-        Some(Header::ContentLength(rest.trim().parse().expect("invalid length")))
+        Some(Header::ContentLength(
+            rest.trim().parse().expect("invalid length"),
+        ))
     } else if let Some(_) = maybe_header.strip_prefix("Content-Type:") {
         Some(Header::ContentType)
     } else {
@@ -220,29 +227,28 @@ impl Lsp {
                 errors: local_errors,
                 notifications: local_notifications,
                 requests: local_requests,
-            }.run(stdout);
+            }
+            .run(stdout);
         });
 
         let process = Arc::new(Mutex::new(process));
 
         let (exit_tx, exit_rx) = unbounded();
         let local_process = Arc::clone(&process);
-        thread::spawn(move || {
-            loop {
-                match local_process.lock().unwrap().try_wait() {
-                    Ok(Some(i)) => {
-                        info!("lsp exited");
-                        exit_tx.send(RequestError::ExitedCode(i)).unwrap();
-                    }
-                    Err(e) => {
-                        info!("lsp exited");
-                        exit_tx.send(RequestError::ExitedBecause(e)).unwrap();
-                        return;
-                    }
-                    Ok(None) => {}
+        thread::spawn(move || loop {
+            match local_process.lock().unwrap().try_wait() {
+                Ok(Some(i)) => {
+                    info!("lsp exited");
+                    exit_tx.send(RequestError::ExitedCode(i)).unwrap();
                 }
-                thread::sleep(Duration::from_millis(200));
+                Err(e) => {
+                    info!("lsp exited");
+                    exit_tx.send(RequestError::ExitedBecause(e)).unwrap();
+                    return;
+                }
+                Ok(None) => {}
             }
+            thread::sleep(Duration::from_millis(200));
         });
 
         Ok(Self {
@@ -272,7 +278,9 @@ impl Lsp {
                     Ok(msg) => {
                         info!("progress: {msg}");
                     }
-                    Err(TryRecvError::Disconnected) => { continue; }
+                    Err(TryRecvError::Disconnected) => {
+                        continue;
+                    }
                     Err(TryRecvError::Empty) => {}
                 }
 
@@ -293,7 +301,10 @@ impl Lsp {
     }
 
     /// A notification is a request without expected response
-    pub fn notification<N: Notification>(&mut self, request: &N::Params) -> Result<(), RequestError> {
+    pub fn notification<N: Notification>(
+        &mut self,
+        request: &N::Params,
+    ) -> Result<(), RequestError> {
         self.closed()?;
 
         let msg = serde_json::to_vec(&NotificationMessage {
@@ -302,7 +313,8 @@ impl Lsp {
             params: Some(serde_json::to_value(request).map_err(RequestError::SerializeRequest)?),
         })?;
 
-        self.stdin.write_all(format!("Content-Length: {}\r\n\r\n", msg.len()).as_bytes())?;
+        self.stdin
+            .write_all(format!("Content-Length: {}\r\n\r\n", msg.len()).as_bytes())?;
         self.stdin.write_all(&msg)?;
 
         Ok(())
@@ -312,17 +324,19 @@ impl Lsp {
         match self.exit.try_recv() {
             Ok(i) => Err(i),
             Err(TryRecvError::Disconnected) => Err(RequestError::Exited),
-            _ => Ok(())
+            _ => Ok(()),
         }
     }
 
     fn handle_request(&mut self, msg: RequestMessage) -> Result<(), RequestError> {
         match msg.method.as_str() {
             WorkDoneProgressCreate::METHOD => {
-                let params: WorkDoneProgressCreateParams = serde_json::from_value(msg.params.expect("params"))?;
+                let params: WorkDoneProgressCreateParams =
+                    serde_json::from_value(msg.params.expect("params"))?;
                 let (progress_tx, progress_rx) = unbounded();
                 self.ready.add(progress_rx);
-                self.progress_chans.insert(params.token, ("".to_string(), progress_tx));
+                self.progress_chans
+                    .insert(params.token, ("".to_string(), progress_tx));
             }
             _ => {
                 info!("ignoring {msg:?}...");
@@ -338,12 +352,14 @@ impl Lsp {
                 let params: ProgressParams = serde_json::from_value(msg.params.expect("params"))?;
                 let token = params.token;
                 match params.value {
-                    ProgressParamsValue::WorkDone(
-                        WorkDoneProgress::Begin(
-                            WorkDoneProgressBegin {
-                                title, message, percentage, ..
-                            })
-                    ) => {
+                    ProgressParamsValue::WorkDone(WorkDoneProgress::Begin(
+                        WorkDoneProgressBegin {
+                            title,
+                            message,
+                            percentage,
+                            ..
+                        },
+                    )) => {
                         if let Some((old_title, chan)) = self.progress_chans.get_mut(&token) {
                             let msg = match (message, percentage) {
                                 (None, None) => format!("{title}"),
@@ -358,11 +374,13 @@ impl Lsp {
                             }
                         }
                     }
-                    ProgressParamsValue::WorkDone(
-                        WorkDoneProgress::Report(
-                            WorkDoneProgressReport { message, percentage, .. }
-                        )
-                    ) => {
+                    ProgressParamsValue::WorkDone(WorkDoneProgress::Report(
+                        WorkDoneProgressReport {
+                            message,
+                            percentage,
+                            ..
+                        },
+                    )) => {
                         if let Some((title, chan)) = self.progress_chans.get_mut(&token) {
                             let msg = match (message, percentage) {
                                 (None, None) => format!("{title}"),
@@ -376,9 +394,9 @@ impl Lsp {
                             }
                         }
                     }
-                    ProgressParamsValue::WorkDone(
-                        WorkDoneProgress::End(WorkDoneProgressEnd {message})
-                    ) => {
+                    ProgressParamsValue::WorkDone(WorkDoneProgress::End(WorkDoneProgressEnd {
+                        message,
+                    })) => {
                         if let Some((title, chan)) = self.progress_chans.get_mut(&token) {
                             let msg = match message {
                                 None => format!("{title} (100%)"),
@@ -459,7 +477,8 @@ impl Lsp {
             params: Some(serde_json::to_value(params).map_err(RequestError::SerializeRequest)?),
         })?;
 
-        self.stdin.write_all(format!("Content-Length: {}\r\n\r\n", msg.len()).as_bytes())?;
+        self.stdin
+            .write_all(format!("Content-Length: {}\r\n\r\n", msg.len()).as_bytes())?;
         self.stdin.write_all(&msg)?;
 
         let response = 'outer: {
@@ -503,9 +522,15 @@ impl Lsp {
 impl Drop for Lsp {
     fn drop(&mut self) {
         let mut process = self.process.lock().unwrap();
-        if process.try_wait().expect("failed to find if child process has exited").is_none() {
+        if process
+            .try_wait()
+            .expect("failed to find if child process has exited")
+            .is_none()
+        {
             process.kill().expect("kill language server");
         }
-        self.receiver_thread.take().map(|i| i.join().expect("LSP receiver thread panicked"));
+        self.receiver_thread
+            .take()
+            .map(|i| i.join().expect("LSP receiver thread panicked"));
     }
 }

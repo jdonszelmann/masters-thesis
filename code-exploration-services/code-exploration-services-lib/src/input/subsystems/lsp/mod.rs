@@ -2,24 +2,30 @@
 mod lsp_communication;
 mod lsp_messages;
 
-use std::collections::{HashMap, HashSet};
-use std::path::Path;
-use std::process::{Command, id, Stdio};
-use std::thread;
-use std::time::Duration;
-use lsp_types::{ClientCapabilities, ClientInfo, DidOpenTextDocumentParams, GotoCapability, GotoDefinitionParams, GotoDefinitionResponse, InitializedParams, InitializeParams, Position, PositionEncodingKind, Range, ReferenceClientCapabilities, TextDocumentClientCapabilities, TextDocumentIdentifier, TextDocumentItem, TextDocumentPositionParams, TraceValue, Url, WindowClientCapabilities, WorkspaceClientCapabilities};
-use lsp_types::notification::{DidOpenTextDocument, Initialized};
-use lsp_types::request::{GotoDefinition, Initialize};
-use crate::input::{Analyser, AnalysisError};
-use thiserror::Error;
-use tracing::info;
 use crate::analysis::dir::Analysis;
 use crate::analysis::field::{Field, FieldRef};
 use crate::analysis::file::FileAnalysis;
 use crate::input::subsystems::lsp::lsp_communication::{Lsp, NewLspError, RequestError};
+use crate::input::{Analyser, AnalysisError};
 use crate::languages::Language;
 use crate::sources::dir::{SourceDir, SourceFile};
 use crate::sources::span::Span;
+use lsp_types::notification::{DidOpenTextDocument, Initialized};
+use lsp_types::request::{GotoDefinition, Initialize};
+use lsp_types::{
+    ClientCapabilities, ClientInfo, DidOpenTextDocumentParams, GotoCapability,
+    GotoDefinitionParams, GotoDefinitionResponse, InitializeParams, InitializedParams, Position,
+    PositionEncodingKind, Range, ReferenceClientCapabilities, TextDocumentClientCapabilities,
+    TextDocumentIdentifier, TextDocumentItem, TextDocumentPositionParams, TraceValue, Url,
+    WindowClientCapabilities, WorkspaceClientCapabilities,
+};
+use std::collections::{HashMap, HashSet};
+use std::path::Path;
+use std::process::{id, Command, Stdio};
+use std::thread;
+use std::time::Duration;
+use thiserror::Error;
+use tracing::info;
 
 pub struct LspAnalyser;
 
@@ -51,12 +57,18 @@ struct LanguageServer {
 }
 
 impl LanguageServer {
-    fn initialize(&mut self, parent_id: u32, lang_id: &str, source: &SourceDir) -> Result<(), RequestError> {
+    fn initialize(
+        &mut self,
+        parent_id: u32,
+        lang_id: &str,
+        source: &SourceDir,
+    ) -> Result<(), RequestError> {
         // send capabilities
         let resp = self.lsp.request::<Initialize>(&InitializeParams {
             process_id: Some(parent_id),
-            root_uri: Some(Url::from_file_path(
-                source.root()).map_err(|()| RequestError::ParseUrl(source.root().to_path_buf()))?
+            root_uri: Some(
+                Url::from_file_path(source.root())
+                    .map_err(|()| RequestError::ParseUrl(source.root().to_path_buf()))?,
             ),
             capabilities: ClientCapabilities {
                 workspace: Some(WorkspaceClientCapabilities {
@@ -138,22 +150,27 @@ impl LanguageServer {
             ..Default::default()
         })?;
         // verify capabilities
-        assert_eq!(resp.capabilities.position_encoding, Some(PositionEncodingKind::UTF16));
+        assert_eq!(
+            resp.capabilities.position_encoding,
+            Some(PositionEncodingKind::UTF16)
+        );
 
         // send initialized
-        self.lsp.notification::<Initialized>(&InitializedParams {})?;
+        self.lsp
+            .notification::<Initialized>(&InitializedParams {})?;
 
         // open documents
         for file in source.files() {
-            self.lsp.notification::<DidOpenTextDocument>(&DidOpenTextDocumentParams {
-                text_document: TextDocumentItem {
-                    uri: Url::from_file_path(file.path())
-                        .map_err(|()| RequestError::ParseUrl(file.path().to_path_buf()))?,
-                    language_id: lang_id.to_string(),
-                    version: 0,
-                    text: file.contents()?.to_string(),
-                },
-            })?;
+            self.lsp
+                .notification::<DidOpenTextDocument>(&DidOpenTextDocumentParams {
+                    text_document: TextDocumentItem {
+                        uri: Url::from_file_path(file.path())
+                            .map_err(|()| RequestError::ParseUrl(file.path().to_path_buf()))?,
+                        language_id: lang_id.to_string(),
+                        version: 0,
+                        text: file.contents()?.to_string(),
+                    },
+                })?;
         }
 
         // give the LSP time to respond
@@ -168,13 +185,19 @@ impl LanguageServer {
         Ok(())
     }
 
-    fn get_definition_sites(&mut self, file: SourceFile, line: usize, character: usize) -> Result<Vec<Span>, RequestError> {
+    fn get_definition_sites(
+        &mut self,
+        file: SourceFile,
+        line: usize,
+        character: usize,
+    ) -> Result<Vec<Span>, RequestError> {
         let mut res = Vec::new();
 
         if let Some(resp) = self.lsp.request::<GotoDefinition>(&GotoDefinitionParams {
             text_document_position_params: TextDocumentPositionParams {
                 text_document: TextDocumentIdentifier {
-                    uri: Url::from_file_path(file.path()).map_err(|()| RequestError::ParseUrl(file.path().to_path_buf()))?,
+                    uri: Url::from_file_path(file.path())
+                        .map_err(|()| RequestError::ParseUrl(file.path().to_path_buf()))?,
                 },
                 position: Position {
                     line: line as u32,
@@ -197,7 +220,10 @@ impl LanguageServer {
                 };
 
                 // TODO: handle utf8 well
-                Ok(Some(Span::from_start_end(start_offset + start.character as usize, end_offset + end.character as usize)))
+                Ok(Some(Span::from_start_end(
+                    start_offset + start.character as usize,
+                    end_offset + end.character as usize,
+                )))
             };
 
             match resp {
@@ -229,7 +255,11 @@ impl LanguageServer {
         Ok(res)
     }
 
-    fn start_from_path(path: &Path, lang_id: &str, source: &SourceDir) -> Result<Self, NewLanguageServerError> {
+    fn start_from_path(
+        path: &Path,
+        lang_id: &str,
+        source: &SourceDir,
+    ) -> Result<Self, NewLanguageServerError> {
         let mut command = Command::new(path);
         command.stdin(Stdio::piped());
         command.stdout(Stdio::piped());
@@ -248,7 +278,9 @@ impl LanguageServer {
         if let Some((lsp_path, lang_id)) = language.lsp() {
             Self::start_from_path(&lsp_path, lang_id, source)
         } else {
-            Err(NewLanguageServerError::LanguageNotSupported(ext.to_string()))
+            Err(NewLanguageServerError::LanguageNotSupported(
+                ext.to_string(),
+            ))
         }
     }
 }
@@ -257,11 +289,17 @@ impl Analyser for LspAnalyser {
     fn symbol_navigation(&self, s: &SourceDir) -> Result<Analysis, AnalysisError> {
         info!("lsp hover documentation");
 
-        let extensions = s.files()
-            .flat_map(|i| i.path().extension().map(|i| i.to_string_lossy().to_string()))
+        let extensions = s
+            .files()
+            .flat_map(|i| {
+                i.path()
+                    .extension()
+                    .map(|i| i.to_string_lossy().to_string())
+            })
             .collect::<HashSet<_>>();
 
-        let mut servers = extensions.into_iter()
+        let mut servers = extensions
+            .into_iter()
             .map(|ext| Ok((ext.to_string(), LanguageServer::new(&ext, s)?)))
             .collect::<Result<HashMap<_, _>, _>>()
             .map_err(LanguageServerError::New)?;

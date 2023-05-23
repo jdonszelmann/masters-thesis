@@ -1,8 +1,10 @@
 use crate::output::simple_html::SimpleHtmlError;
+use crate::textmate::theme::{
+    FontStyle, Settings, SettingsItem, TextmateTheme, TextmateThemeManager,
+};
 use std::iter;
 use std::str::FromStr;
 use thiserror::Error;
-use crate::textmate::theme::{FontStyle, Settings, SettingsItem, TextmateTheme, TextmateThemeManager};
 
 pub fn generate_theme_styles(themes: &TextmateThemeManager) -> Result<String, SimpleHtmlError> {
     let mut res = String::new();
@@ -47,7 +49,7 @@ fn generate_theme_style(theme: &TextmateTheme) -> Result<String, SimpleHtmlError
             sanitize_theme_name(&theme.name),
             global_settings.selection
         )
-            .as_str(),
+        .as_str(),
     );
 
     res.push_str(

@@ -1,11 +1,10 @@
-use std::fmt::{Display, Formatter};
-use thiserror::Error;
 use crate::analysis::field::Field;
 use crate::sources::dir::{HashError, SourceFile};
 use crate::sources::hash::SourceCodeHash;
 use crate::sources::span::Span;
+use std::fmt::{Display, Formatter};
 use std::io::Write;
-
+use thiserror::Error;
 
 #[derive(Debug)]
 pub struct FileAnalysis {
@@ -16,7 +15,7 @@ pub struct FileAnalysis {
 #[derive(Debug, Error)]
 pub enum NewFileAnalysisError {
     #[error("failed to hash")]
-    Hash(#[from] HashError)
+    Hash(#[from] HashError),
 }
 
 impl FileAnalysis {

@@ -1,5 +1,5 @@
-use serde::{Serialize, Deserialize};
 use crate::sources::span::Span;
+use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Field {

@@ -1,11 +1,11 @@
 use crate::output::simple_html::sanitize_theme_name;
 use crate::output::simple_html::tokenize::Token;
 use crate::output::simple_html::{themes, SimpleHtmlError};
+use crate::textmate::theme::TextmateThemeManager;
 use axohtml::dom::DOMTree;
 use axohtml::elements::FlowContent;
 use axohtml::types::{Class, SpacedSet};
 use axohtml::{html, text, unsafe_text};
-use crate::textmate::theme::TextmateThemeManager;
 
 fn generate_line_from_tokens(tokens: &[Token], line_num: usize) -> Box<dyn FlowContent<String>> {
     let mut spans = Vec::new();
@@ -37,9 +37,7 @@ fn generate_line_from_tokens(tokens: &[Token], line_num: usize) -> Box<dyn FlowC
     }
 }
 
-pub fn generate_html_from_tokens(
-    tokens: Vec<Token>,
-) -> Box<dyn FlowContent<String>> {
+pub fn generate_html_from_tokens(tokens: Vec<Token>) -> Box<dyn FlowContent<String>> {
     let mut lines = Vec::new();
     let mut line = Vec::new();
     let mut line_num = 1;
@@ -73,13 +71,13 @@ pub fn generate_html(
         "change-theme",
         sanitize_theme_name(&themes.iter().next().unwrap().name).as_str(),
     ])
-        .unwrap();
+    .unwrap();
 
-    let lines = tokens.iter().filter(|i| matches!(i, Token::Newline)).count() + if tokens.is_empty() {
-        0
-    } else {
-        1
-    };
+    let lines = tokens
+        .iter()
+        .filter(|i| matches!(i, Token::Newline))
+        .count()
+        + if tokens.is_empty() { 0 } else { 1 };
 
     let doc: DOMTree<String> = html! {
         <html>

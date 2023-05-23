@@ -19,7 +19,10 @@ pub struct RequestMessage {
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
-pub enum Union<T0, T1>{A(T0), B(T1)}
+pub enum Union<T0, T1> {
+    A(T0),
+    B(T1),
+}
 
 impl<T0, T1> Union<T0, T1> {
     #[allow(unused)]
@@ -35,7 +38,11 @@ impl<T0, T1> Union<T0, T1> {
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
-pub enum Union3<T0, T1, T2>{A(T0), B(T1), C(T2)}
+pub enum Union3<T0, T1, T2> {
+    A(T0),
+    B(T1),
+    C(T2),
+}
 
 impl<T0, T1, T2> Union3<T0, T1, T2> {
     #[allow(unused)]
@@ -64,8 +71,8 @@ impl<T> Nullable<T> {}
 
 impl<T: Serialize> Serialize for Nullable<T> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
+    where
+        S: Serializer,
     {
         if let Nullable::Some(value) = &self {
             serializer.serialize_some::<T>(value)
@@ -76,11 +83,16 @@ impl<T: Serialize> Serialize for Nullable<T> {
 }
 
 impl<'de, T: Deserialize<'de>> Deserialize<'de> for Nullable<T> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
-        Ok(match Option::<T>::deserialize(deserializer).unwrap_or(None) {
-            None => Self::None,
-            Some(i) => Self::Some(i),
-        })
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        Ok(
+            match Option::<T>::deserialize(deserializer).unwrap_or(None) {
+                None => Self::None,
+                Some(i) => Self::Some(i),
+            },
+        )
     }
 }
 
@@ -112,7 +124,7 @@ pub struct NotificationMessage {
 
     /// The notification's params.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub params: Option<Value>
+    pub params: Option<Value>,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -126,5 +138,5 @@ pub struct ResponseError<D> {
     /// A Primitive or Structured value that contains additional
     /// information about the error. Can be omitted.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub data: Option<D>
+    pub data: Option<D>,
 }

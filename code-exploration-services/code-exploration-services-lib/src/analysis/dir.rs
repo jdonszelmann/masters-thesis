@@ -1,11 +1,11 @@
-use std::collections::hash_map::Entry;
-use std::path::PathBuf;
-use std::io::{Write};
-use std::collections::HashMap;
-use std::fmt::{Display, Formatter};
-use thiserror::Error;
 use crate::analysis::file::{FileAnalysis, HashesDontMatch};
 use crate::sources::dir::{HashError, SourceFile};
+use std::collections::hash_map::Entry;
+use std::collections::HashMap;
+use std::fmt::{Display, Formatter};
+use std::io::Write;
+use std::path::PathBuf;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum GetAnalysisError {
@@ -31,7 +31,9 @@ impl Analysis {
     }
 
     pub fn analysis_for(&self, file: SourceFile) -> Result<&FileAnalysis, GetAnalysisError> {
-        let analysis= self.files.get(&file.path().to_path_buf())
+        let analysis = self
+            .files
+            .get(&file.path().to_path_buf())
             .ok_or_else(|| GetAnalysisError::NotFound(file.path().to_path_buf()))?;
 
         if analysis.hash() != &file.hash()? {
@@ -59,9 +61,7 @@ impl Analysis {
             }
         }
 
-        Ok(Self {
-            files: new_files
-        })
+        Ok(Self { files: new_files })
     }
 
     pub fn serialize(&self) -> Vec<u8> {

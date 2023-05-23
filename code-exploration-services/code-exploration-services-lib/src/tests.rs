@@ -1,6 +1,6 @@
 use crate::input::analyse;
-use code_exploration_services_tests::{color_eyre, install_eyre};
 use crate::sources::dir::SourceDir;
+use code_exploration_services_tests::{color_eyre, install_eyre};
 
 #[test]
 fn test_example_rs() -> color_eyre::Result<()> {
@@ -25,8 +25,6 @@ fn test_small_rs() -> color_eyre::Result<()> {
 
     Ok(())
 }
-
-
 
 #[test]
 fn test_unicode() -> color_eyre::Result<()> {

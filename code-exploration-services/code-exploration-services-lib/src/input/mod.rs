@@ -1,11 +1,11 @@
-use crate::input::subsystems::ctags::CtagsAnalysisError;
-use crate::input::subsystems::textmate::TextmateAnalysisError;
-use thiserror::Error;
-use crate::input::subsystems::lsp::LanguageServerError;
-use crate::textmate::grammar::FromLanguageError;
-use crate::sources::dir::{ContentsError, SourceDir};
 use crate::analysis::dir::Analysis;
 use crate::analysis::file::NewFileAnalysisError;
+use crate::input::subsystems::ctags::CtagsAnalysisError;
+use crate::input::subsystems::lsp::LanguageServerError;
+use crate::input::subsystems::textmate::TextmateAnalysisError;
+use crate::sources::dir::{ContentsError, SourceDir};
+use crate::textmate::grammar::FromLanguageError;
+use thiserror::Error;
 
 pub mod subsystems;
 
@@ -32,7 +32,7 @@ pub enum AnalysisError {
     Lsp(#[from] LanguageServerError),
 
     #[error("parse grammar")]
-    ParseGrammar(#[from] FromLanguageError)
+    ParseGrammar(#[from] FromLanguageError),
 }
 
 #[inline]

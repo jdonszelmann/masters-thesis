@@ -1,8 +1,8 @@
+use sha1::digest::FixedOutput;
+use sha1::Digest;
+use sha1::Sha1;
 use std::fmt::{Display, Formatter};
 use std::hash::{Hash, Hasher};
-use sha1::Sha1;
-use sha1::Digest;
-use sha1::digest::FixedOutput;
 
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct SourceCodeHash(String);
@@ -30,4 +30,3 @@ impl Display for SourceCodeHash {
         write!(f, "{}", self.0)
     }
 }
-

@@ -2,10 +2,10 @@ use crate::input::subsystems::ctags::xref_kinds::XrefKind;
 use crate::input::subsystems::ctags::CtagsAnalysisError;
 use crate::input::subsystems::ctags::CtagsAnalysisError::RunCtagsCommand;
 use crate::parse::ParseHelper;
-use std::io::BufRead;
-use std::process::Command;
 use crate::sources::dir::{ContentsError, SourceFile};
 use crate::sources::span::Span;
+use std::io::BufRead;
+use std::process::Command;
 
 #[derive(Clone, Debug)]
 pub struct XrefAnalysis {

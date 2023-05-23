@@ -99,5 +99,3 @@ impl TextmateTheme {
         serde_yaml::from_str(data)
     }
 }
-
-

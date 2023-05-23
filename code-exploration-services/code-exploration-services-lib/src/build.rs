@@ -1,13 +1,13 @@
 use convert_case::{Case, Casing};
+use schemars::schema::Schema;
 use std::collections::{HashMap, HashSet};
-use std::{env, fs};
 use std::error::Error;
 use std::fs::File;
 use std::io::BufRead;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use schemars::schema::Schema;
+use std::{env, fs};
 use typify::{TypeSpace, TypeSpaceSettings};
 
 fn generate_xref_kinds() -> Result<(), Box<dyn Error>> {

@@ -188,8 +188,10 @@ impl Default for TextmateThemeManager {
                 .expect("theme to parse"),
         );
         res.add(
-            TextmateTheme::from_xml(include_str!("../../../../textmate_themes/solarized-dark.tmTheme"))
-                .expect("theme to parse"),
+            TextmateTheme::from_xml(include_str!(
+                "../../../../textmate_themes/solarized-dark.tmTheme"
+            ))
+            .expect("theme to parse"),
         );
         res.add(
             TextmateTheme::from_xml(include_str!(

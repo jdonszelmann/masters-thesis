@@ -1,22 +1,20 @@
-
-use std::{fs, io};
-use std::cell::RefCell;
-use std::ops::Deref;
-use std::path::{Path, PathBuf};
-use thiserror::Error;
 use crate::analysis::dir::Analysis;
 use crate::analysis::file::FileAnalysis;
 use crate::input::AnalysisError;
 use crate::languages::{IntoSourceDirError, Language};
 use crate::sources::hash::SourceCodeHash;
 use crate::sources::span::Span;
+use std::cell::RefCell;
+use std::ops::Deref;
+use std::path::{Path, PathBuf};
+use std::{fs, io};
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum NewDirError {
     #[error("walking through directory")]
-    Io(#[from] walkdir::Error)
+    Io(#[from] walkdir::Error),
 }
-
 
 #[derive(Debug, Error)]
 pub enum NewSingleFileError {
@@ -30,7 +28,7 @@ pub enum NewSingleFileError {
 #[derive(Debug, Error)]
 pub enum ContentsError {
     #[error("read source file contents")]
-    Io(#[from] io::Error)
+    Io(#[from] io::Error),
 }
 
 #[derive(Debug, Error)]
@@ -42,7 +40,7 @@ pub enum NewSourceDirError {
     NewDir(#[from] NewDirError),
 
     #[error("can't open project, not a file nor a directory")]
-    NotAFileOrDir(PathBuf)
+    NotAFileOrDir(PathBuf),
 }
 
 pub enum FilesList {
@@ -69,18 +67,17 @@ impl SourceDir {
         } else if root.as_ref().is_dir() {
             Ok(Self::new_dir(root)?)
         } else {
-            Err(NewSourceDirError::NotAFileOrDir(root.as_ref().to_path_buf()))
+            Err(NewSourceDirError::NotAFileOrDir(
+                root.as_ref().to_path_buf(),
+            ))
         }
     }
-
 
     pub fn new_dir(root: impl AsRef<Path>) -> Result<Self, NewDirError> {
         let root = root.as_ref().to_path_buf();
         let files = walkdir::WalkDir::new(&root)
             .into_iter()
-            .map(|i| i.map(|i| {
-                InternalSourceFile::new(i.path())
-            }))
+            .map(|i| i.map(|i| InternalSourceFile::new(i.path())))
             .collect::<Result<_, _>>()?;
 
         Ok(Self {
@@ -91,14 +88,19 @@ impl SourceDir {
     }
 
     pub fn new_single_file(file: impl AsRef<Path>) -> Result<Self, NewSingleFileError> {
-        let ext = file.as_ref().extension()
+        let ext = file
+            .as_ref()
+            .extension()
             .ok_or_else(|| NewSingleFileError::NoExtension(file.as_ref().to_path_buf()))?;
 
         let language = Language::from_extension(&ext.to_string_lossy());
         language.source_file_into_dir(file).map_err(Into::into)
     }
 
-    pub(crate) fn __internal_construct_single_file(root: impl AsRef<Path>, file: impl AsRef<Path>) -> Self {
+    pub(crate) fn __internal_construct_single_file(
+        root: impl AsRef<Path>,
+        file: impl AsRef<Path>,
+    ) -> Self {
         let root = root.as_ref().to_path_buf();
 
         Self {
@@ -117,17 +119,18 @@ impl SourceDir {
     }
 
     pub fn files(&self) -> FileIter {
-        FileIter {
-            dir: self,
-            loc: 0,
-        }
+        FileIter { dir: self, loc: 0 }
     }
 
-    pub fn map_analyze<'a>(&'a self, mut f: impl FnMut(SourceFile) -> Result<FileAnalysis, AnalysisError>) -> Result<Analysis, AnalysisError> {
+    pub fn map_analyze<'a>(
+        &'a self,
+        mut f: impl FnMut(SourceFile) -> Result<FileAnalysis, AnalysisError>,
+    ) -> Result<Analysis, AnalysisError> {
         let mut res = Analysis::new();
-        for elem in self.files().map(|i| -> Result<(SourceFile, FileAnalysis), AnalysisError> {
-            Ok((i, f(i)?))
-        }) {
+        for elem in self
+            .files()
+            .map(|i| -> Result<(SourceFile, FileAnalysis), AnalysisError> { Ok((i, f(i)?)) })
+        {
             let (f, a) = elem?;
 
             res.add_file(f, a);
@@ -179,7 +182,7 @@ pub struct InternalSourceFileCache {
 
 pub struct InternalSourceFile {
     path: PathBuf,
-    cache: RefCell<InternalSourceFileCache>
+    cache: RefCell<InternalSourceFileCache>,
 }
 
 impl InternalSourceFile {
@@ -217,7 +220,8 @@ impl InternalSourceFile {
     }
 
     pub fn slice(&self, span: &Span) -> Result<String, ContentsError> {
-        Ok(self.contents()?
+        Ok(self
+            .contents()?
             .chars()
             .into_iter()
             .skip(span.start)
@@ -242,7 +246,7 @@ impl InternalSourceFile {
 #[derive(Debug, Error)]
 pub enum HashError {
     #[error("read file contents")]
-    Contents(#[from] ContentsError)
+    Contents(#[from] ContentsError),
 }
 
 #[derive(Copy, Clone)]

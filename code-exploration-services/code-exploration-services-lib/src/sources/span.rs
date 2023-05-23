@@ -1,6 +1,6 @@
-use std::str::FromStr;
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::de::Error;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::str::FromStr;
 
 impl Span {
     pub fn new(start: usize, len: usize) -> Self {
@@ -23,7 +23,7 @@ impl Span {
     fn from_parts(parts: &[(usize, usize)]) -> Option<Self> {
         match parts {
             &[] => None,
-            &[(start, len), ref rest@..] => {
+            &[(start, len), ref rest @ ..] => {
                 let mut res = Self::new(start, len);
                 res.next = Self::from_parts(rest).map(Box::new);
                 Some(res)
@@ -33,12 +33,13 @@ impl Span {
 }
 
 impl Serialize for Span {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
         let mut res = Vec::new();
         let mut curr = self;
-        let mut fmt = |_part: &Self| {
-            res.push(format!("{}+{}", self.start, self.len))
-        };
+        let mut fmt = |_part: &Self| res.push(format!("{}+{}", self.start, self.len));
 
         fmt(curr);
         while let Some(i) = &curr.next {
@@ -51,7 +52,10 @@ impl Serialize for Span {
 }
 
 impl<'de> Deserialize<'de> for Span {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error> where D: Deserializer<'de> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
         let s = String::deserialize(deserializer)?;
         let mut parts = Vec::new();
         for part in s.split("&") {

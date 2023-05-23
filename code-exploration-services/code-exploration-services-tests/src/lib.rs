@@ -1,5 +1,5 @@
-use std::sync::Mutex;
 pub use color_eyre;
+use std::sync::Mutex;
 
 static EYRE_INSTALLED: Mutex<bool> = Mutex::new(false);
 
@@ -16,4 +16,3 @@ pub fn install_eyre() -> color_eyre::Result<()> {
 
     Ok(())
 }
-

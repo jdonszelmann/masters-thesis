@@ -1,15 +1,15 @@
+use crate::analysis::dir::{Analysis, GetAnalysisError};
+use crate::analysis::field::Field;
 use crate::output::simple_html::themes::sanitize_theme_name;
+use crate::output::simple_html::tokenize::OutlineSetting::GenerateOutline;
 use crate::output::Annotater;
+use crate::sources::dir::{ContentsError, SourceDir};
+use crate::sources::span::Span;
+use crate::textmate::theme::TextmateThemeManager;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use themes::ScopeSelectorFromStrError;
 use thiserror::Error;
-use crate::analysis::dir::{Analysis, GetAnalysisError};
-use crate::analysis::field::Field;
-use crate::output::simple_html::tokenize::OutlineSetting::GenerateOutline;
-use crate::sources::dir::{ContentsError, SourceDir};
-use crate::sources::span::Span;
-use crate::textmate::theme::TextmateThemeManager;
 
 mod generate_html;
 mod outline;
@@ -27,7 +27,7 @@ pub enum SimpleHtmlError {
     Contents(#[from] ContentsError),
 
     #[error("get analysis for file {1:?}")]
-    GetAnalysis(#[source] GetAnalysisError, PathBuf)
+    GetAnalysis(#[source] GetAnalysisError, PathBuf),
 }
 
 type FieldIndex<'a> = HashMap<usize, Vec<(&'a Span, &'a Field)>>;
@@ -37,7 +37,8 @@ impl Annotater for SimpleHtml {
 
     fn annotate(&self, source: &SourceDir, a: Analysis) -> Self::Output {
         let file = source.files().next().expect("one source file");
-        let a = a.analysis_for(file)
+        let a = a
+            .analysis_for(file)
             .map_err(|i| SimpleHtmlError::GetAnalysis(i, file.path().to_path_buf()))?;
 
         let themes = TextmateThemeManager::default();

@@ -1,10 +1,10 @@
+use crate::sources::dir::SourceDir;
+use fs_extra::file::CopyOptions;
 use std::borrow::Cow;
-use std::{fs, io};
 use std::fs::File;
 use std::path::{Path, PathBuf};
-use fs_extra::file::CopyOptions;
+use std::{fs, io};
 use thiserror::Error;
-use crate::sources::dir::SourceDir;
 
 #[derive(Debug, Error)]
 pub enum IntoSourceDirError {
@@ -18,7 +18,7 @@ pub enum IntoSourceDirError {
     Copy(#[from] fs_extra::error::Error),
 
     #[error("path does not refer to a file: {0:?}")]
-    NotAFile(PathBuf)
+    NotAFile(PathBuf),
 }
 
 pub enum Language {
@@ -66,14 +66,22 @@ impl Language {
     /// Returns the textmate grammar for a language, if available.
     pub fn textmate_grammar(&self) -> Option<Cow<str>> {
         match self {
-            Language::Rust => Some(include_str!("../../../textmate_grammars/rust.tmLanguage.json").into()),
-            Language::Json => Some(include_str!("../../../textmate_grammars/json.tmLanguage.xml").into()),
-            Language::Html => Some(include_str!("../../../textmate_grammars/html.tmLanguage.json").into()),
+            Language::Rust => {
+                Some(include_str!("../../../textmate_grammars/rust.tmLanguage.json").into())
+            }
+            Language::Json => {
+                Some(include_str!("../../../textmate_grammars/json.tmLanguage.xml").into())
+            }
+            Language::Html => {
+                Some(include_str!("../../../textmate_grammars/html.tmLanguage.json").into())
+            }
             Language::Cpp => None,
             Language::C => None,
             Language::OneOf(_) => todo!(),
             Language::Unknown => None,
-            Language::Css => Some(include_str!("../../../textmate_grammars/css.tmLanguage.xml").into())
+            Language::Css => {
+                Some(include_str!("../../../textmate_grammars/css.tmLanguage.xml").into())
+            }
         }
     }
 
@@ -81,60 +89,67 @@ impl Language {
     /// just put the file in a tempdir and be done with it, but for example for Rust,
     /// it basically creates a cargo project. The resulting directory should be ready
     /// for for example an LSP to run on it.
-    pub fn source_file_into_dir(&self, file: impl AsRef<Path>) -> Result<SourceDir, IntoSourceDirError> {
+    pub fn source_file_into_dir(
+        &self,
+        file: impl AsRef<Path>,
+    ) -> Result<SourceDir, IntoSourceDirError> {
         let file = file.as_ref();
         if !File::open(file)?.metadata()?.is_file() {
             return Err(IntoSourceDirError::NotAFile(file.to_path_buf()));
         }
-        let filename = file.file_name().expect("has file name").to_string_lossy().to_string();
+        let filename = file
+            .file_name()
+            .expect("has file name")
+            .to_string_lossy()
+            .to_string();
 
-        let source_dir_path = tempdir::TempDir::new("CES")
-            .map_err(IntoSourceDirError::Tempdir)?;
+        let source_dir_path = tempdir::TempDir::new("CES").map_err(IntoSourceDirError::Tempdir)?;
 
         let file_in_dir = match self {
             Self::Rust => {
                 let module_name = filename.replace(" ", "_").replace("-", "_").to_lowercase();
-                let (module_name_ident, _ext) = module_name.rsplit_once(".").expect("has extension");
+                let (module_name_ident, _ext) =
+                    module_name.rsplit_once(".").expect("has extension");
 
                 let src = source_dir_path.path().join("src");
                 fs::create_dir_all(&src)?;
-                fs::write(source_dir_path.path().join("Cargo.toml"), r#"
+                fs::write(
+                    source_dir_path.path().join("Cargo.toml"),
+                    r#"
 [package]
 name = "code-exploration-services"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-                "#)?;
+                "#,
+                )?;
 
-
-                fs::write(src.join("lib.rs"), format!(r#"
+                fs::write(
+                    src.join("lib.rs"),
+                    format!(
+                        r#"
 pub mod {};
-                "#, module_name_ident))?;
+                "#,
+                        module_name_ident
+                    ),
+                )?;
                 let file_in_dir = src.join(module_name);
 
-
-                fs_extra::file::copy(
-                    file, &file_in_dir,
-                    &CopyOptions::new()
-                )?;
+                fs_extra::file::copy(file, &file_in_dir, &CopyOptions::new())?;
 
                 file_in_dir
-            },
+            }
             _ => {
                 let file_in_dir = source_dir_path.path().join(filename);
-                fs_extra::file::copy(
-                    file, &file_in_dir,
-                    &CopyOptions::new()
-                )?;
+                fs_extra::file::copy(file, &file_in_dir, &CopyOptions::new())?;
                 file_in_dir
             }
         };
 
-
         let mut source_dir = SourceDir::__internal_construct_single_file(
             source_dir_path.path().to_path_buf(),
-            file_in_dir
+            file_in_dir,
         );
         source_dir.set_cleanup(|| {
             drop(source_dir_path);

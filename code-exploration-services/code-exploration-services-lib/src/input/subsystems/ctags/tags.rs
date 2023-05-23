@@ -1,9 +1,9 @@
 use crate::input::subsystems::ctags::CtagsAnalysisError;
 use crate::input::subsystems::ctags::CtagsAnalysisError::RunCtagsCommand;
+use crate::sources::dir::SourceFile;
 use serde::{Deserialize, Serialize};
 use std::io::BufRead;
 use std::process::Command;
-use crate::sources::dir::SourceFile;
 
 #[derive(Clone)]
 pub struct CtagsAnalysis {

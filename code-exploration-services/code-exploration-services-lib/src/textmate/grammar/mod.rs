@@ -1,5 +1,5 @@
-use thiserror::Error;
 use crate::languages::Language;
+use thiserror::Error;
 
 pub mod constructor;
 pub mod name;
@@ -38,14 +38,8 @@ impl TextmateGrammar {
 
         Self::from_xml(&grammar)
             .map_err(FromLanguageError::from)
-            .or(
-                Self::from_json(&grammar)
-                .map_err(FromLanguageError::from)
-            )
-            .or(
-                Self::from_yaml(&grammar)
-                    .map_err(FromLanguageError::from)
-            )
+            .or(Self::from_json(&grammar).map_err(FromLanguageError::from))
+            .or(Self::from_yaml(&grammar).map_err(FromLanguageError::from))
             .map(Some)
     }
 }
