@@ -3,7 +3,10 @@ use crate::sources::span::Span;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Field {
-    Ref(FieldRef),
+    Ref {
+        description: String,
+        reference: FieldRef,
+    },
     SyntaxColour(String),
     Outline {
         description: Option<String>,

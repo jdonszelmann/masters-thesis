@@ -1,19 +1,25 @@
-mod lsp_types;
-mod lsp_protocol;
+// mod lsp_types;
+mod lsp_communication;
+mod lsp_messages;
 
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::process::{Command, id, Stdio};
+use std::thread;
+use std::time::Duration;
+use lsp_types::{ClientCapabilities, ClientInfo, DidOpenTextDocumentParams, GotoCapability, GotoDefinitionParams, GotoDefinitionResponse, InitializedParams, InitializeParams, Position, PositionEncodingKind, Range, ReferenceClientCapabilities, TextDocumentClientCapabilities, TextDocumentIdentifier, TextDocumentItem, TextDocumentPositionParams, TraceValue, Url, WindowClientCapabilities, WorkspaceClientCapabilities};
+use lsp_types::notification::{DidOpenTextDocument, Initialized};
+use lsp_types::request::{GotoDefinition, Initialize};
 use crate::input::{Analyser, AnalysisError};
 use thiserror::Error;
+use tracing::info;
 use crate::analysis::dir::Analysis;
+use crate::analysis::field::{Field, FieldRef};
 use crate::analysis::file::FileAnalysis;
-use crate::input::subsystems::lsp::lsp_protocol::{Lsp, NewLspError, RequestError};
-use crate::input::subsystems::lsp::lsp_types::jsonrpc::Nullable;
-use crate::input::subsystems::lsp::lsp_types::protocol::{ClientCapabilities, definition_request, did_open_text_document_notification, DidOpenTextDocumentParams, initialize_request, initialized_notification, InitializedParams, InitializeParams, InitialTraceSetting, ReferencesCapabilities, SynchronizationCapabilities, TextDocumentClientCapabilities, TextDocumentPositionParams};
-use crate::input::subsystems::lsp::lsp_types::types::{Position, TextDocumentIdentifier, TextDocumentItem};
+use crate::input::subsystems::lsp::lsp_communication::{Lsp, NewLspError, RequestError};
 use crate::languages::Language;
-use crate::sources::dir::SourceDir;
+use crate::sources::dir::{SourceDir, SourceFile};
+use crate::sources::span::Span;
 
 pub struct LspAnalyser;
 
@@ -46,23 +52,34 @@ struct LanguageServer {
 
 impl LanguageServer {
     fn initialize(&mut self, parent_id: u32, lang_id: &str, source: &SourceDir) -> Result<(), RequestError> {
-        let resp = self.lsp.request(&InitializeParams {
-            process_id: parent_id as i32,
-            root_path: None,
-            root_uri: Nullable::Some(source.root().to_string_lossy().to_string()),
+        // send capabilities
+        let resp = self.lsp.request::<Initialize>(&InitializeParams {
+            process_id: Some(parent_id),
+            root_uri: Some(Url::from_file_path(
+                source.root()).map_err(|()| RequestError::ParseUrl(source.root().to_path_buf()))?
+            ),
             capabilities: ClientCapabilities {
-                workspace: None,
+                workspace: Some(WorkspaceClientCapabilities {
+                    apply_edit: None,
+                    workspace_edit: None,
+                    did_change_configuration: None,
+                    did_change_watched_files: None,
+                    symbol: None,
+                    execute_command: None,
+                    workspace_folders: None,
+                    configuration: None,
+                    semantic_tokens: None,
+                    code_lens: None,
+                    file_operations: None,
+                    inline_value: None,
+                    inlay_hint: None,
+                }),
                 text_document: Some(TextDocumentClientCapabilities {
-                    synchronization: Some(SynchronizationCapabilities {
-                        dynamic_registration: None,
-                        will_save: None,
-                        will_save_wait_until: None,
-                        did_save: None,
-                    }),
+                    synchronization: None,
                     completion: None,
                     hover: None,
                     signature_help: None,
-                    references: Some(ReferencesCapabilities {
+                    references: Some(ReferenceClientCapabilities {
                         dynamic_registration: Some(true),
                     }),
                     document_highlight: None,
@@ -70,58 +87,153 @@ impl LanguageServer {
                     formatting: None,
                     range_formatting: None,
                     on_type_formatting: None,
-                    definition: None,
-                    type_definition: None,
-                    implementation: None,
+                    declaration: Some(GotoCapability {
+                        dynamic_registration: None,
+                        link_support: Some(true),
+                    }),
+                    definition: Some(GotoCapability {
+                        dynamic_registration: None,
+                        link_support: Some(true),
+                    }),
+                    type_definition: Some(GotoCapability {
+                        dynamic_registration: None,
+                        link_support: Some(true),
+                    }),
+                    implementation: Some(GotoCapability {
+                        dynamic_registration: None,
+                        link_support: Some(true),
+                    }),
                     code_action: None,
                     code_lens: None,
                     document_link: None,
                     color_provider: None,
                     rename: None,
                     publish_diagnostics: None,
+                    folding_range: None,
+                    selection_range: None,
+                    linked_editing_range: None,
+                    call_hierarchy: None,
+                    semantic_tokens: None,
+                    moniker: None,
+                    type_hierarchy: None,
+                    inline_value: None,
+                    inlay_hint: None,
                 }),
+                window: Some(WindowClientCapabilities {
+                    work_done_progress: Some(true),
+                    show_message: None,
+                    show_document: None,
+                }),
+                general: None,
                 experimental: None,
             },
             initialization_options: None,
-            trace: Some(InitialTraceSetting::Verbose),
+            trace: Some(TraceValue::Verbose),
             workspace_folders: None,
-        }, initialize_request::TYPE)?;
-        assert_eq!(resp.capabilities.position_encoding, "utf-16");
-        tracing::debug!("{:?}", resp);
+            client_info: Some(ClientInfo {
+                name: "code exploration services".to_string(),
+                version: None,
+            }),
+            locale: Some("en-US".to_string()),
+            ..Default::default()
+        })?;
+        // verify capabilities
+        assert_eq!(resp.capabilities.position_encoding, Some(PositionEncodingKind::UTF16));
 
-        self.lsp.notification(&InitializedParams {}, initialized_notification::TYPE)?;
+        // send initialized
+        self.lsp.notification::<Initialized>(&InitializedParams {})?;
+
+        // open documents
         for file in source.files() {
-            self.lsp.notification(&DidOpenTextDocumentParams {
+            self.lsp.notification::<DidOpenTextDocument>(&DidOpenTextDocumentParams {
                 text_document: TextDocumentItem {
-                    uri: format!("file://{}", file.path().to_string_lossy()),
+                    uri: Url::from_file_path(file.path())
+                        .map_err(|()| RequestError::ParseUrl(file.path().to_path_buf()))?,
                     language_id: lang_id.to_string(),
                     version: 0,
                     text: file.contents()?.to_string(),
                 },
-            }, did_open_text_document_notification::TYPE)?;
+            })?;
         }
+
+        // give the LSP time to respond
+        thread::sleep(Duration::from_millis(100));
+
+        // if there was a work progress request, wait for all
+        // work to be done
+        info!("waiting for LSP ready");
+        self.lsp.wait_ready()?;
+        info!("LSP ready");
 
         Ok(())
     }
 
-    fn get_definition(&mut self, file: &Path, line: usize, character: usize) -> Result<(), RequestError> {
-        let resp = self.lsp.request(&TextDocumentPositionParams {
-            text_document: TextDocumentIdentifier { uri: format!("file://{}", file.to_string_lossy()) },
-            position: Position {
-                line: line as i32,
-                character: character as i32,
+    fn get_definition_sites(&mut self, file: SourceFile, line: usize, character: usize) -> Result<Vec<Span>, RequestError> {
+        let mut res = Vec::new();
+
+        if let Some(resp) = self.lsp.request::<GotoDefinition>(&GotoDefinitionParams {
+            text_document_position_params: TextDocumentPositionParams {
+                text_document: TextDocumentIdentifier {
+                    uri: Url::from_file_path(file.path()).map_err(|()| RequestError::ParseUrl(file.path().to_path_buf()))?,
+                },
+                position: Position {
+                    line: line as u32,
+                    character: character as u32,
+                },
             },
-        }, definition_request::TYPE)?;
+            work_done_progress_params: Default::default(),
+            partial_result_params: Default::default(),
+        })? {
+            let span_from_range = |range: Range| -> Result<Option<Span>, RequestError> {
+                let start = range.start;
+                let end = range.end;
 
-        println!("{:?}", resp);
+                let Some(start_offset) = file.offset_of_line_num(start.line as usize + 1)? else {
+                    return Ok(None);
+                };
 
-        Ok(())
+                let Some(end_offset) = file.offset_of_line_num(end.line as usize + 1)? else {
+                    return Ok(None);
+                };
+
+                // TODO: handle utf8 well
+                Ok(Some(Span::from_start_end(start_offset + start.character as usize, end_offset + end.character as usize)))
+            };
+
+            match resp {
+                GotoDefinitionResponse::Scalar(s) => {
+                    // TODO: handle s.uri
+                    if let Some(span) = span_from_range(s.range)? {
+                        res.push(span);
+                    }
+                }
+                GotoDefinitionResponse::Array(a) => {
+                    for i in a {
+                        // TODO: handle s.uri
+                        if let Some(span) = span_from_range(i.range)? {
+                            res.push(span)
+                        }
+                    }
+                }
+                GotoDefinitionResponse::Link(locations) => {
+                    for i in locations {
+                        // TODO: handle i.uri
+                        if let Some(span) = span_from_range(i.target_range)? {
+                            res.push(span)
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(res)
     }
 
     fn start_from_path(path: &Path, lang_id: &str, source: &SourceDir) -> Result<Self, NewLanguageServerError> {
         let mut command = Command::new(path);
         command.stdin(Stdio::piped());
         command.stdout(Stdio::piped());
+        command.stderr(Stdio::inherit());
 
         let mut s = Self {
             lsp: Lsp::new(command.spawn()?)?,
@@ -142,8 +254,8 @@ impl LanguageServer {
 }
 
 impl Analyser for LspAnalyser {
-    fn hover_documentation(&self, s: &SourceDir) -> Result<Analysis, AnalysisError> {
-        tracing::info!("lsp hover documentation");
+    fn symbol_navigation(&self, s: &SourceDir) -> Result<Analysis, AnalysisError> {
+        info!("lsp hover documentation");
 
         let extensions = s.files()
             .flat_map(|i| i.path().extension().map(|i| i.to_string_lossy().to_string()))
@@ -154,7 +266,9 @@ impl Analyser for LspAnalyser {
             .collect::<Result<HashMap<_, _>, _>>()
             .map_err(LanguageServerError::New)?;
 
-        s.map_analyze(|file| {
+        info!("analysing files");
+
+        let analysis = s.map_analyze(|file| {
             let Some(extensions) = file.path().extension() else {
                 return Ok(FileAnalysis::new(file, Vec::new())?);
             };
@@ -162,13 +276,32 @@ impl Analyser for LspAnalyser {
                 return Ok(FileAnalysis::new(file, Vec::new())?);
             };
 
-            let fields = Vec::new();
+            let mut fields = Vec::new();
 
             let mut line = 0;
             let mut character = 0;
-            for i in file.contents()?.chars() {
-                let _resp = server_for_file.get_definition(&file.path(), line, character)
+            let mut last = (0, Vec::new());
+            for (offset, i) in file.contents()?.chars().enumerate() {
+                let resp = server_for_file.get_definition_sites(file, line, character)
                     .map_err(LanguageServerError::Request)?;
+
+                if resp != last.1 {
+                    for span in last.1 {
+                        fields.push((
+                            Span::from_start_end(last.0, offset),
+                            Field::Ref {
+                                description: "definition".to_string(),
+                                reference: FieldRef {
+                                    start: span.start,
+                                    len: span.len,
+                                    next: None,
+                                },
+                            }
+                        ));
+                    }
+
+                    last = (offset, resp);
+                }
 
                 character += i.len_utf16();
                 if i == '\n' {
@@ -177,12 +310,11 @@ impl Analyser for LspAnalyser {
                 }
             }
 
-
-            // loop {
-            //     lsp.lsp.poll_notification().map_err(LanguageServerError::Request)?;
-            // }
-
             Ok(FileAnalysis::new(file, fields)?)
-        })
+        })?;
+
+        info!("done");
+
+        Ok(analysis)
     }
 }

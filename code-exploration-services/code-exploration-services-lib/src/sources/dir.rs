@@ -206,7 +206,14 @@ impl InternalSourceFile {
     }
 
     pub fn hash(&self) -> Result<SourceCodeHash, HashError> {
-        Ok(SourceCodeHash::of(&self.contents()?))
+        if let Some(ref i) = self.cache.borrow().hash {
+            return Ok(i.clone());
+        }
+
+        let hash = SourceCodeHash::of(&self.contents()?);
+        self.cache.borrow_mut().hash = Some(hash.clone());
+
+        Ok(hash)
     }
 
     pub fn slice(&self, span: &Span) -> Result<String, ContentsError> {
@@ -245,7 +252,7 @@ pub struct SourceFile<'a> {
 }
 
 impl<'a> SourceFile<'a> {
-    fn root(&self) -> &'a SourceDir {
+    pub fn root(&self) -> &'a SourceDir {
         self.dir
     }
 }

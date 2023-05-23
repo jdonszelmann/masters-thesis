@@ -32,6 +32,7 @@ sha1 = "0.10.5"
 tempdir = "0.3.7"
 walkdir = "2.3.3"
 hex = "0.4.3"
+crossbeam = "0.8.2"
 
 [dev-dependencies]
 code-exploration-services-tests = {path="../code-exploration-services-tests"}

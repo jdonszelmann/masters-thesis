@@ -108,8 +108,8 @@ edition = "2021"
                 "#)?;
 
 
-                fs::write(src.join("main.rs"), format!(r#"
-mod {};
+                fs::write(src.join("lib.rs"), format!(r#"
+pub mod {};
                 "#, module_name_ident))?;
                 let file_in_dir = src.join(module_name);
 
