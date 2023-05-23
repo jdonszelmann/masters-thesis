@@ -30,7 +30,12 @@ pub enum SimpleHtmlError {
     GetAnalysis(#[source] GetAnalysisError, PathBuf),
 }
 
-type FieldIndex<'a> = HashMap<usize, Vec<(&'a Span, &'a Field)>>;
+pub enum IndexField<'a> {
+    Field(&'a Field),
+    ReferenceTarget,
+}
+
+type FieldIndex<'a> = HashMap<usize, Vec<(&'a Span, IndexField<'a>)>>;
 
 impl Annotater for SimpleHtml {
     type Output = Result<String, SimpleHtmlError>;

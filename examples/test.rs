@@ -1,6 +1,14 @@
 use core::fmt;
 use std::collections::HashSet;
 
+fn test_2() {
+
+}
+
+fn test_1() {
+    test_2()
+}
+
 #[derive(Debug, Clone)]
 pub struct Options {
     options: HashSet<String>,

@@ -122,8 +122,8 @@ impl SourceDir {
         FileIter { dir: self, loc: 0 }
     }
 
-    pub fn map_analyze<'a>(
-        &'a self,
+    pub fn map_analyze(
+        &self,
         mut f: impl FnMut(SourceFile) -> Result<FileAnalysis, AnalysisError>,
     ) -> Result<Analysis, AnalysisError> {
         let mut res = Analysis::new();

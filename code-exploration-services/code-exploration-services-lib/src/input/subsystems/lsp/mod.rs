@@ -222,7 +222,7 @@ impl LanguageServer {
                 // TODO: handle utf8 well
                 Ok(Some(Span::from_start_end(
                     start_offset + start.character as usize,
-                    end_offset + end.character as usize,
+                    end_offset + end.character as usize + 1,
                 )))
             };
 
@@ -323,15 +323,19 @@ impl Analyser for LspAnalyser {
                 let resp = server_for_file.get_definition_sites(file, line, character)
                     .map_err(LanguageServerError::Request)?;
 
+                // println!("{resp:?}");
+
                 if resp != last.1 {
-                    for span in last.1 {
+                    for definition_span in last.1 {
+                        let span = Span::from_start_end(last.0, offset - 1);
+                        // println!("pushing span {span:?} referring to {}", file.slice(&span)?);
                         fields.push((
-                            Span::from_start_end(last.0, offset),
+                            span,
                             Field::Ref {
                                 description: "definition".to_string(),
                                 reference: FieldRef {
-                                    start: span.start,
-                                    len: span.len,
+                                    start: definition_span.start,
+                                    len: definition_span.len,
                                     next: None,
                                 },
                             }

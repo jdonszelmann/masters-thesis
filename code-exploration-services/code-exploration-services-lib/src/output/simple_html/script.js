@@ -33,7 +33,13 @@ function register_highlight(location) {
 function go_to(location) {
     register_highlight(location);
 
-    const el = document.getElementsByClassName(location)[0];
+    let el;
+    for (const i of document.getElementsByClassName(location)) {
+        if (!i.classList.contains("outline")) {
+            el = i;
+            break;
+        }
+    }
 
     el.scrollIntoView({
         behavior: "smooth",
@@ -51,7 +57,37 @@ document.onreadystatechange = () => {
 
     for (const i of document.getElementsByClassName("outline-header")) {
         i.onclick = () => {
-            go_to(i.dataset.outlineClass);
+            go_to(i.dataset.gotoClass);
+        }
+    }
+
+    document.onclick = () => {
+        for (const i of document.getElementsByClassName("reference-popup")) {
+            i.style.display = "none";
+        }
+    };
+
+    for (const i of document.getElementsByClassName("token")) {
+        const reference_children = i.getElementsByClassName("goto-reference-instantly")
+        if (reference_children.length === 1) {
+            i.onclick = () => {
+                const child = reference_children[0];
+                go_to(child.dataset.gotoClass);
+            };
+        }
+
+        const popup_children = i.getElementsByClassName("reference-popup")
+        if (popup_children.length === 1) {
+            i.onclick = (e) => {
+                e.stopPropagation();
+
+                for (const i of document.getElementsByClassName("reference-popup")) {
+                    i.style.display = "none";
+                }
+
+                const popup = popup_children[0];
+                popup.style.display = "flex";
+            };
         }
     }
 }

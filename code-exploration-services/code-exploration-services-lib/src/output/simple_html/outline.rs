@@ -8,6 +8,7 @@ use crate::sources::span::Span;
 use axohtml::dom::DOMTree;
 use axohtml::{html, text, unsafe_text};
 use std::collections::VecDeque;
+use crate::output::simple_html::generate_html::GenerateForOutlineStatus::GenerateForOutline;
 
 #[derive(Debug)]
 struct OutlineItem<'a> {
@@ -63,13 +64,13 @@ fn generate_outline_html(
     } else {
         text!("")
     };
-    let outline_class = span_to_class(parent.span);
+    let goto_class = span_to_class(parent.span);
 
     let doc: DOMTree<String> = html! {
         <div class="outline-item">
-            <div class="outline-header" data-outline-class=outline_class>
+            <div class="outline-header" data-goto-class=goto_class>
                 <span>{heading}</span>
-                {generate_html_from_tokens(tokens)}
+                {generate_html_from_tokens(tokens, GenerateForOutline, )}
             </div>
             {
                 contents
@@ -150,5 +151,5 @@ pub fn span_to_class(span: &Span) -> String {
         }
     }
 
-    format!("outline-{}", span_to_class_helper(span))
+    format!("goto-{}", span_to_class_helper(span))
 }

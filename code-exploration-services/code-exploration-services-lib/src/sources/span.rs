@@ -76,7 +76,7 @@ impl<'de> Deserialize<'de> for Span {
 
 /// `start` and `len` are always in *bytes*, not in *chars*.
 /// With unicode, start and len always refer to starts of code points.
-#[derive(Debug, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Span {
     pub start: usize,
     pub len: usize,
