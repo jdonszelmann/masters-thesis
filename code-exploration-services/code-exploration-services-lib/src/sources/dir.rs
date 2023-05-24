@@ -197,6 +197,12 @@ impl InternalSourceFile {
         &self.path
     }
 
+    pub fn name(&self) -> Option<String> {
+        self.path
+            .file_name()
+            .map(|i| i.to_string_lossy().to_string())
+    }
+
     pub fn contents(&self) -> Result<String, ContentsError> {
         if let Some(ref i) = self.cache.borrow().contents {
             return Ok(i.clone());

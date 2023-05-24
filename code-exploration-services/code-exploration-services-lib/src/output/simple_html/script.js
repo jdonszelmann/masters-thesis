@@ -61,6 +61,13 @@ document.onreadystatechange = () => {
         }
     }
 
+    for (const i of document.getElementsByClassName("reference-item")) {
+        i.onclick = () => {
+            go_to(i.dataset.gotoClass);
+        }
+    }
+
+
     document.onclick = () => {
         for (const i of document.getElementsByClassName("reference-popup")) {
             i.style.display = "none";

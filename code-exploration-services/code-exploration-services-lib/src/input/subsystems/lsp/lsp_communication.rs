@@ -423,7 +423,7 @@ impl Lsp {
                 recv(self.errors_rx) -> err => return Err(err.unwrap()),
                 recv(self.notifications_rx) -> not => self.handle_notification(not.unwrap())?,
                 recv(self.requests_rx) -> req => self.handle_request(req.unwrap())?,
-                default(Duration::from_millis(5000)) => return Err(RequestError::Timeout),
+                default(Duration::from_millis(10000)) => return Err(RequestError::Timeout),
             }
         }
     }

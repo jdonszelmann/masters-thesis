@@ -1,6 +1,7 @@
 use crate::analysis::field::Field;
 use crate::analysis::file::FileAnalysis;
 use crate::output::simple_html::generate_html::generate_html_from_tokens;
+use crate::output::simple_html::generate_html::GenerateForOutlineStatus::GenerateForOutline;
 use crate::output::simple_html::tokenize::OutlineSetting::DontGenerateOutline;
 use crate::output::simple_html::{tokenize, FieldIndex, SimpleHtmlError};
 use crate::sources::dir::SourceFile;
@@ -8,7 +9,6 @@ use crate::sources::span::Span;
 use axohtml::dom::DOMTree;
 use axohtml::{html, text, unsafe_text};
 use std::collections::VecDeque;
-use crate::output::simple_html::generate_html::GenerateForOutlineStatus::GenerateForOutline;
 
 #[derive(Debug)]
 struct OutlineItem<'a> {

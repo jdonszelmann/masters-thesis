@@ -133,8 +133,9 @@ pre {
 .reference-popup {
     display: none;
     position: absolute;
-    width: 10em;
-    border: 1px solid;
+    border: 2px solid;
+    border-radius: 2px;
+    padding: 0.5em;
 
     top: 1.5em;
     z-index: 10;
@@ -147,5 +148,23 @@ pre {
 }
 
 .highlighted {
-    text-shadow: 0 0 1px black;
+    /*transform: scale(110%);*/
+    z-index: 5;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0% {
+        /*transform: scale(0.95);*/
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+    }
+
+    70% {
+        /*transform: scale(1);*/
+        box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+    }
+
+    100% {
+        /*transform: scale(0.95);*/
+        box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+    }
 }

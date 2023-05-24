@@ -10,14 +10,19 @@ use crate::input::{Analyser, AnalysisError};
 use crate::languages::Language;
 use crate::sources::dir::{SourceDir, SourceFile};
 use crate::sources::span::Span;
+use itertools::Itertools;
 use lsp_types::notification::{DidOpenTextDocument, Initialized};
-use lsp_types::request::{GotoDefinition, Initialize};
+use lsp_types::request::{
+    GotoDeclaration, GotoDeclarationParams, GotoDefinition, GotoImplementation,
+    GotoImplementationResponse, Initialize, References,
+};
 use lsp_types::{
     ClientCapabilities, ClientInfo, DidOpenTextDocumentParams, GotoCapability,
     GotoDefinitionParams, GotoDefinitionResponse, InitializeParams, InitializedParams, Position,
-    PositionEncodingKind, Range, ReferenceClientCapabilities, TextDocumentClientCapabilities,
-    TextDocumentIdentifier, TextDocumentItem, TextDocumentPositionParams, TraceValue, Url,
-    WindowClientCapabilities, WorkspaceClientCapabilities,
+    PositionEncodingKind, Range, ReferenceClientCapabilities, ReferenceContext, ReferenceParams,
+    TextDocumentClientCapabilities, TextDocumentIdentifier, TextDocumentItem,
+    TextDocumentPositionParams, TraceValue, Url, WindowClientCapabilities,
+    WorkspaceClientCapabilities,
 };
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
@@ -54,6 +59,63 @@ pub enum LanguageServerError {
 
 struct LanguageServer {
     lsp: Lsp,
+}
+
+macro_rules! create_sites_fn {
+    ($name: ident, $req: ident, $params: ident, $resp: ident) => {
+        fn $name(
+            &mut self,
+            file: SourceFile,
+            line: usize,
+            character: usize,
+        ) -> Result<Vec<Span>, RequestError> {
+            let mut res = Vec::new();
+
+            if let Some(resp) = self.lsp.request::<$req>(&$params {
+                text_document_position_params: TextDocumentPositionParams {
+                    text_document: TextDocumentIdentifier {
+                        uri: Url::from_file_path(file.path())
+                            .map_err(|()| RequestError::ParseUrl(file.path().to_path_buf()))?,
+                    },
+                    position: Position {
+                        line: line as u32,
+                        character: character as u32,
+                    },
+                },
+                work_done_progress_params: Default::default(),
+                partial_result_params: Default::default(),
+            })? {
+                match resp {
+                    $resp::Scalar(s) => {
+                        // TODO: handle s.uri
+                        if let Some(span) = self.span_from_range(s.range, s.uri, file)? {
+                            res.push(span);
+                        }
+                    }
+                    $resp::Array(a) => {
+                        for i in a {
+                            // TODO: handle s.uri
+                            if let Some(span) = self.span_from_range(i.range, i.uri, file)? {
+                                res.push(span)
+                            }
+                        }
+                    }
+                    $resp::Link(locations) => {
+                        for i in locations {
+                            // TODO: handle i.uri
+                            if let Some(span) =
+                                self.span_from_range(i.target_range, i.target_uri, file)?
+                            {
+                                res.push(span)
+                            }
+                        }
+                    }
+                }
+            }
+
+            Ok(res)
+        }
+    };
 }
 
 impl LanguageServer {
@@ -185,7 +247,55 @@ impl LanguageServer {
         Ok(())
     }
 
-    fn get_definition_sites(
+    fn span_from_range(
+        &self,
+        range: Range,
+        uri: Url,
+        file: SourceFile,
+    ) -> Result<Option<Span>, RequestError> {
+        // TODO: inter-file references
+        if Path::new(uri.path()) != file.path() {
+            return Ok(None);
+        }
+
+        let start = range.start;
+        let end = range.end;
+
+        let Some(start_offset) = file.offset_of_line_num(start.line as usize + 1)? else {
+            return Ok(None);
+        };
+
+        let Some(end_offset) = file.offset_of_line_num(end.line as usize + 1)? else {
+            return Ok(None);
+        };
+
+        // TODO: handle utf8 well
+        Ok(Some(Span::from_start_end(
+            start_offset + start.character as usize + 1,
+            end_offset + end.character as usize + 1,
+        )))
+    }
+
+    create_sites_fn!(
+        get_definition_sites,
+        GotoDefinition,
+        GotoDefinitionParams,
+        GotoDefinitionResponse
+    );
+    create_sites_fn!(
+        get_declaration_sites,
+        GotoDeclaration,
+        GotoDeclarationParams,
+        GotoDefinitionResponse
+    );
+    create_sites_fn!(
+        get_implementation_sites,
+        GotoImplementation,
+        GotoDeclarationParams,
+        GotoImplementationResponse
+    );
+
+    fn get_usage_sites(
         &mut self,
         file: SourceFile,
         line: usize,
@@ -193,8 +303,8 @@ impl LanguageServer {
     ) -> Result<Vec<Span>, RequestError> {
         let mut res = Vec::new();
 
-        if let Some(resp) = self.lsp.request::<GotoDefinition>(&GotoDefinitionParams {
-            text_document_position_params: TextDocumentPositionParams {
+        if let Some(resp) = self.lsp.request::<References>(&ReferenceParams {
+            text_document_position: TextDocumentPositionParams {
                 text_document: TextDocumentIdentifier {
                     uri: Url::from_file_path(file.path())
                         .map_err(|()| RequestError::ParseUrl(file.path().to_path_buf()))?,
@@ -206,48 +316,13 @@ impl LanguageServer {
             },
             work_done_progress_params: Default::default(),
             partial_result_params: Default::default(),
+            context: ReferenceContext {
+                include_declaration: false,
+            },
         })? {
-            let span_from_range = |range: Range| -> Result<Option<Span>, RequestError> {
-                let start = range.start;
-                let end = range.end;
-
-                let Some(start_offset) = file.offset_of_line_num(start.line as usize + 1)? else {
-                    return Ok(None);
-                };
-
-                let Some(end_offset) = file.offset_of_line_num(end.line as usize + 1)? else {
-                    return Ok(None);
-                };
-
-                // TODO: handle utf8 well
-                Ok(Some(Span::from_start_end(
-                    start_offset + start.character as usize,
-                    end_offset + end.character as usize + 1,
-                )))
-            };
-
-            match resp {
-                GotoDefinitionResponse::Scalar(s) => {
-                    // TODO: handle s.uri
-                    if let Some(span) = span_from_range(s.range)? {
-                        res.push(span);
-                    }
-                }
-                GotoDefinitionResponse::Array(a) => {
-                    for i in a {
-                        // TODO: handle s.uri
-                        if let Some(span) = span_from_range(i.range)? {
-                            res.push(span)
-                        }
-                    }
-                }
-                GotoDefinitionResponse::Link(locations) => {
-                    for i in locations {
-                        // TODO: handle i.uri
-                        if let Some(span) = span_from_range(i.target_range)? {
-                            res.push(span)
-                        }
-                    }
+            for i in resp {
+                if let Some(span) = self.span_from_range(i.range, i.uri, file)? {
+                    res.push(span)
                 }
             }
         }
@@ -319,20 +394,59 @@ impl Analyser for LspAnalyser {
             let mut line = 0;
             let mut character = 0;
             let mut last = (0, Vec::new());
+            let len = file.contents()?.chars().count();
+            let mut last_percentage = 0;
+
             for (offset, i) in file.contents()?.chars().enumerate() {
-                let resp = server_for_file.get_definition_sites(file, line, character)
-                    .map_err(LanguageServerError::Request)?;
+                let percentage = (offset * 100) / len;
+                if percentage >= last_percentage + 1 {
+                    info!("indexing {}: {percentage}%", file.name().expect("has a name"));
+                    last_percentage = percentage;
+                }
 
-                // println!("{resp:?}");
+                let definition_references = server_for_file.get_definition_sites(file, line, character)
+                    .map_err(LanguageServerError::Request)?
+                    .into_iter()
+                    .map(|i| ("definition", i))
+                    .collect_vec();
 
-                if resp != last.1 {
-                    for definition_span in last.1 {
+                let declaration_references = server_for_file.get_declaration_sites(file, line, character)
+                    .map_err(LanguageServerError::Request)?
+                    .into_iter()
+                    .map(|i| ("declaration", i))
+                    .collect_vec();
+
+                let implementation_references = server_for_file.get_implementation_sites(file, line, character)
+                    .map_err(LanguageServerError::Request)?
+                    .into_iter()
+                    .map(|i| ("implementation", i))
+                    .collect_vec();
+
+                let usage_references = if (implementation_references.len() + declaration_references.len() + definition_references.len()) > 0 {
+                    server_for_file.get_usage_sites(file, line, character)
+                        .map_err(LanguageServerError::Request)?
+                        .into_iter()
+                        .map(|i| ("usage", i))
+                        .collect_vec()
+                } else {
+                    Vec::new()
+                };
+
+                let references = declaration_references
+                    .into_iter()
+                    .chain(definition_references)
+                    .chain(implementation_references)
+                    .chain(usage_references)
+                    .collect_vec();
+
+                if references != last.1 {
+                    for (description, definition_span) in last.1 {
                         let span = Span::from_start_end(last.0, offset - 1);
                         // println!("pushing span {span:?} referring to {}", file.slice(&span)?);
                         fields.push((
                             span,
                             Field::Ref {
-                                description: "definition".to_string(),
+                                description: description.to_string(),
                                 reference: FieldRef {
                                     start: definition_span.start,
                                     len: definition_span.len,
@@ -342,7 +456,7 @@ impl Analyser for LspAnalyser {
                         ));
                     }
 
-                    last = (offset, resp);
+                    last = (offset, references);
                 }
 
                 character += i.len_utf16();
@@ -351,6 +465,7 @@ impl Analyser for LspAnalyser {
                     character = 0;
                 }
             }
+            info!("indexing {}: 100%", file.name().expect("has a name"));
 
             Ok(FileAnalysis::new(file, fields)?)
         })?;

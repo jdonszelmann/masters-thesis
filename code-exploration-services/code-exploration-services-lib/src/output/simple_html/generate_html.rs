@@ -1,3 +1,5 @@
+use crate::output::simple_html::generate_html::GenerateForOutlineStatus::GenerateForSource;
+use crate::output::simple_html::outline::span_to_class;
 use crate::output::simple_html::sanitize_theme_name;
 use crate::output::simple_html::tokenize::{Reference, Token};
 use crate::output::simple_html::{themes, SimpleHtmlError};
@@ -6,55 +8,80 @@ use axohtml::dom::DOMTree;
 use axohtml::elements::FlowContent;
 use axohtml::types::{Class, SpacedSet};
 use axohtml::{html, text, unsafe_text};
-use tracing::info;
-use crate::output::simple_html::generate_html::GenerateForOutlineStatus::GenerateForSource;
-use crate::output::simple_html::outline::span_to_class;
+use std::collections::hash_map::Entry;
+use std::collections::HashMap;
 
-fn generate_reference(reference: &Reference) -> Box<dyn FlowContent<String>> {
+fn generate_reference(references: &[&Reference]) -> Box<dyn FlowContent<String>> {
     let context = "";
 
+    let mut description = Vec::new();
+    for i in references {
+        if !description.contains(&i.description.as_str()) {
+            description.push(i.description.as_str());
+        }
+    }
+
+    let goto_class = span_to_class(&references[0].to);
+
     html! {
-        <div class="reference-item background foreground border">
-            <span class="description">{text!("{}", reference.description)}</span>
+        <div class="reference-item" data-goto-class=goto_class>
+            <span class="description">{text!("{}", description.join(" + "))}</span>
             <span class="context">{text!("{}", context)}</span>
         </div>
     }
 }
 
 fn generate_popup(references: &[Reference]) -> Option<Box<dyn FlowContent<String>>> {
-    match references.len() {
+    let mut references_tracker = HashMap::new();
+    let mut deduplicated_references = Vec::<Vec<&Reference>>::new();
+    for r in references {
+        match references_tracker.entry(&r.to) {
+            Entry::Occupied(o) => {
+                deduplicated_references[*o.get() as usize].push(r);
+            }
+            Entry::Vacant(v) => {
+                v.insert(deduplicated_references.len());
+                deduplicated_references.push(vec![r]);
+            }
+        }
+    }
+
+    match deduplicated_references.len() {
         0 => None,
         1 => {
-            let reference = &references[0];
+            let reference = &deduplicated_references[0][0];
             let goto_class = span_to_class(&reference.to);
-            Some(html!{
+            Some(html! {
                 <div class="goto-reference-instantly" data-goto-class=goto_class></div>
             })
-        },
+        }
         _ => Some(html! {
-            <div class="reference-popup">
+            <div class="reference-popup background foreground border">
                 {
-                    {references.iter().map(generate_reference)}
+                    deduplicated_references.iter().map(|i| generate_reference(i))
                 }
             </div>
-        })
+        }),
     }
 }
 
-fn generate_line_from_tokens(tokens: &[Token], line_num: usize, generate_for_outline: GenerateForOutlineStatus) -> Box<dyn FlowContent<String>> {
+fn generate_line_from_tokens(
+    tokens: &[Token],
+    line_num: usize,
+    generate_for_outline: GenerateForOutlineStatus,
+) -> Box<dyn FlowContent<String>> {
     let mut spans = Vec::new();
 
     for token in tokens {
         if let Token::Token { text, classes } = token {
             let mut class = SpacedSet::new();
             class.add("token");
-            if !classes.reference_targets.is_empty() {
-                info!("target: {:?}", classes.reference_targets);
-            }
 
-            for i in classes.color_classes.iter()
-                    .chain(&classes.outline_targets)
-                    .chain(&classes.reference_targets)
+            for i in classes
+                .color_classes
+                .iter()
+                .chain(&classes.outline_targets)
+                .chain(&classes.reference_targets)
             {
                 let mut res = String::new();
                 for i in i.split_inclusive('.') {
@@ -99,20 +126,31 @@ pub enum GenerateForOutlineStatus {
     GenerateForOutline,
 }
 
-pub fn generate_html_from_tokens(tokens: Vec<Token>, generate_for_outline: GenerateForOutlineStatus) -> Box<dyn FlowContent<String>> {
+pub fn generate_html_from_tokens(
+    tokens: Vec<Token>,
+    generate_for_outline: GenerateForOutlineStatus,
+) -> Box<dyn FlowContent<String>> {
     let mut lines = Vec::new();
     let mut line = Vec::new();
     let mut line_num = 1;
     for i in tokens {
         if let Token::Newline = i {
-            lines.push(generate_line_from_tokens(&line, line_num, generate_for_outline));
+            lines.push(generate_line_from_tokens(
+                &line,
+                line_num,
+                generate_for_outline,
+            ));
             line_num += 1;
             line = Vec::new();
         } else {
             line.push(i);
         }
     }
-    lines.push(generate_line_from_tokens(&line, line_num, generate_for_outline));
+    lines.push(generate_line_from_tokens(
+        &line,
+        line_num,
+        generate_for_outline,
+    ));
 
     html! {
         <div class="code-view">
@@ -133,7 +171,7 @@ pub fn generate_html(
         "change-theme",
         sanitize_theme_name(&themes.iter().next().unwrap().name).as_str(),
     ])
-        .unwrap();
+    .unwrap();
 
     let lines = tokens
         .iter()

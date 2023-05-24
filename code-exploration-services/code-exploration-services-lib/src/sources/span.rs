@@ -2,6 +2,15 @@ use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::str::FromStr;
 
+/// `start` and `len` are always in *bytes*, not in *chars*.
+/// With unicode, start and len always refer to starts of code points.
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub struct Span {
+    pub start: usize,
+    pub len: usize,
+    pub next: Option<Box<Span>>,
+}
+
 impl Span {
     pub fn new(start: usize, len: usize) -> Self {
         Self {
@@ -9,6 +18,14 @@ impl Span {
             len,
             next: None,
         }
+    }
+
+    pub fn includes(&self, other: &Self) -> bool {
+        self.start <= other.start && self.end() >= other.end()
+    }
+
+    pub fn end(&self) -> usize {
+        self.start + self.len
     }
 
     pub fn midpoint(&self) -> usize {
@@ -72,13 +89,4 @@ impl<'de> Deserialize<'de> for Span {
 
         Self::from_parts(&parts).ok_or_else(|| D::Error::custom(format!("zero part span: {s}")))
     }
-}
-
-/// `start` and `len` are always in *bytes*, not in *chars*.
-/// With unicode, start and len always refer to starts of code points.
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub struct Span {
-    pub start: usize,
-    pub len: usize,
-    pub next: Option<Box<Span>>,
 }

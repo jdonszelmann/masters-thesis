@@ -4,7 +4,6 @@ use crate::output::simple_html::tokenize::Token::Newline;
 use crate::output::simple_html::{outline, FieldIndex, IndexField};
 use crate::sources::span::Span;
 use std::collections::HashSet;
-use tracing::info;
 
 #[derive(Debug)]
 pub enum Token {
@@ -36,10 +35,25 @@ fn active_at_offset<'a>(
             if offset >= span.start && offset < span.start + span.len {
                 if let IndexField::Field(Field::SyntaxColour(c)) = field {
                     Some(ActiveClass::colour_from_span(span, c))
-                } else if let IndexField::Field(Field::Ref { description, reference }) = field {
-                    Some(ActiveClass::ref_from_span(span, description, reference.clone()))
+                } else if let IndexField::Field(Field::Ref {
+                    description,
+                    reference,
+                }) = field
+                {
+                    if !reference.includes(span) {
+                        Some(ActiveClass::ref_from_span(
+                            span,
+                            description,
+                            reference.clone(),
+                        ))
+                    } else {
+                        None
+                    }
                 } else if let IndexField::ReferenceTarget = field {
-                    Some(ActiveClass::ref_target_from_span(span, outline::span_to_class(span)))
+                    Some(ActiveClass::ref_target_from_span(
+                        span,
+                        outline::span_to_class(span),
+                    ))
                 } else {
                     None
                 }
@@ -80,20 +94,29 @@ pub fn tokenize_string(
                     IndexField::Field(Field::SyntaxColour(c)) if span.len != 0 => {
                         active_classes.push(ActiveClass::colour_from_span(span, c));
                     }
-                    IndexField::Field(Field::Ref { description, reference }) => {
+                    IndexField::Field(Field::Ref {
+                        description,
+                        reference,
+                    }) if !reference.includes(span) => {
                         active_classes.push(ActiveClass::ref_from_span(
                             span,
                             description.clone(),
                             reference.clone(),
                         ));
                     }
-                    IndexField::Field(Field::Outline { .. }) if outline_setting == OutlineSetting::GenerateOutline => {
-                        active_classes
-                            .push(ActiveClass::outline_target_from_span(span, outline::span_to_class(span)));
+                    IndexField::Field(Field::Outline { .. })
+                        if outline_setting == OutlineSetting::GenerateOutline =>
+                    {
+                        active_classes.push(ActiveClass::outline_target_from_span(
+                            span,
+                            outline::span_to_class(span),
+                        ));
                     }
-                    IndexField::ReferenceTarget  => {
-                        active_classes
-                            .push(ActiveClass::ref_target_from_span(span, outline::span_to_class(span)));
+                    IndexField::ReferenceTarget => {
+                        active_classes.push(ActiveClass::ref_target_from_span(
+                            span,
+                            outline::span_to_class(span),
+                        ));
                     }
                     _ => {}
                 }
@@ -132,10 +155,15 @@ pub fn tokenize_string(
 pub fn index_analysis(a: &FileAnalysis) -> FieldIndex {
     let mut fields = FieldIndex::new();
     for (s, f) in a.fields() {
-        fields.entry(s.start).or_insert_with(Vec::new).push((s, IndexField::Field(f)));
+        fields
+            .entry(s.start)
+            .or_insert_with(Vec::new)
+            .push((s, IndexField::Field(f)));
         if let Field::Ref { reference, .. } = f {
-            info!("reference: {reference:?}");
-            fields.entry(reference.start).or_insert_with(Vec::new).push((reference, IndexField::ReferenceTarget));
+            fields
+                .entry(reference.start)
+                .or_insert_with(Vec::new)
+                .push((reference, IndexField::ReferenceTarget));
         }
     }
 
@@ -170,34 +198,62 @@ impl Classes {
 impl<'a> From<&'a [ActiveClass]> for Classes {
     fn from(value: &'a [ActiveClass]) -> Self {
         Self {
-            outline_targets: value.iter().filter_map(|i| {
-                if let ActiveClass {contents: ClassContents::OutlineTarget(class), ..} = i {
-                    Some(class.clone())
-                } else {
-                    None
-                }
-            }).collect(),
-            color_classes: value.iter().filter_map(|i| {
-                if let ActiveClass {contents: ClassContents::ColourClass(class), ..} = i {
-                    Some(class.clone())
-                } else {
-                    None
-                }
-            }).collect(),
-            references: value.iter().filter_map(|i| {
-                if let ActiveClass {contents: ClassContents::Reference(reference), ..} = i {
-                    Some(reference.clone())
-                } else {
-                    None
-                }
-            }).collect(),
-            reference_targets: value.iter().filter_map(|i| {
-                if let ActiveClass {contents: ClassContents::ReferenceTarget(reference), ..} = i {
-                    Some(reference.clone())
-                } else {
-                    None
-                }
-            }).collect(),
+            outline_targets: value
+                .iter()
+                .filter_map(|i| {
+                    if let ActiveClass {
+                        contents: ClassContents::OutlineTarget(class),
+                        ..
+                    } = i
+                    {
+                        Some(class.clone())
+                    } else {
+                        None
+                    }
+                })
+                .collect(),
+            color_classes: value
+                .iter()
+                .filter_map(|i| {
+                    if let ActiveClass {
+                        contents: ClassContents::ColourClass(class),
+                        ..
+                    } = i
+                    {
+                        Some(class.clone())
+                    } else {
+                        None
+                    }
+                })
+                .collect(),
+            references: value
+                .iter()
+                .filter_map(|i| {
+                    if let ActiveClass {
+                        contents: ClassContents::Reference(reference),
+                        ..
+                    } = i
+                    {
+                        Some(reference.clone())
+                    } else {
+                        None
+                    }
+                })
+                .collect(),
+            reference_targets: value
+                .iter()
+                .filter_map(|i| {
+                    if let ActiveClass {
+                        contents: ClassContents::ReferenceTarget(reference),
+                        ..
+                    } = i
+                    {
+                        Some(reference.clone())
+                    } else {
+                        None
+                    }
+                })
+                .collect(),
         }
     }
 }
@@ -210,12 +266,12 @@ enum ClassContents {
 }
 
 struct ActiveClass {
-        #[allow(dead_code)]
-        start: usize,
-        #[allow(dead_code)]
-        len: usize,
-        len_to_go: usize,
-        contents: ClassContents,
+    #[allow(dead_code)]
+    start: usize,
+    #[allow(dead_code)]
+    len: usize,
+    len_to_go: usize,
+    contents: ClassContents,
 }
 
 impl ActiveClass {
@@ -242,10 +298,12 @@ impl ActiveClass {
             start: span.start,
             len: span.len,
             len_to_go: span.len,
-            contents: ClassContents::Reference(Reference{description: description.as_ref().to_string(), to }),
+            contents: ClassContents::Reference(Reference {
+                description: description.as_ref().to_string(),
+                to,
+            }),
         }
     }
-
 
     pub fn ref_target_from_span(span: &Span, class: impl AsRef<str>) -> Self {
         Self {

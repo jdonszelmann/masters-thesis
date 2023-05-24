@@ -39,7 +39,6 @@ fn generate_theme_style(theme: &TextmateTheme) -> Result<String, SimpleHtmlError
         .as_str(),
     );
 
-
     res.push_str(
         format!(
             "
@@ -50,7 +49,7 @@ fn generate_theme_style(theme: &TextmateTheme) -> Result<String, SimpleHtmlError
             sanitize_theme_name(&theme.name),
             global_settings.foreground
         )
-            .as_str(),
+        .as_str(),
     );
 
     res.push_str(
@@ -89,7 +88,7 @@ fn generate_theme_style(theme: &TextmateTheme) -> Result<String, SimpleHtmlError
             sanitize_theme_name(&theme.name),
             global_settings.background
         )
-            .as_str(),
+        .as_str(),
     );
 
     res.push_str(
@@ -102,7 +101,7 @@ fn generate_theme_style(theme: &TextmateTheme) -> Result<String, SimpleHtmlError
             sanitize_theme_name(&theme.name),
             global_settings.line_highlight
         )
-            .as_str(),
+        .as_str(),
     );
 
     for settings_item in &theme.settings {
