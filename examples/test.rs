@@ -2,6 +2,13 @@ use core::fmt;
 use std::collections::HashSet;
 
 fn test_2() {
+    let x;
+
+    x = 4;
+    x = 5;
+
+
+    println!("{}", x);
 
 }
 

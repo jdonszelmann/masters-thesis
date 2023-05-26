@@ -25,7 +25,7 @@ function register_highlight(location) {
         }
 
         highlights.delete(location);
-    }, 5000);
+    }, 2000);
 
     highlights.set(location, cancel);
 }
@@ -62,7 +62,12 @@ document.onreadystatechange = () => {
     }
 
     for (const i of document.getElementsByClassName("reference-item")) {
-        i.onclick = () => {
+        i.onclick = (evt) => {
+            evt.stopPropagation()
+            for (const i of document.getElementsByClassName("reference-popup")) {
+                i.style.display = "none";
+            }
+
             go_to(i.dataset.gotoClass);
         }
     }

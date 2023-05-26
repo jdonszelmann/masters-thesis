@@ -56,6 +56,6 @@ impl Annotater for SimpleHtml {
         let script = include_str!("./script.js");
         let themes_css = themes::generate_theme_styles(&themes)?;
 
-        generate_html::generate_html(themes, tokens, outline, style, script, themes_css)
+        generate_html::generate_html(themes, tokens, outline, style, script, themes_css, file)
     }
 }

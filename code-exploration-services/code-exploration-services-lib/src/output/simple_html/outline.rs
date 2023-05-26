@@ -70,7 +70,7 @@ fn generate_outline_html(
         <div class="outline-item">
             <div class="outline-header" data-goto-class=goto_class>
                 <span>{heading}</span>
-                {generate_html_from_tokens(tokens, GenerateForOutline, )}
+                {generate_html_from_tokens(tokens, GenerateForOutline, source)}
             </div>
             {
                 contents

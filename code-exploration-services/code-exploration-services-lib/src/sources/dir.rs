@@ -247,6 +247,18 @@ impl InternalSourceFile {
 
         Ok(None)
     }
+
+
+    pub fn line_of(&self, offset: usize) -> Result<usize, ContentsError> {
+        let mut line_num = 1;
+        for i in self.contents()?.bytes().take(offset) {
+            if i == b'\n' {
+                line_num += 1;
+            }
+        }
+
+        Ok(line_num)
+    }
 }
 
 #[derive(Debug, Error)]

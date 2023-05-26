@@ -10,10 +10,9 @@ use axohtml::types::{Class, SpacedSet};
 use axohtml::{html, text, unsafe_text};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use crate::sources::dir::{ContentsError, SourceFile};
 
-fn generate_reference(references: &[&Reference]) -> Box<dyn FlowContent<String>> {
-    let context = "";
-
+fn generate_reference(references: &[&Reference], source: SourceFile) -> Result<(Box<dyn FlowContent<String>>, usize), ContentsError> {
     let mut description = Vec::new();
     for i in references {
         if !description.contains(&i.description.as_str()) {
@@ -21,17 +20,20 @@ fn generate_reference(references: &[&Reference]) -> Box<dyn FlowContent<String>>
         }
     }
 
+    let line = source.line_of(references[0].to.start)?;
+    let context = format!("line {}", line);
+
     let goto_class = span_to_class(&references[0].to);
 
-    html! {
+    Ok((html! {
         <div class="reference-item" data-goto-class=goto_class>
             <span class="description">{text!("{}", description.join(" + "))}</span>
             <span class="context">{text!("{}", context)}</span>
         </div>
-    }
+    }, line))
 }
 
-fn generate_popup(references: &[Reference]) -> Option<Box<dyn FlowContent<String>>> {
+fn generate_popup(references: &[Reference], source: SourceFile) -> Result<Option<Box<dyn FlowContent<String>>>, ContentsError> {
     let mut references_tracker = HashMap::new();
     let mut deduplicated_references = Vec::<Vec<&Reference>>::new();
     for r in references {
@@ -46,7 +48,7 @@ fn generate_popup(references: &[Reference]) -> Option<Box<dyn FlowContent<String
         }
     }
 
-    match deduplicated_references.len() {
+    Ok(match deduplicated_references.len() {
         0 => None,
         1 => {
             let reference = &deduplicated_references[0][0];
@@ -55,21 +57,30 @@ fn generate_popup(references: &[Reference]) -> Option<Box<dyn FlowContent<String
                 <div class="goto-reference-instantly" data-goto-class=goto_class></div>
             })
         }
-        _ => Some(html! {
-            <div class="reference-popup background foreground border">
-                {
-                    deduplicated_references.iter().map(|i| generate_reference(i))
-                }
-            </div>
-        }),
-    }
+        _ => {
+            let mut refs = deduplicated_references.iter()
+                .map(|i| generate_reference(i, source))
+                .collect::<Result<Vec<_>, _>>()?;
+
+            refs.sort_by_key(|i| i.1);
+
+            Some(html! {
+                <div class="reference-popup background foreground border">
+                    {
+                        refs.into_iter().map(|i| i.0)
+                    }
+                </div>
+            })
+        },
+    })
 }
 
 fn generate_line_from_tokens(
     tokens: &[Token],
     line_num: usize,
     generate_for_outline: GenerateForOutlineStatus,
-) -> Box<dyn FlowContent<String>> {
+    source: SourceFile,
+) -> Result<Box<dyn FlowContent<String>>, ContentsError> {
     let mut spans = Vec::new();
 
     for token in tokens {
@@ -94,7 +105,7 @@ fn generate_line_from_tokens(
             }
 
             let popup = if generate_for_outline == GenerateForSource {
-                generate_popup(&classes.references)
+                generate_popup(&classes.references, source)?
             } else {
                 class.add("outline");
                 None
@@ -115,9 +126,9 @@ fn generate_line_from_tokens(
         }
     }
 
-    html! {
+    Ok(html! {
         <div class="code-line">{spans}</div>
-    }
+    })
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -129,7 +140,8 @@ pub enum GenerateForOutlineStatus {
 pub fn generate_html_from_tokens(
     tokens: Vec<Token>,
     generate_for_outline: GenerateForOutlineStatus,
-) -> Box<dyn FlowContent<String>> {
+    source: SourceFile,
+) -> Result<Box<dyn FlowContent<String>>, ContentsError> {
     let mut lines = Vec::new();
     let mut line = Vec::new();
     let mut line_num = 1;
@@ -139,7 +151,8 @@ pub fn generate_html_from_tokens(
                 &line,
                 line_num,
                 generate_for_outline,
-            ));
+                source
+            )?);
             line_num += 1;
             line = Vec::new();
         } else {
@@ -150,13 +163,14 @@ pub fn generate_html_from_tokens(
         &line,
         line_num,
         generate_for_outline,
-    ));
+        source
+    )?);
 
-    html! {
+    Ok(html! {
         <div class="code-view">
             {lines}
         </div>
-    }
+    })
 }
 
 pub fn generate_html(
@@ -166,6 +180,7 @@ pub fn generate_html(
     style: &str,
     script: &str,
     themes_css: String,
+    source: SourceFile,
 ) -> Result<String, SimpleHtmlError> {
     let change_theme_classes = SpacedSet::try_from([
         "change-theme",
@@ -210,7 +225,7 @@ pub fn generate_html(
                             </div>
                         </div>
                         <div class="source">
-                            {generate_html_from_tokens(tokens, GenerateForSource)}
+                            {generate_html_from_tokens(tokens, GenerateForSource, source)}
                         </div>
                     </div>
                     <script>
