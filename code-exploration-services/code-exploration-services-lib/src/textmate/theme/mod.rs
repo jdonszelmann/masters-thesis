@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 pub mod constructor;
 
 #[derive(Debug, Copy, Clone)]
-pub struct Color(u8, u8, u8, u8);
+pub struct Color(pub u8, pub u8, pub u8, pub u8);
 
 impl Display for Color {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {

@@ -376,6 +376,7 @@ impl Analyser for LspAnalyser {
         let mut servers = extensions
             .into_iter()
             .map(|ext| Ok((ext.to_string(), LanguageServer::new(&ext, s)?)))
+            .filter(|i| !matches!(i, Err(NewLanguageServerError::LanguageNotSupported(_))))
             .collect::<Result<HashMap<_, _>, _>>()
             .map_err(LanguageServerError::New)?;
 
@@ -423,11 +424,12 @@ impl Analyser for LspAnalyser {
                     .collect_vec();
 
                 let usage_references = if (implementation_references.len() + declaration_references.len() + definition_references.len()) > 0 {
-                    server_for_file.get_usage_sites(file, line, character)
-                        .map_err(LanguageServerError::Request)?
-                        .into_iter()
-                        .map(|i| ("usage", i))
-                        .collect_vec()
+                    Vec::new()
+                    // server_for_file.get_usage_sites(file, line, character)
+                    //     .map_err(LanguageServerError::Request)?
+                    //     .into_iter()
+                    //     .map(|i| ("usage", i))
+                    //     .collect_vec()
                 } else {
                     Vec::new()
                 };

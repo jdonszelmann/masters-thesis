@@ -2,19 +2,18 @@ use crate::analysis::dir::{Analysis, GetAnalysisError};
 use crate::analysis::field::Field;
 use crate::output::simple_html::themes::sanitize_theme_name;
 use crate::output::simple_html::tokenize::OutlineSetting::GenerateOutline;
-use crate::output::Annotater;
+use crate::output::{Annotater, tokenize};
 use crate::sources::dir::{ContentsError, SourceDir};
 use crate::sources::span::Span;
 use crate::textmate::theme::TextmateThemeManager;
 use std::collections::HashMap;
 use std::path::PathBuf;
-use themes::ScopeSelectorFromStrError;
+use crate::output::scope_selector::ScopeSelectorFromStrError;
 use thiserror::Error;
 
 mod generate_html;
 mod outline;
 mod themes;
-mod tokenize;
 
 pub struct SimpleHtml;
 
@@ -30,17 +29,11 @@ pub enum SimpleHtmlError {
     GetAnalysis(#[source] GetAnalysisError, PathBuf),
 }
 
-pub enum IndexField<'a> {
-    Field(&'a Field),
-    ReferenceTarget,
-}
-
-type FieldIndex<'a> = HashMap<usize, Vec<(&'a Span, IndexField<'a>)>>;
-
 impl Annotater for SimpleHtml {
     type Output = Result<String, SimpleHtmlError>;
+    type Params = ();
 
-    fn annotate(&self, source: &SourceDir, a: Analysis) -> Self::Output {
+    fn annotate(&self, source: &SourceDir, a: Analysis, (): ()) -> Self::Output {
         let file = source.files().next().expect("one source file");
         let a = a
             .analysis_for(file)

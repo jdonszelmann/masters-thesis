@@ -1,9 +1,17 @@
 use crate::analysis::field::{Field, FieldRef};
 use crate::analysis::file::FileAnalysis;
-use crate::output::simple_html::tokenize::Token::Newline;
-use crate::output::simple_html::{outline, FieldIndex, IndexField};
 use crate::sources::span::Span;
-use std::collections::HashSet;
+use std::collections::{BTreeSet, HashMap, HashSet};
+use thiserror::Error;
+use crate::output::span_to_class;
+use crate::output::tokenize::Token::Newline;
+
+pub enum IndexField<'a> {
+    Field(&'a Field),
+    ReferenceTarget,
+}
+
+pub type FieldIndex<'a> = HashMap<usize, Vec<(&'a Span, IndexField<'a>)>>;
 
 #[derive(Debug)]
 pub enum Token {
@@ -52,7 +60,7 @@ fn active_at_offset<'a>(
                 } else if let IndexField::ReferenceTarget = field {
                     Some(ActiveClass::ref_target_from_span(
                         span,
-                        outline::span_to_class(span),
+                        span_to_class(span),
                     ))
                 } else {
                     None
@@ -109,13 +117,13 @@ pub fn tokenize_string(
                     {
                         active_classes.push(ActiveClass::outline_target_from_span(
                             span,
-                            outline::span_to_class(span),
+                            span_to_class(span),
                         ));
                     }
                     IndexField::ReferenceTarget => {
                         active_classes.push(ActiveClass::ref_target_from_span(
                             span,
-                            outline::span_to_class(span),
+                            span_to_class(span),
                         ));
                     }
                     _ => {}
@@ -170,18 +178,20 @@ pub fn index_analysis(a: &FileAnalysis) -> FieldIndex {
     fields
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub struct Reference {
     pub description: String,
     pub to: Span,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+pub type ColorClasses = BTreeSet<String>;
+
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
 pub struct Classes {
-    pub color_classes: HashSet<String>,
+    pub color_classes: ColorClasses,
     pub references: Vec<Reference>,
-    pub reference_targets: HashSet<String>,
-    pub outline_targets: HashSet<String>,
+    pub reference_targets: BTreeSet<String>,
+    pub outline_targets: BTreeSet<String>,
 }
 
 impl Classes {

@@ -1,5 +1,5 @@
 use crate::output::simple_html::generate_html::GenerateForOutlineStatus::GenerateForSource;
-use crate::output::simple_html::outline::span_to_class;
+use crate::output::span_to_class;
 use crate::output::simple_html::sanitize_theme_name;
 use crate::output::simple_html::tokenize::{Reference, Token};
 use crate::output::simple_html::{themes, SimpleHtmlError};

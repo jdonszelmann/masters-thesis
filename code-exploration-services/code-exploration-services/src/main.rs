@@ -3,10 +3,12 @@ use code_exploration_services_lib::analysis::dir::Analysis;
 use std::fs::File;
 use std::io::{stdin, stdout, Read, Write};
 use std::path::{Path, PathBuf};
+use color_eyre::eyre::{ContextCompat, ensure};
 
 use code_exploration_services_lib::output::simple_html::SimpleHtml;
 use code_exploration_services_lib::sources::dir::SourceDir;
 use code_exploration_services_lib::Annotater;
+use code_exploration_services_lib::output::latex::Latex;
 
 #[derive(Parser)]
 #[command(author, version, about)]
@@ -21,6 +23,8 @@ struct Cli {
 enum Output {
     // convert to html
     SimpleHtml,
+
+    Latex,
 }
 
 #[derive(Subcommand)]
@@ -88,13 +92,30 @@ fn main() -> color_eyre::Result<()> {
 
             match output_type {
                 Output::SimpleHtml => {
-                    let res = SimpleHtml.annotate(&source, analysis)?;
+                    let res = SimpleHtml.annotate(&source, analysis, ())?;
 
                     if let Some(output) = output {
                         std::fs::write(output, res)?;
                     } else {
                         stdout().write_all(res.as_bytes())?;
                     }
+                }
+                Output::Latex => {
+                    ensure!(output.is_some(), "specify an output directory");
+                    let output = output.unwrap();
+                    ensure!(output.exists(), "make sure the output path exists");
+                    ensure!(output.is_dir(), "make sure the output path is a directory");
+
+
+                    let res = Latex.annotate(&source, analysis, Default::default())?;
+
+                    let sty_path = output.join(res.codex_sty.0);
+                    std::fs::create_dir_all(sty_path.parent().context("has parent")?)?;
+                    std::fs::write(sty_path, res.codex_sty.1)?;
+
+                    let tex_path = output.join(res.latex_source.0);
+                    std::fs::create_dir_all(tex_path.parent().context("has parent")?)?;
+                    std::fs::write(tex_path, res.latex_source.1)?;
                 }
             };
         }

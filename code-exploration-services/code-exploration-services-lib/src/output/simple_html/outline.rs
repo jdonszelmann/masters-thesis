@@ -3,12 +3,14 @@ use crate::analysis::file::FileAnalysis;
 use crate::output::simple_html::generate_html::generate_html_from_tokens;
 use crate::output::simple_html::generate_html::GenerateForOutlineStatus::GenerateForOutline;
 use crate::output::simple_html::tokenize::OutlineSetting::DontGenerateOutline;
-use crate::output::simple_html::{tokenize, FieldIndex, SimpleHtmlError};
 use crate::sources::dir::SourceFile;
 use crate::sources::span::Span;
 use axohtml::dom::DOMTree;
 use axohtml::{html, text, unsafe_text};
 use std::collections::VecDeque;
+use crate::output;
+use crate::output::simple_html::SimpleHtmlError;
+use crate::output::tokenize::{FieldIndex, tokenize_string};
 
 #[derive(Debug)]
 struct OutlineItem<'a> {
@@ -57,14 +59,14 @@ fn generate_outline_html(
 
     let source_text = source.slice(parent.span)?;
     let tokens =
-        tokenize::tokenize_string(&source_text, parent.span.start, index, DontGenerateOutline);
+        tokenize_string(&source_text, parent.span.start, index, DontGenerateOutline);
 
     let heading = if let Some(description) = parent.description {
         text!("{}: ", description)
     } else {
         text!("")
     };
-    let goto_class = span_to_class(parent.span);
+    let goto_class = output::span_to_class(parent.span);
 
     let doc: DOMTree<String> = html! {
         <div class="outline-item">
@@ -140,16 +142,4 @@ pub fn generate_outline(
     };
 
     Ok(doc)
-}
-
-pub fn span_to_class(span: &Span) -> String {
-    fn span_to_class_helper(span: &Span) -> String {
-        if let Some(ref i) = span.next {
-            format!("{}-{}-{}", span.start, span.len, span_to_class_helper(i))
-        } else {
-            format!("{}-{}", span.start, span.len)
-        }
-    }
-
-    format!("goto-{}", span_to_class_helper(span))
 }
