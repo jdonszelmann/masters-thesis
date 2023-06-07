@@ -1,12 +1,10 @@
+use std::iter;
 use crate::analysis::dir::{Analysis, GetAnalysisError};
-use crate::analysis::field::Field;
 use crate::output::simple_html::themes::sanitize_theme_name;
 use crate::output::simple_html::tokenize::OutlineSetting::GenerateOutline;
 use crate::output::{Annotater, tokenize};
-use crate::sources::dir::{ContentsError, SourceDir};
-use crate::sources::span::Span;
+use crate::sources::dir::{ContentsError, HashError, SourceDir};
 use crate::textmate::theme::TextmateThemeManager;
-use std::collections::HashMap;
 use std::path::PathBuf;
 use crate::output::scope_selector::ScopeSelectorFromStrError;
 use thiserror::Error;
@@ -25,6 +23,9 @@ pub enum SimpleHtmlError {
     #[error("contents")]
     Contents(#[from] ContentsError),
 
+    #[error("file hash")]
+    HashError(#[from] HashError),
+
     #[error("get analysis for file {1:?}")]
     GetAnalysis(#[source] GetAnalysisError, PathBuf),
 }
@@ -41,7 +42,8 @@ impl Annotater for SimpleHtml {
 
         let themes = TextmateThemeManager::default();
 
-        let field_index = tokenize::index_analysis(&a);
+        let field_index = tokenize::index_analyses(iter::once(a), source)?.remove(&file.hash()?).expect("has file");
+
         let tokens = tokenize::tokenize_string(&file.contents()?, 0, &field_index, GenerateOutline);
         let outline = outline::generate_outline(&a, &field_index, file)?;
 

@@ -6,6 +6,7 @@ use crate::sources::dir::{ContentsError, SourceFile};
 use crate::sources::span::Span;
 use std::io::BufRead;
 use std::process::Command;
+use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct XrefAnalysis {
@@ -28,8 +29,9 @@ pub struct Xref {
 impl Xref {
     pub fn span(&self, source: SourceFile) -> Result<Span, ContentsError> {
         // subtract two for the `/^` at the start of the pattern, but add one since columns are 1-based
-        let column = self.pattern.find(&self.name).expect("name in pattern") - 1;
+        let column = self.pattern.find(&self.name).expect("name in pattern") - 2;
         let start = source.offset_of_line_num(self.line_num)?.expect("in file") + column;
+
         let len = self.name.len();
 
         Ok(Span::new(start, len))

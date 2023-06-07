@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use itertools::Itertools;
 use thiserror::Error;
 use crate::output::theme::Theme;
 use crate::output::tokenize::{Classes, ColorClasses, Token};
@@ -20,32 +19,35 @@ fn resolve_color(classes: &ColorClasses, theme: &Theme) -> Result<Color, Resolve
 }
 
 
-pub struct Colors<'a, 'b> {
-    colors: HashMap<&'a Classes, (Color, String)>,
-    theme: &'b Theme<'b>
+pub struct Colors<'b> {
+    colors: HashMap<Classes, (Color, String)>,
+    theme: &'b Theme<'b>,
+    color_idx: usize,
 }
 
-impl<'a, 'b> Colors<'a, 'b> {
-    pub fn from_tokens(t: &'a [Token], theme: &'b Theme<'b>) -> Result<Self, ResolveColorError> {
-        let mut colors: HashMap<&'a Classes, (Color, String)> = HashMap::new();
-        let mut color_idx = 0;
+impl<'b> Colors<'b> {
+    pub fn new(theme: &'b Theme<'b>) -> Self {
+        Self {
+            colors: HashMap::new(),
+            theme,
+            color_idx: 0,
+        }
+    }
 
-        for i in t {
+    pub fn add_tokens(&mut self, tokens: &[Token]) -> Result<(), ResolveColorError> {
+        for i in tokens {
             if let Token::Token {classes, ..} = i {
-                if !colors.contains_key(&classes) {
-                    colors.insert(classes, (
-                        resolve_color(&classes.color_classes, theme)?,
-                        format!("color{color_idx}"))
+                if !self.colors.contains_key(&classes) {
+                    self.colors.insert(classes.clone(), (
+                        resolve_color(&classes.color_classes, self.theme)?,
+                        format!("color{}", self.color_idx))
                     );
-                    color_idx += 1;
+                    self.color_idx += 1;
                 }
             }
         }
 
-        Ok(Self {
-            colors,
-            theme,
-        })
+        Ok(())
     }
 
     pub fn color_for(&self, classes: &Classes) -> &str {

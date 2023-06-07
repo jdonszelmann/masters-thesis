@@ -66,9 +66,10 @@ macro_rules! create_sites_fn {
         fn $name(
             &mut self,
             file: SourceFile,
+            other_files: &SourceDir,
             line: usize,
             character: usize,
-        ) -> Result<Vec<Span>, RequestError> {
+        ) -> Result<Vec<(Span, Option<String>)>, RequestError> {
             let mut res = Vec::new();
 
             if let Some(resp) = self.lsp.request::<$req>(&$params {
@@ -88,14 +89,14 @@ macro_rules! create_sites_fn {
                 match resp {
                     $resp::Scalar(s) => {
                         // TODO: handle s.uri
-                        if let Some(span) = self.span_from_range(s.range, s.uri, file)? {
+                        if let Some(span) = self.span_from_range(s.range, s.uri, file, other_files)? {
                             res.push(span);
                         }
                     }
                     $resp::Array(a) => {
                         for i in a {
                             // TODO: handle s.uri
-                            if let Some(span) = self.span_from_range(i.range, i.uri, file)? {
+                            if let Some(span) = self.span_from_range(i.range, i.uri, file, other_files)? {
                                 res.push(span)
                             }
                         }
@@ -104,7 +105,7 @@ macro_rules! create_sites_fn {
                         for i in locations {
                             // TODO: handle i.uri
                             if let Some(span) =
-                                self.span_from_range(i.target_range, i.target_uri, file)?
+                                self.span_from_range(i.target_range, i.target_uri, file, other_files)?
                             {
                                 res.push(span)
                             }
@@ -252,11 +253,22 @@ impl LanguageServer {
         range: Range,
         uri: Url,
         file: SourceFile,
-    ) -> Result<Option<Span>, RequestError> {
+        other_files: &SourceDir,
+    ) -> Result<Option<(Span, Option<String>)>, RequestError> {
         // TODO: inter-file references
-        if Path::new(uri.path()) != file.path() {
+        let path = if Path::new(uri.path()) == file.path() {
+            // if it's this file, no filename is necessary
+            None
+        } else  if other_files.has_file(Path::new(uri.path())) {
+            // if it's somewhere else in the dir, reference that file
+            let relative = other_files.relative_path_of(Path::new(uri.path()))
+                .expect("dir has file so must be prefix");
+
+            Some(relative.to_string_lossy().to_string())
+        } else {
+            // otherwise, drop it
             return Ok(None);
-        }
+        };
 
         let start = range.start;
         let end = range.end;
@@ -270,10 +282,10 @@ impl LanguageServer {
         };
 
         // TODO: handle utf8 well
-        Ok(Some(Span::from_start_end(
-            start_offset + start.character as usize + 1,
-            end_offset + end.character as usize + 1,
-        )))
+        Ok(Some((Span::from_start_end(
+            start_offset + start.character as usize,
+            end_offset + end.character as usize,
+        ), path)))
     }
 
     create_sites_fn!(
@@ -298,9 +310,10 @@ impl LanguageServer {
     fn get_usage_sites(
         &mut self,
         file: SourceFile,
+        other_files: &SourceDir,
         line: usize,
         character: usize,
-    ) -> Result<Vec<Span>, RequestError> {
+    ) -> Result<Vec<(Span, Option<String>)>, RequestError> {
         let mut res = Vec::new();
 
         if let Some(resp) = self.lsp.request::<References>(&ReferenceParams {
@@ -321,7 +334,7 @@ impl LanguageServer {
             },
         })? {
             for i in resp {
-                if let Some(span) = self.span_from_range(i.range, i.uri, file)? {
+                if let Some(span) = self.span_from_range(i.range, i.uri, file, other_files)? {
                     res.push(span)
                 }
             }
@@ -361,10 +374,10 @@ impl LanguageServer {
 }
 
 impl Analyser for LspAnalyser {
-    fn symbol_navigation(&self, s: &SourceDir) -> Result<Analysis, AnalysisError> {
+    fn symbol_navigation(&self, dir: &SourceDir) -> Result<Analysis, AnalysisError> {
         info!("lsp hover documentation");
 
-        let extensions = s
+        let extensions = dir
             .files()
             .flat_map(|i| {
                 i.path()
@@ -375,14 +388,14 @@ impl Analyser for LspAnalyser {
 
         let mut servers = extensions
             .into_iter()
-            .map(|ext| Ok((ext.to_string(), LanguageServer::new(&ext, s)?)))
+            .map(|ext| Ok((ext.to_string(), LanguageServer::new(&ext, dir)?)))
             .filter(|i| !matches!(i, Err(NewLanguageServerError::LanguageNotSupported(_))))
             .collect::<Result<HashMap<_, _>, _>>()
             .map_err(LanguageServerError::New)?;
 
         info!("analysing files");
 
-        let analysis = s.map_analyze(|file| {
+        let analysis = dir.map_analyze(|file| {
             let Some(extensions) = file.path().extension() else {
                 return Ok(FileAnalysis::new(file, Vec::new())?);
             };
@@ -405,19 +418,19 @@ impl Analyser for LspAnalyser {
                     last_percentage = percentage;
                 }
 
-                let definition_references = server_for_file.get_definition_sites(file, line, character)
+                let definition_references = server_for_file.get_definition_sites(file, dir, line, character)
                     .map_err(LanguageServerError::Request)?
                     .into_iter()
                     .map(|i| ("definition", i))
                     .collect_vec();
 
-                let declaration_references = server_for_file.get_declaration_sites(file, line, character)
+                let declaration_references = server_for_file.get_declaration_sites(file, dir, line, character)
                     .map_err(LanguageServerError::Request)?
                     .into_iter()
                     .map(|i| ("declaration", i))
                     .collect_vec();
 
-                let implementation_references = server_for_file.get_implementation_sites(file, line, character)
+                let implementation_references = server_for_file.get_implementation_sites(file, dir, line, character)
                     .map_err(LanguageServerError::Request)?
                     .into_iter()
                     .map(|i| ("implementation", i))
@@ -425,7 +438,8 @@ impl Analyser for LspAnalyser {
 
                 let usage_references = if (implementation_references.len() + declaration_references.len() + definition_references.len()) > 0 {
                     Vec::new()
-                    // server_for_file.get_usage_sites(file, line, character)
+                    // TODO: enable again
+                    // server_for_file.get_usage_sites(file, dir, line, character)
                     //     .map_err(LanguageServerError::Request)?
                     //     .into_iter()
                     //     .map(|i| ("usage", i))
@@ -442,7 +456,7 @@ impl Analyser for LspAnalyser {
                     .collect_vec();
 
                 if references != last.1 {
-                    for (description, definition_span) in last.1 {
+                    for (description, (definition_span, file)) in last.1 {
                         let span = Span::from_start_end(last.0, offset - 1);
                         // println!("pushing span {span:?} referring to {}", file.slice(&span)?);
                         fields.push((
@@ -454,6 +468,7 @@ impl Analyser for LspAnalyser {
                                     len: definition_span.len,
                                     next: None,
                                 },
+                                file,
                             }
                         ));
                     }

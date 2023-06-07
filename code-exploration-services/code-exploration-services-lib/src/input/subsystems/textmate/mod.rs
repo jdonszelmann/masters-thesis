@@ -6,6 +6,7 @@ use crate::sources::dir::SourceDir;
 use crate::sources::span::Span;
 use crate::textmate;
 use thiserror::Error;
+use tracing::info;
 
 #[derive(Debug, Error)]
 pub enum TextmateAnalysisError {
@@ -18,10 +19,13 @@ pub struct TextmateAnalyser;
 impl Analyser for TextmateAnalyser {
     fn syntax_coloring<'a>(&self, s: &'a SourceDir) -> Result<Analysis, AnalysisError> {
         s.map_analyze(|file| {
+
             let Some(ext) = file.path().extension() else {
+                info!("no extension {:?}", file.path());
                 return Err(AnalysisError::NotImplemented);
             };
             let Some(parser) = textmate::TextmateGrammar::from_language(&ext.to_string_lossy())? else {
+                info!("not implemented for {ext:?}");
                 return Err(AnalysisError::NotImplemented)
             };
 

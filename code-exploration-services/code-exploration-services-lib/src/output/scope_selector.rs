@@ -2,7 +2,6 @@ use std::collections::VecDeque;
 use thiserror::Error;
 use std::iter;
 use std::str::FromStr;
-use tracing::info;
 use crate::output::tokenize::ColorClasses;
 
 #[derive(Debug, Error)]
@@ -101,8 +100,6 @@ impl ScopeSelector {
     fn matches_split(&self, classes: Vec<VecDeque<&str>>) -> bool {
         match self {
             ScopeSelector::Selector(i) => {
-                info!("{}", i);
-                info!("{classes:?}");
                 for class in classes {
                     if class.front() == Some(&i.as_str()) {
                         return true
@@ -131,12 +128,10 @@ impl ScopeSelector {
     }
 
     pub fn matches(&self, classes: &ColorClasses) -> bool {
-        info!("{:?}", classes);
         let mut split_classes = Vec::new();
         for i in classes {
             split_classes.push(i.split('.').collect::<VecDeque<_>>());
         }
-        info!("{:?}", split_classes);
 
         self.matches_split(split_classes)
     }

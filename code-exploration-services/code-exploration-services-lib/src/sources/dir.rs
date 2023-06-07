@@ -8,12 +8,18 @@ use std::cell::RefCell;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::{fs, io};
+use std::ffi::OsStr;
 use thiserror::Error;
+use tracing::info;
+use walkdir::DirEntry;
 
 #[derive(Debug, Error)]
 pub enum NewDirError {
     #[error("walking through directory")]
     Io(#[from] walkdir::Error),
+
+    #[error("canonicalize path")]
+    Canonicalize(#[from] io::Error),
 }
 
 #[derive(Debug, Error)]
@@ -60,6 +66,21 @@ impl Drop for SourceDir {
     }
 }
 
+const EXCLUDED_PATHS: &[&str] = &[
+    "target"
+];
+
+fn excluded(p: &DirEntry) -> bool {
+    for segment in p.path() {
+        for excluded in EXCLUDED_PATHS {
+            if segment == OsStr::new(excluded) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 impl SourceDir {
     pub fn new(root: impl AsRef<Path>) -> Result<Self, NewSourceDirError> {
         if root.as_ref().is_file() {
@@ -74,15 +95,33 @@ impl SourceDir {
     }
 
     pub fn new_dir(root: impl AsRef<Path>) -> Result<Self, NewDirError> {
-        let root = root.as_ref().to_path_buf();
-        let files = walkdir::WalkDir::new(&root)
+        let root = fs::canonicalize(root.as_ref().to_path_buf())?;
+        let files: Vec<_> = walkdir::WalkDir::new(&root)
             .into_iter()
-            .map(|i| i.map(|i| InternalSourceFile::new(i.path())))
+            .filter_map(|i| {
+                match i {
+                    Ok(i) => {
+                        if i.path().is_dir() || excluded(&i) {
+                            None
+                        } else {
+                            Some(Ok(InternalSourceFile::new(i.path())))
+                        }
+                    },
+                    Err(e) => Some(Err(e)),
+                }
+            })
             .collect::<Result<_, _>>()?;
 
         Ok(Self {
             root,
-            files: FilesList::Many(files),
+            files: FilesList::Many(files.into_iter()
+                .filter(|i| if let Err(e) = i.contents() {
+                    info!("excluding {:?} because of error: {e}", i.path());
+                    false
+                } else {
+                    true
+                })
+                .collect()),
             cleanup: None,
         })
     }
@@ -110,6 +149,46 @@ impl SourceDir {
         }
     }
 
+    pub fn has_file(&self, path: &Path) -> bool {
+        match self.files {
+            FilesList::SingleFile(ref f) => f.path == path,
+            FilesList::Many(ref files) => {
+                for i in files {
+                    if i.path == path {
+                        return true
+                    }
+                }
+                false
+            }
+        }
+    }
+
+    pub fn relative_path_of(&self, path: &Path) -> Option<PathBuf> {
+        pathdiff::diff_paths(path, self.root())
+    }
+
+    pub fn file_from_suffix(&self, path: &str) -> Option<SourceFile> {
+        match &self.files {
+            FilesList::SingleFile(s) if s.path.to_string_lossy().contains(path) => Some(SourceFile {
+                internal: &s,
+                dir: self,
+            }),
+            FilesList::Many(m) => {
+                for s in m {
+                    if s.path.to_string_lossy().contains(path) {
+                        return Some(SourceFile {
+                            internal: &s,
+                            dir: self
+                        })
+                    }
+                }
+
+                None
+            }
+            _ => None,
+        }
+    }
+
     pub fn root(&self) -> &Path {
         &self.root
     }
@@ -127,13 +206,27 @@ impl SourceDir {
         mut f: impl FnMut(SourceFile) -> Result<FileAnalysis, AnalysisError>,
     ) -> Result<Analysis, AnalysisError> {
         let mut res = Analysis::new();
+        let mut analysed_one = false;
+        let mut not_implemented_one = false;
+
         for elem in self
             .files()
             .map(|i| -> Result<(SourceFile, FileAnalysis), AnalysisError> { Ok((i, f(i)?)) })
         {
-            let (f, a) = elem?;
-
-            res.add_file(f, a);
+            match elem {
+                Ok((f, a)) => {
+                    res.add_file(f, a);
+                    analysed_one = true;
+                }
+                Err(AnalysisError::NotImplemented) => {
+                    not_implemented_one = true;
+                    continue
+                }
+                Err(e) => return Err(e),
+            }
+        }
+        if !analysed_one && not_implemented_one {
+            return Err(AnalysisError::NotImplemented)
         }
 
         Ok(res)
@@ -236,11 +329,15 @@ impl InternalSourceFile {
     }
 
     pub fn offset_of_line_num(&self, mut line_num: usize) -> Result<Option<usize>, ContentsError> {
+        if line_num <= 1 {
+            return Ok(Some(0));
+        }
+
         for (idx, i) in self.contents()?.bytes().enumerate() {
             if i == b'\n' {
                 line_num -= 1;
                 if line_num <= 1 {
-                    return Ok(Some(idx));
+                    return Ok(Some(idx + 1));
                 }
             }
         }

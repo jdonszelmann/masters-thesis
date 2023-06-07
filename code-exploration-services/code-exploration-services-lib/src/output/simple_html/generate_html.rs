@@ -91,7 +91,7 @@ fn generate_line_from_tokens(
             for i in classes
                 .color_classes
                 .iter()
-                .chain(&classes.outline_targets)
+                .chain(classes.outline_targets.iter().map(|i| &i.class))
                 .chain(&classes.reference_targets)
             {
                 let mut res = String::new();
