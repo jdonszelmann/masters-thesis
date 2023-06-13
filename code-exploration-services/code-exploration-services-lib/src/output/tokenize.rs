@@ -1,14 +1,14 @@
 use crate::analysis::field::{Field, FieldRef};
 use crate::analysis::file::FileAnalysis;
-use crate::sources::span::Span;
-use std::collections::{BTreeSet, HashMap};
-use std::path::PathBuf;
-use itertools::Itertools;
-use tracing::{error, info};
 use crate::output::span_to_class;
 use crate::output::tokenize::Token::Newline;
 use crate::sources::dir::{HashError, SourceDir};
 use crate::sources::hash::SourceCodeHash;
+use crate::sources::span::Span;
+use itertools::Itertools;
+use std::collections::{BTreeSet, HashMap};
+use std::path::PathBuf;
+use tracing::{error, info};
 
 #[derive(Debug)]
 pub enum IndexField<'a> {
@@ -40,7 +40,7 @@ pub enum OutlineSetting {
 fn active_at_offset<'a>(
     field_index: &'a FieldIndex,
     offset: usize,
-) -> impl Iterator<Item=ActiveClass> + 'a {
+) -> impl Iterator<Item = ActiveClass> + 'a {
     field_index
         .values()
         .flatten()
@@ -48,12 +48,11 @@ fn active_at_offset<'a>(
             if offset >= span.start && offset < span.start + span.len {
                 if let IndexField::Field(Field::SyntaxColour(c)) = field {
                     Some(ActiveClass::colour_from_span(span, c))
-                } else if let IndexField::Field(
-                    Field::Ref {
-                        description,
-                        reference,
-                        file,
-                    }) = field
+                } else if let IndexField::Field(Field::Ref {
+                    description,
+                    reference,
+                    file,
+                }) = field
                 {
                     if !reference.includes(span) {
                         Some(ActiveClass::ref_from_span(
@@ -66,10 +65,7 @@ fn active_at_offset<'a>(
                         None
                     }
                 } else if let IndexField::ReferenceTarget = field {
-                    Some(ActiveClass::ref_target_from_span(
-                        span,
-                        span_to_class(span),
-                    ))
+                    Some(ActiveClass::ref_target_from_span(span, span_to_class(span)))
                 } else {
                     None
                 }
@@ -110,12 +106,11 @@ pub fn tokenize_string(
                     IndexField::Field(Field::SyntaxColour(c)) if span.len != 0 => {
                         active_classes.push(ActiveClass::colour_from_span(span, c));
                     }
-                    IndexField::Field(
-                        Field::Ref {
-                            description,
-                            reference,
-                            file,
-                        }) if !reference.includes(span) || file.is_some() => {
+                    IndexField::Field(Field::Ref {
+                        description,
+                        reference,
+                        file,
+                    }) if !reference.includes(span) || file.is_some() => {
                         active_classes.push(ActiveClass::ref_from_span(
                             span,
                             description.clone(),
@@ -123,21 +118,20 @@ pub fn tokenize_string(
                             reference.clone(),
                         ));
                     }
-                    IndexField::Field(Field::Outline { description, parent })
-                    if outline_setting == OutlineSetting::GenerateOutline =>
-                        {
-                            active_classes.push(ActiveClass::outline_target_from_span(
-                                span,
-                                parent.is_none(),
-                                description.clone(),
-                                span_to_class(span),
-                            ));
-                        }
-                    IndexField::ReferenceTarget => {
-                        active_classes.push(ActiveClass::ref_target_from_span(
+                    IndexField::Field(Field::Outline {
+                        description,
+                        parent,
+                    }) if outline_setting == OutlineSetting::GenerateOutline => {
+                        active_classes.push(ActiveClass::outline_target_from_span(
                             span,
+                            parent.is_none(),
+                            description.clone(),
                             span_to_class(span),
                         ));
+                    }
+                    IndexField::ReferenceTarget => {
+                        active_classes
+                            .push(ActiveClass::ref_target_from_span(span, span_to_class(span)));
                     }
                     _ => {}
                 }
@@ -173,7 +167,10 @@ pub fn tokenize_string(
     tokens
 }
 
-pub fn index_analyses<'a: 'b, 'b>(a: impl Iterator<Item=&'a FileAnalysis>, dir: &'b SourceDir) -> Result<HashMap<SourceCodeHash, FieldIndex>, HashError> {
+pub fn index_analyses<'a: 'b, 'b>(
+    a: impl Iterator<Item = &'a FileAnalysis>,
+    dir: &'b SourceDir,
+) -> Result<HashMap<SourceCodeHash, FieldIndex>, HashError> {
     let analyses = a.collect_vec();
     let mut fields = HashMap::new();
 
@@ -189,10 +186,14 @@ pub fn index_analyses<'a: 'b, 'b>(a: impl Iterator<Item=&'a FileAnalysis>, dir: 
                 .entry(s.start)
                 .or_insert_with(Vec::new)
                 .push((s, IndexField::Field(f)));
-            if let Field::Ref { reference, file, .. } = f {
+            if let Field::Ref {
+                reference, file, ..
+            } = f
+            {
                 if let Some(i) = file {
                     let f = dir.file_from_suffix(i).expect("contains file");
-                    fields.get_mut(&f.hash()?)
+                    fields
+                        .get_mut(&f.hash()?)
                         .expect("inserted at start")
                         .entry(reference.start)
                         .or_insert_with(Vec::new)
@@ -256,7 +257,13 @@ impl<'a> From<&'a [ActiveClass]> for Classes {
                 .iter()
                 .filter_map(|i| {
                     if let ActiveClass {
-                        contents: ClassContents::OutlineTarget { span, class, description, root },
+                        contents:
+                            ClassContents::OutlineTarget {
+                                span,
+                                class,
+                                description,
+                                root,
+                            },
                         ..
                     } = i
                     {
@@ -348,16 +355,31 @@ impl ActiveClass {
         }
     }
 
-    pub fn outline_target_from_span(span: &Span, root: bool, description: Option<String>, target: impl AsRef<str>) -> Self {
+    pub fn outline_target_from_span(
+        span: &Span,
+        root: bool,
+        description: Option<String>,
+        target: impl AsRef<str>,
+    ) -> Self {
         Self {
             start: span.start,
             len: span.len,
             len_to_go: span.len,
-            contents: ClassContents::OutlineTarget { span: span.clone(), class: target.as_ref().to_string(), description, root },
+            contents: ClassContents::OutlineTarget {
+                span: span.clone(),
+                class: target.as_ref().to_string(),
+                description,
+                root,
+            },
         }
     }
 
-    pub fn ref_from_span(span: &Span, description: impl AsRef<str>, file: &Option<String>, to: FieldRef) -> Self {
+    pub fn ref_from_span(
+        span: &Span,
+        description: impl AsRef<str>,
+        file: &Option<String>,
+        to: FieldRef,
+    ) -> Self {
         let includes_self = span.overlaps(&to);
         Self {
             start: span.start,

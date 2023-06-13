@@ -6,7 +6,7 @@ pub enum Field {
     Ref {
         description: String,
         reference: FieldRef,
-        file: Option<String>
+        file: Option<String>,
     },
     SyntaxColour(String),
     Outline {

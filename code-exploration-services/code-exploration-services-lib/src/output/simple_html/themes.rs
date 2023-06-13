@@ -1,9 +1,9 @@
+use crate::output::scope_selector::ScopeSelector;
 use crate::output::simple_html::SimpleHtmlError;
 use crate::textmate::theme::{
     FontStyle, Settings, SettingsItem, TextmateTheme, TextmateThemeManager,
 };
 use std::str::FromStr;
-use crate::output::scope_selector::ScopeSelector;
 
 pub fn generate_theme_styles(themes: &TextmateThemeManager) -> Result<String, SimpleHtmlError> {
     let mut res = String::new();

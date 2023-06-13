@@ -1,17 +1,17 @@
-use std::collections::HashSet;
-use std::path::PathBuf;
-use convert_case::{Case, Casing};
-use thiserror::Error;
-use tracing::{error, info};
 use crate::analysis::dir::{Analysis, GetAnalysisError};
-use crate::Annotater;
 use crate::output::latex::colors::{Colors, ResolveColorError};
 use crate::output::scope_selector::ScopeSelectorFromStrError;
 use crate::output::span_to_class;
 use crate::output::theme::Theme;
-use crate::output::tokenize::{index_analyses, OutlineSetting, Token, tokenize_string};
+use crate::output::tokenize::{index_analyses, tokenize_string, OutlineSetting, Token};
 use crate::sources::dir::{ContentsError, HashError, SourceDir, SourceFile};
 use crate::textmate::theme::TextmateThemeManager;
+use crate::Annotater;
+use convert_case::{Case, Casing};
+use std::collections::HashSet;
+use std::path::PathBuf;
+use thiserror::Error;
+use tracing::{error, info};
 
 mod colors;
 
@@ -38,7 +38,7 @@ pub enum LatexError {
     ResolveColor(#[from] ResolveColorError),
 
     #[error("had to produce code for file without name: {0:?}")]
-    NoFileName(PathBuf)
+    NoFileName(PathBuf),
 }
 
 pub struct LatexOutput {
@@ -54,6 +54,7 @@ impl Default for LatexParams {
     fn default() -> Self {
         Self {
             theme: "One Dark".to_string(),
+            // theme: "3024 day".to_string(),
         }
     }
 }
@@ -79,20 +80,25 @@ impl Annotater for Latex {
         let mut latexes = Vec::new();
         let mut colors = Colors::new(&theme);
 
-        let analyses = source.files()
+        let analyses = source
+            .files()
             .map(|file| {
-                a
-                    .analysis_for(file)
+                a.analysis_for(file)
                     .map_err(|i| LatexError::GetAnalysis(i, file.path().to_path_buf()))
-            }).collect::<Result<Vec<_>, _>>()?;
+            })
+            .collect::<Result<Vec<_>, _>>()?;
         let index = index_analyses(analyses.into_iter(), source)?;
 
         let mut all_labels = HashSet::new();
 
         for file in source.files() {
-            let field_index = index.get(&file.hash()?)
-                .expect("has field index");
-            let tokens = tokenize_string(&file.contents()?, 0, &field_index, OutlineSetting::GenerateOutline);
+            let field_index = index.get(&file.hash()?).expect("has field index");
+            let tokens = tokenize_string(
+                &file.contents()?,
+                0,
+                &field_index,
+                OutlineSetting::GenerateOutline,
+            );
 
             for i in tokens {
                 if let Token::Token { classes, .. } = i {
@@ -103,22 +109,32 @@ impl Annotater for Latex {
             }
         }
 
-
         for file in source.files() {
-            let field_index = index.get(&file.hash()?)
-                .expect("has field index");
-            let tokens = tokenize_string(&file.contents()?, 0, &field_index, OutlineSetting::GenerateOutline);
+            let field_index = index.get(&file.hash()?).expect("has field index");
+            let tokens = tokenize_string(
+                &file.contents()?,
+                0,
+                &field_index,
+                OutlineSetting::GenerateOutline,
+            );
 
-            let name = latex_safe(file.name().ok_or_else(|| LatexError::NoFileName(file.path().to_path_buf()))?);
-            let parent = file.path().parent()
+            let file_name = file
+                .name()
+                .ok_or_else(|| LatexError::NoFileName(file.path().to_path_buf()))?;
+            let name = latex_safe(&file_name);
+            let parent = file
+                .path()
+                .parent()
                 .and_then(|i| i.file_name())
                 .map(|i| latex_safe(i.to_string_lossy()));
 
             let command_name = if let Some(parent) = parent {
-                format!("code {parent} {name}")
+                format!("code {name} ")
+                // format!("code {parent} {name}")
             } else {
                 format!("code {name} ")
-            }.to_case(Case::Camel);
+            }
+            .to_case(Case::Camel);
 
             colors.add_tokens(&tokens)?;
             let latex = generate_latex(file, &tokens, &colors, &all_labels)?;
@@ -126,24 +142,37 @@ impl Annotater for Latex {
             info!("Generated latex for {:?}", file.path());
             info!("Insert into latex by using \\{command_name}");
 
-            latexes.push(format!(r#"
+            let latex_name = validate(file_name);
+
+            latexes.push(format!(
+                r#"
 \newcommand\{command_name}{{
+\subsection{{{latex_name}}}
 \begin{{codexcode}}
     {latex}
 \end{{codexcode}}
 }}
-            "#));
+            "#
+            ));
         }
 
         let color_definitions = colors.definitions();
 
         let latexes = latexes.join("\n");
         Ok(LatexOutput {
-            latex_source: (PathBuf::from("output.tex"), format!(r#"
+            latex_source: (
+                PathBuf::from("output.tex"),
+                format!(
+                    r#"
 {color_definitions}
 {latexes}
-            "#)),
-            codex_sty: (PathBuf::from("codex.sty"), include_str!("codex.sty").to_string()),
+            "#
+                ),
+            ),
+            codex_sty: (
+                PathBuf::from("codex.sty"),
+                include_str!("codex.sty").to_string(),
+            ),
         })
     }
 }
@@ -165,7 +194,12 @@ fn validate(inp: impl AsRef<str>) -> String {
         .to_string()
 }
 
-fn generate_latex(source: SourceFile, tokens: &[Token], colors: &Colors, all_labels: &HashSet<String>) -> Result<String, LatexError> {
+fn generate_latex(
+    source: SourceFile,
+    tokens: &[Token],
+    colors: &Colors,
+    all_labels: &HashSet<String>,
+) -> Result<String, LatexError> {
     let mut res = Vec::<String>::new();
     let mut labels_already_inserted = HashSet::new();
 
@@ -194,8 +228,8 @@ fn generate_latex(source: SourceFile, tokens: &[Token], colors: &Colors, all_lab
                     if all_labels.contains(&label) && !refs_already_inserted.contains(&label) {
                         refs.push((
                             label.replace("-", ""),
-                            i.description.chars().take(4).collect::<String>())
-                        );
+                            i.description.chars().take(4).collect::<String>(),
+                        ));
                         refs_already_inserted.insert(label);
                     }
                 }
@@ -261,8 +295,21 @@ fn generate_latex(source: SourceFile, tokens: &[Token], colors: &Colors, all_lab
                 for label in labels {
                     latex_code = format!("\\linkdest{{{label}}}{{}}{latex_code}");
                 }
-                for (label, text) in refs {
-                    latex_code = format!("{latex_code}\\textsuperscript{{\\hyperlink{{{label}}}{{\\color{{vforeground}}{text}}}}}");
+
+                let num_refs = refs.len();
+                if num_refs == 1 {
+                    let (label, _) = refs.first().unwrap();
+                    latex_code = format!("\\hyperlink{{{label}}}{{\\color{{vforeground}}\\underline{{{latex_code}}}}}")
+                } else {
+                    for (idx, (label, text)) in refs.into_iter().enumerate() {
+                        let separator = if idx == num_refs - 1 {
+                            ""
+                        } else {
+                            ","
+                        };
+
+                        latex_code = format!("{latex_code}\\textsuperscript{{\\hyperlink{{{label}}}{{\\color{{vforeground}}{text}{separator}}}}}");
+                    }
                 }
 
                 for entry in outline {
@@ -271,9 +318,7 @@ fn generate_latex(source: SourceFile, tokens: &[Token], colors: &Colors, all_lab
 
                 res.push(latex_code);
             }
-            Token::Newline => {
-                res.push("\\leavevmode \\\\\n".to_string())
-            }
+            Token::Newline => res.push("\\leavevmode \\\\\n".to_string()),
         }
     }
 

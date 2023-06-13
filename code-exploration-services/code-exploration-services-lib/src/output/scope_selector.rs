@@ -1,8 +1,8 @@
+use crate::output::tokenize::ColorClasses;
 use std::collections::VecDeque;
-use thiserror::Error;
 use std::iter;
 use std::str::FromStr;
-use crate::output::tokenize::ColorClasses;
+use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum ScopeSelectorFromStrError {
@@ -102,7 +102,7 @@ impl ScopeSelector {
             ScopeSelector::Selector(i) => {
                 for class in classes {
                     if class.front() == Some(&i.as_str()) {
-                        return true
+                        return true;
                     }
                 }
 
@@ -119,7 +119,7 @@ impl ScopeSelector {
                 }
 
                 if new_classes.is_empty() {
-                    return false
+                    return false;
                 } else {
                     b.matches_split(new_classes)
                 }

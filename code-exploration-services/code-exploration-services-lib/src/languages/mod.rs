@@ -28,6 +28,7 @@ pub enum Language {
     Cpp,
     C,
     Css,
+    Elaine,
 
     OneOf(Vec<Self>),
     Unknown,
@@ -44,6 +45,7 @@ impl Language {
             "html" | "htm" => Self::Html,
             "json" => Self::Json,
             "css" => Self::Css,
+            "elaine" => Self::Elaine,
             _ => Self::Unknown,
         }
     }
@@ -60,6 +62,7 @@ impl Language {
             Language::OneOf(_) => todo!(),
             Language::Unknown => None,
             Language::Css => None,
+            Language::Elaine => None,
         }
     }
 
@@ -82,6 +85,7 @@ impl Language {
             Language::Css => {
                 Some(include_str!("../../../textmate_grammars/css.tmLanguage.xml").into())
             }
+            Language::Elaine => None,
         }
     }
 

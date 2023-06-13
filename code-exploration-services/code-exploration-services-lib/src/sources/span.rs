@@ -22,7 +22,7 @@ impl Span {
 
     pub fn overlaps(&self, other: &Span) -> bool {
         (self.start >= other.start && self.start <= other.end())
-        || (self.end() >= other.start && self.end() <= other.end())
+            || (self.end() >= other.start && self.end() <= other.end())
     }
 
     pub fn includes(&self, other: &Self) -> bool {

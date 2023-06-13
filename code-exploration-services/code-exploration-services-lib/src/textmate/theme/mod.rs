@@ -4,7 +4,7 @@ use std::fmt::{Display, Formatter};
 
 pub mod constructor;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct Color(pub u8, pub u8, pub u8, pub u8);
 
 impl Display for Color {

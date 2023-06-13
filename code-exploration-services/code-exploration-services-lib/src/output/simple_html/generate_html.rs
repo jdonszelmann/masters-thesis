@@ -1,8 +1,9 @@
 use crate::output::simple_html::generate_html::GenerateForOutlineStatus::GenerateForSource;
-use crate::output::span_to_class;
 use crate::output::simple_html::sanitize_theme_name;
 use crate::output::simple_html::tokenize::{Reference, Token};
 use crate::output::simple_html::{themes, SimpleHtmlError};
+use crate::output::span_to_class;
+use crate::sources::dir::{ContentsError, SourceFile};
 use crate::textmate::theme::TextmateThemeManager;
 use axohtml::dom::DOMTree;
 use axohtml::elements::FlowContent;
@@ -10,9 +11,11 @@ use axohtml::types::{Class, SpacedSet};
 use axohtml::{html, text, unsafe_text};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use crate::sources::dir::{ContentsError, SourceFile};
 
-fn generate_reference(references: &[&Reference], source: SourceFile) -> Result<(Box<dyn FlowContent<String>>, usize), ContentsError> {
+fn generate_reference(
+    references: &[&Reference],
+    source: SourceFile,
+) -> Result<(Box<dyn FlowContent<String>>, usize), ContentsError> {
     let mut description = Vec::new();
     for i in references {
         if !description.contains(&i.description.as_str()) {
@@ -25,15 +28,21 @@ fn generate_reference(references: &[&Reference], source: SourceFile) -> Result<(
 
     let goto_class = span_to_class(&references[0].to);
 
-    Ok((html! {
-        <div class="reference-item" data-goto-class=goto_class>
-            <span class="description">{text!("{}", description.join(" + "))}</span>
-            <span class="context">{text!("{}", context)}</span>
-        </div>
-    }, line))
+    Ok((
+        html! {
+            <div class="reference-item" data-goto-class=goto_class>
+                <span class="description">{text!("{}", description.join(" + "))}</span>
+                <span class="context">{text!("{}", context)}</span>
+            </div>
+        },
+        line,
+    ))
 }
 
-fn generate_popup(references: &[Reference], source: SourceFile) -> Result<Option<Box<dyn FlowContent<String>>>, ContentsError> {
+fn generate_popup(
+    references: &[Reference],
+    source: SourceFile,
+) -> Result<Option<Box<dyn FlowContent<String>>>, ContentsError> {
     let mut references_tracker = HashMap::new();
     let mut deduplicated_references = Vec::<Vec<&Reference>>::new();
     for r in references {
@@ -58,7 +67,8 @@ fn generate_popup(references: &[Reference], source: SourceFile) -> Result<Option
             })
         }
         _ => {
-            let mut refs = deduplicated_references.iter()
+            let mut refs = deduplicated_references
+                .iter()
                 .map(|i| generate_reference(i, source))
                 .collect::<Result<Vec<_>, _>>()?;
 
@@ -71,7 +81,7 @@ fn generate_popup(references: &[Reference], source: SourceFile) -> Result<Option
                     }
                 </div>
             })
-        },
+        }
     })
 }
 
@@ -151,7 +161,7 @@ pub fn generate_html_from_tokens(
                 &line,
                 line_num,
                 generate_for_outline,
-                source
+                source,
             )?);
             line_num += 1;
             line = Vec::new();
@@ -163,7 +173,7 @@ pub fn generate_html_from_tokens(
         &line,
         line_num,
         generate_for_outline,
-        source
+        source,
     )?);
 
     Ok(html! {
@@ -221,7 +231,7 @@ pub fn generate_html(
                     <div class="code">
                         <div class="nums">
                             <div class="line-numbers">
-                                {(1..lines).map(|i| html!{<span>{text!("{}", i)}</span>})}
+                                {(1..(lines + 1)).map(|i| html!{<span>{text!("{}", i)}</span>})}
                             </div>
                         </div>
                         <div class="source">

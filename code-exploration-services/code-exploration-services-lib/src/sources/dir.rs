@@ -5,10 +5,10 @@ use crate::languages::{IntoSourceDirError, Language};
 use crate::sources::hash::SourceCodeHash;
 use crate::sources::span::Span;
 use std::cell::RefCell;
+use std::ffi::OsStr;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::{fs, io};
-use std::ffi::OsStr;
 use thiserror::Error;
 use tracing::info;
 use walkdir::DirEntry;
@@ -66,9 +66,7 @@ impl Drop for SourceDir {
     }
 }
 
-const EXCLUDED_PATHS: &[&str] = &[
-    "target"
-];
+const EXCLUDED_PATHS: &[&str] = &["target"];
 
 fn excluded(p: &DirEntry) -> bool {
     for segment in p.path() {
@@ -98,30 +96,33 @@ impl SourceDir {
         let root = fs::canonicalize(root.as_ref().to_path_buf())?;
         let files: Vec<_> = walkdir::WalkDir::new(&root)
             .into_iter()
-            .filter_map(|i| {
-                match i {
-                    Ok(i) => {
-                        if i.path().is_dir() || excluded(&i) {
-                            None
-                        } else {
-                            Some(Ok(InternalSourceFile::new(i.path())))
-                        }
-                    },
-                    Err(e) => Some(Err(e)),
+            .filter_map(|i| match i {
+                Ok(i) => {
+                    if i.path().is_dir() || excluded(&i) {
+                        None
+                    } else {
+                        Some(Ok(InternalSourceFile::new(i.path())))
+                    }
                 }
+                Err(e) => Some(Err(e)),
             })
             .collect::<Result<_, _>>()?;
 
         Ok(Self {
             root,
-            files: FilesList::Many(files.into_iter()
-                .filter(|i| if let Err(e) = i.contents() {
-                    info!("excluding {:?} because of error: {e}", i.path());
-                    false
-                } else {
-                    true
-                })
-                .collect()),
+            files: FilesList::Many(
+                files
+                    .into_iter()
+                    .filter(|i| {
+                        if let Err(e) = i.contents() {
+                            info!("excluding {:?} because of error: {e}", i.path());
+                            false
+                        } else {
+                            true
+                        }
+                    })
+                    .collect(),
+            ),
             cleanup: None,
         })
     }
@@ -155,7 +156,7 @@ impl SourceDir {
             FilesList::Many(ref files) => {
                 for i in files {
                     if i.path == path {
-                        return true
+                        return true;
                     }
                 }
                 false
@@ -169,17 +170,19 @@ impl SourceDir {
 
     pub fn file_from_suffix(&self, path: &str) -> Option<SourceFile> {
         match &self.files {
-            FilesList::SingleFile(s) if s.path.to_string_lossy().contains(path) => Some(SourceFile {
-                internal: &s,
-                dir: self,
-            }),
+            FilesList::SingleFile(s) if s.path.to_string_lossy().contains(path) => {
+                Some(SourceFile {
+                    internal: &s,
+                    dir: self,
+                })
+            }
             FilesList::Many(m) => {
                 for s in m {
                     if s.path.to_string_lossy().contains(path) {
                         return Some(SourceFile {
                             internal: &s,
-                            dir: self
-                        })
+                            dir: self,
+                        });
                     }
                 }
 
@@ -220,13 +223,13 @@ impl SourceDir {
                 }
                 Err(AnalysisError::NotImplemented) => {
                     not_implemented_one = true;
-                    continue
+                    continue;
                 }
                 Err(e) => return Err(e),
             }
         }
         if !analysed_one && not_implemented_one {
-            return Err(AnalysisError::NotImplemented)
+            return Err(AnalysisError::NotImplemented);
         }
 
         Ok(res)
@@ -344,7 +347,6 @@ impl InternalSourceFile {
 
         Ok(None)
     }
-
 
     pub fn line_of(&self, offset: usize) -> Result<usize, ContentsError> {
         let mut line_num = 1;

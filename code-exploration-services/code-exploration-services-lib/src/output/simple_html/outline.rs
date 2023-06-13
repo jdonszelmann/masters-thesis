@@ -1,16 +1,16 @@
 use crate::analysis::field::Field;
 use crate::analysis::file::FileAnalysis;
+use crate::output;
 use crate::output::simple_html::generate_html::generate_html_from_tokens;
 use crate::output::simple_html::generate_html::GenerateForOutlineStatus::GenerateForOutline;
 use crate::output::simple_html::tokenize::OutlineSetting::DontGenerateOutline;
+use crate::output::simple_html::SimpleHtmlError;
+use crate::output::tokenize::{tokenize_string, FieldIndex};
 use crate::sources::dir::SourceFile;
 use crate::sources::span::Span;
 use axohtml::dom::DOMTree;
 use axohtml::{html, text, unsafe_text};
 use std::collections::VecDeque;
-use crate::output;
-use crate::output::simple_html::SimpleHtmlError;
-use crate::output::tokenize::{FieldIndex, tokenize_string};
 
 #[derive(Debug)]
 struct OutlineItem<'a> {
@@ -58,8 +58,7 @@ fn generate_outline_html(
         .collect::<Result<Vec<_>, _>>()?;
 
     let source_text = source.slice(parent.span)?;
-    let tokens =
-        tokenize_string(&source_text, parent.span.start, index, DontGenerateOutline);
+    let tokens = tokenize_string(&source_text, parent.span.start, index, DontGenerateOutline);
 
     let heading = if let Some(description) = parent.description {
         text!("{}: ", description)

@@ -16,6 +16,10 @@ pub enum TextmateAnalysisError {
 
 pub struct TextmateAnalyser;
 
+impl TextmateAnalyser {
+    pub fn new() -> Self {Self}
+}
+
 impl Analyser for TextmateAnalyser {
     fn syntax_coloring<'a>(&self, s: &'a SourceDir) -> Result<Analysis, AnalysisError> {
         s.map_analyze(|file| {

@@ -80,6 +80,10 @@ fn find_parent(
 
 pub struct CtagsAnalyser;
 
+impl CtagsAnalyser {
+    pub fn new() -> Self {Self}
+}
+
 impl Analyser for CtagsAnalyser {
     fn outline(&self, s: &SourceDir) -> Result<Analysis, AnalysisError> {
         s.map_analyze(|file| -> Result<FileAnalysis, AnalysisError> {

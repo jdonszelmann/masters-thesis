@@ -1,11 +1,11 @@
-use std::str::FromStr;
 use crate::output::scope_selector::{ScopeSelector, ScopeSelectorFromStrError};
 use crate::output::tokenize::ColorClasses;
 use crate::textmate::theme::{SettingsItem, StyleItemSettings, TextmateTheme};
+use std::str::FromStr;
 
 pub struct Theme<'a> {
     pub global: StyleItemSettings,
-    styles: Vec<(ScopeSelector, &'a StyleItemSettings)>
+    styles: Vec<(ScopeSelector, &'a StyleItemSettings)>,
 }
 
 impl<'a> Theme<'a> {
@@ -23,16 +23,13 @@ impl<'a> Theme<'a> {
                     global.foreground = Some(settings.foreground);
                     global.background = Some(settings.background);
                 }
-                SettingsItem::Style { scope, settings, .. } => {
-                    styles.push((ScopeSelector::from_str(scope)?, settings))
-                }
+                SettingsItem::Style {
+                    scope, settings, ..
+                } => styles.push((ScopeSelector::from_str(scope)?, settings)),
             }
         }
 
-        Ok(Self {
-            global,
-            styles,
-        })
+        Ok(Self { global, styles })
     }
 
     pub fn style_for_classes(&self, classes: &ColorClasses) -> &StyleItemSettings {

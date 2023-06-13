@@ -1,0 +1,3 @@
+[submodule "code-exploration-services/code-exploration-services-lib/src/input/subsystems/elaine/elaine-repo"]
+	path = code-exploration-services/code-exploration-services-lib/src/input/subsystems/elaine/elaine-repo
+	url = git@github.com:tertsdiepraam/thesis.git

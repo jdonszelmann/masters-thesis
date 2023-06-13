@@ -2,11 +2,11 @@ use crate::analysis::dir::Analysis;
 use crate::sources::dir::SourceDir;
 use crate::sources::span::Span;
 
-pub mod simple_html;
 pub mod latex;
-pub mod tokenize;
 pub mod scope_selector;
+pub mod simple_html;
 pub mod theme;
+pub mod tokenize;
 
 pub trait Annotater {
     type Output;

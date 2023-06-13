@@ -1,11 +1,12 @@
 use crate::analysis::dir::Analysis;
-use crate::analysis::file::NewFileAnalysisError;
+use crate::analysis::file::{HashesDontMatch, NewFileAnalysisError};
 use crate::input::subsystems::ctags::CtagsAnalysisError;
 use crate::input::subsystems::lsp::LanguageServerError;
 use crate::input::subsystems::textmate::TextmateAnalysisError;
 use crate::sources::dir::{ContentsError, SourceDir};
 use crate::textmate::grammar::FromLanguageError;
 use thiserror::Error;
+use crate::input::subsystems::elaine::ElaineAnalysisError;
 
 pub mod subsystems;
 
@@ -19,6 +20,9 @@ pub enum AnalysisError {
     #[error("contents")]
     Contents(#[from] ContentsError),
 
+    #[error(transparent)]
+    HashesDontMatch(#[from] HashesDontMatch),
+
     #[error("create file analysis structure")]
     NewAnalysis(#[from] NewFileAnalysisError),
 
@@ -31,24 +35,33 @@ pub enum AnalysisError {
     #[error("language server")]
     Lsp(#[from] LanguageServerError),
 
+    #[error("elaine")]
+    Elaine(#[from] ElaineAnalysisError),
+
     #[error("parse grammar")]
     ParseGrammar(#[from] FromLanguageError),
 }
 
 #[inline]
-fn or<T>(fs: &[&dyn Fn() -> Result<T, AnalysisError>]) -> Result<T, AnalysisError> {
+fn or(fs: &[&dyn Fn() -> Result<Analysis, AnalysisError>]) -> Result<Analysis, AnalysisError> {
+    let mut res: Option<Analysis> = None;
     for f in fs {
         match f() {
-            Ok(i) => return Ok(i),
+            Ok(i) => if let Some(r) = res.take() {
+                res = Some(r.merge(i)?);
+            } else {
+                res = Some(i);
+            },
             Err(AnalysisError::NotImplemented) => continue,
             Err(e) => return Err(e),
         }
     }
-    Err(AnalysisError::NotImplemented)
+
+    res.ok_or(AnalysisError::NotImplemented)
 }
 
 macro_rules! define_analysis_chain {
-    ($s: ident, [$name: ident, $($others: ident),*] for [$($path: path),*] ) => {
+    ($s: ident, [$name: ident, $($others: ident),*] for [$($path: ident),*] ) => {
         match (or(&[$(&|| $path.$name($s)),*]), || define_analysis_chain!($s, [$($others),*] for [$($path),*]),) {
             (Ok(i), f) => {
                 match f() {
@@ -61,7 +74,7 @@ macro_rules! define_analysis_chain {
             (Err(e), _) => Err(e)
         }
     };
-    ($s: ident, [$name: ident] for [$($path: path),*] ) => {
+    ($s: ident, [$name: ident] for [$($path: ident),*] ) => {
         or(&[$(
             &|| $path.$name($s)
         ),*])
@@ -69,15 +82,22 @@ macro_rules! define_analysis_chain {
 }
 
 macro_rules! define_analysis_types {
-    ($($name: ident),* $(,)?; for $($path: path),* $(,)? ) => {
+    ($($name: ident),* $(,)?; for $($path: ty as $analyser_name: ident),* $(,)? ) => {
         pub trait Analyser {
         $(
-            fn $name<'a>(&self, _s: &SourceDir) -> Result<Analysis, AnalysisError> { Err(AnalysisError::NotImplemented) }
+            fn $name(&self, _s: &SourceDir) -> Result<Analysis, AnalysisError> { Err(AnalysisError::NotImplemented) }
         )*
         }
 
         pub fn analyse(s: &SourceDir) -> Result<Analysis, AnalysisError> {
-            define_analysis_chain!(s, [$($name),*] for [$($path),*])
+            $(
+                let $analyser_name = {
+                    type X = $path;
+                    X::new()
+                };
+            )*
+
+            define_analysis_chain!(s, [$($name),*] for [$($analyser_name),*])
         }
     };
 }
@@ -92,7 +112,8 @@ define_analysis_types!(
     expansions,
     diagnostic_messages;
     for
-    subsystems::lsp::LspAnalyser,
-    subsystems::textmate::TextmateAnalyser,
-    subsystems::ctags::CtagsAnalyser,
+    subsystems::lsp::LspAnalyser as lsp,
+    subsystems::textmate::TextmateAnalyser as tm,
+    subsystems::ctags::CtagsAnalyser as ctags,
+    subsystems::elaine::ElaineAnalyser as elaine,
 );

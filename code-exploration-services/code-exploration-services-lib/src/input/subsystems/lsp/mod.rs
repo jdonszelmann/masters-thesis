@@ -34,6 +34,10 @@ use tracing::info;
 
 pub struct LspAnalyser;
 
+impl LspAnalyser {
+    pub fn new() -> Self {Self}
+}
+
 #[derive(Debug, Error)]
 pub enum NewLanguageServerError {
     #[error("spawn lsp command")]
@@ -89,14 +93,18 @@ macro_rules! create_sites_fn {
                 match resp {
                     $resp::Scalar(s) => {
                         // TODO: handle s.uri
-                        if let Some(span) = self.span_from_range(s.range, s.uri, file, other_files)? {
+                        if let Some(span) =
+                            self.span_from_range(s.range, s.uri, file, other_files)?
+                        {
                             res.push(span);
                         }
                     }
                     $resp::Array(a) => {
                         for i in a {
                             // TODO: handle s.uri
-                            if let Some(span) = self.span_from_range(i.range, i.uri, file, other_files)? {
+                            if let Some(span) =
+                                self.span_from_range(i.range, i.uri, file, other_files)?
+                            {
                                 res.push(span)
                             }
                         }
@@ -104,9 +112,12 @@ macro_rules! create_sites_fn {
                     $resp::Link(locations) => {
                         for i in locations {
                             // TODO: handle i.uri
-                            if let Some(span) =
-                                self.span_from_range(i.target_range, i.target_uri, file, other_files)?
-                            {
+                            if let Some(span) = self.span_from_range(
+                                i.target_range,
+                                i.target_uri,
+                                file,
+                                other_files,
+                            )? {
                                 res.push(span)
                             }
                         }
@@ -259,9 +270,10 @@ impl LanguageServer {
         let path = if Path::new(uri.path()) == file.path() {
             // if it's this file, no filename is necessary
             None
-        } else  if other_files.has_file(Path::new(uri.path())) {
+        } else if other_files.has_file(Path::new(uri.path())) {
             // if it's somewhere else in the dir, reference that file
-            let relative = other_files.relative_path_of(Path::new(uri.path()))
+            let relative = other_files
+                .relative_path_of(Path::new(uri.path()))
                 .expect("dir has file so must be prefix");
 
             Some(relative.to_string_lossy().to_string())
@@ -282,10 +294,13 @@ impl LanguageServer {
         };
 
         // TODO: handle utf8 well
-        Ok(Some((Span::from_start_end(
-            start_offset + start.character as usize,
-            end_offset + end.character as usize,
-        ), path)))
+        Ok(Some((
+            Span::from_start_end(
+                start_offset + start.character as usize,
+                end_offset + end.character as usize,
+            ),
+            path,
+        )))
     }
 
     create_sites_fn!(
@@ -437,13 +452,13 @@ impl Analyser for LspAnalyser {
                     .collect_vec();
 
                 let usage_references = if (implementation_references.len() + declaration_references.len() + definition_references.len()) > 0 {
-                    Vec::new()
+                    // Vec::new()
                     // TODO: enable again
-                    // server_for_file.get_usage_sites(file, dir, line, character)
-                    //     .map_err(LanguageServerError::Request)?
-                    //     .into_iter()
-                    //     .map(|i| ("usage", i))
-                    //     .collect_vec()
+                    server_for_file.get_usage_sites(file, dir, line, character)
+                        .map_err(LanguageServerError::Request)?
+                        .into_iter()
+                        .map(|i| ("usage", i))
+                        .collect_vec()
                 } else {
                     Vec::new()
                 };

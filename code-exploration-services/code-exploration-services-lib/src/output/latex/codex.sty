@@ -15,10 +15,9 @@
 \RequirePackage[most]{tcolorbox}
 
 \newcommand{\linkdest}[1]{\Hy@raisedlink{\hypertarget{#1}{}}}
-%\newcommand{\outlineentry}[1]{\subsubsection{#1}}
 \newcommand\outlineentry[1]{%
-    \refstepcounter{section}%
-    \addcontentsline{toc}{section}{\protect\numberline{\thesection}#1}%
+    \refstepcounter{subsubsection}%
+    \addcontentsline{toc}{subsubsection}{\protect\numberline{\thesubsubsection}#1}%
     \sectionmark{#1}}
 
 \newenvironment{codexcode}{
