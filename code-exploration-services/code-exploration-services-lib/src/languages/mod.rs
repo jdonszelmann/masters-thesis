@@ -29,6 +29,8 @@ pub enum Language {
     C,
     Css,
     Elaine,
+    Typescript,
+    Haskell,
 
     OneOf(Vec<Self>),
     Unknown,
@@ -41,20 +43,22 @@ impl Language {
             "rs" => Self::Rust,
             "cpp" | "c++" | "cxx" | "hxx" => Self::Cpp,
             "c" => Self::C,
-            "h" => Self::OneOf(vec![Self::C, Self::Cpp]),
+            // "h" => Self::OneOf(vec![Self::C, Self::Cpp]),
             "html" | "htm" => Self::Html,
             "json" => Self::Json,
             "css" => Self::Css,
             "elaine" => Self::Elaine,
+            "ts" | "tsx" => Self::Typescript,
+            "hs" => Self::Haskell,
             _ => Self::Unknown,
         }
     }
 
     /// Where is the lsp for a language located? A language could simply not have an LSP, then None is returned
     /// Also returns the lsp lang id for the language
-    pub fn lsp(&self) -> Option<(PathBuf, &'static str)> {
+    pub fn lsp(&self) -> Option<(PathBuf, &'static str, &'static str)> {
         match self {
-            Language::Rust => Some((PathBuf::from("/usr/bin/rust-analyzer"), "rust")),
+            Language::Rust => Some((PathBuf::from("/usr/bin/rust-analyzer"), "", "rust")),
             Language::Json => None,
             Language::Html => None,
             Language::Cpp => None,
@@ -63,6 +67,8 @@ impl Language {
             Language::Unknown => None,
             Language::Css => None,
             Language::Elaine => None,
+            Language::Haskell => Some((PathBuf::from("/usr/bin/haskell-language-server"), "", "haskell")),
+            Language::Typescript => None, // wont fix! ts lsp sucks
         }
     }
 
@@ -86,6 +92,8 @@ impl Language {
                 Some(include_str!("../../../textmate_grammars/css.tmLanguage.xml").into())
             }
             Language::Elaine => None,
+            Language::Typescript => Some(include_str!("../../../textmate_grammars/typescript.tmLanguage.json").into()),
+            Language::Haskell => Some(include_str!("../../../textmate_grammars/haskell.tmLanguage.xml").into()),
         }
     }
 

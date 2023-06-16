@@ -58,7 +58,11 @@ fn find_parent(
     let mut min_ref = None;
     let mut min_distance = usize::MAX;
     for i in index_entry {
-        let midpoint = i.span(file)?.midpoint();
+        let midpoint = if let Some(i) = i.span(file)? {
+            i.midpoint()
+        } else {
+            continue;
+        };
         let distance = if span_midpoint < midpoint {
             usize::MAX
         } else {
@@ -72,7 +76,7 @@ fn find_parent(
     }
 
     if let Some(i) = min_ref {
-        Ok(Some(i.span(file)?))
+        Ok(i.span(file)?)
     } else {
         Ok(None)
     }
@@ -100,7 +104,9 @@ impl Analyser for CtagsAnalyser {
 
             let mut res = Vec::new();
             for xref in &xref_output.xrefs {
-                let span = xref.span(file)?;
+                let Some(span) = xref.span(file)? else {
+                    continue;
+                };
                 let parent =
                     if let (Some(parent), Some(parent_kind)) = (&xref.parent, &xref.parent_kind) {
                         find_parent(parent, parent_kind, &span, file, &index)?

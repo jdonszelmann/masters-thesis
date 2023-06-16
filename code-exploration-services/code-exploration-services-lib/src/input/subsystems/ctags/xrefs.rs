@@ -7,6 +7,7 @@ use crate::sources::span::Span;
 use std::io::BufRead;
 use std::process::Command;
 use tracing::{error, info};
+use crate::input::AnalysisError;
 
 #[derive(Clone, Debug)]
 pub struct XrefAnalysis {
@@ -27,14 +28,18 @@ pub struct Xref {
 }
 
 impl Xref {
-    pub fn span(&self, source: SourceFile) -> Result<Span, ContentsError> {
+    pub fn span(&self, source: SourceFile) -> Result<Option<Span>, ContentsError> {
         // subtract two for the `/^` at the start of the pattern, but add one since columns are 1-based
-        let column = self.pattern.find(&self.name).expect("name in pattern") - 2;
+        let Some(loc) = self.pattern.find(&self.name) else {
+            return Ok(None);
+        };
+
+        let column = loc - 2;
         let start = source.offset_of_line_num(self.line_num)?.expect("in file") + column;
 
         let len = self.name.len();
 
-        Ok(Span::new(start, len))
+        Ok(Some(Span::new(start, len)))
     }
 }
 
@@ -49,7 +54,7 @@ fn parse_field<'a>(p: &mut ParseHelper<'a>) -> &'a str {
 }
 
 // TODO: does xref handle unicode. What do the spans become??
-fn parse_xref_line(xref: &str) -> Result<Xref, CtagsAnalysisError> {
+fn parse_xref_line(xref: &str) -> Result<Option<Xref>, CtagsAnalysisError> {
     let mut p = ParseHelper::new(xref);
     p.accept('"');
 
@@ -61,7 +66,11 @@ fn parse_xref_line(xref: &str) -> Result<Xref, CtagsAnalysisError> {
     let parent_name = parse_field(&mut p);
     let pattern = parse_field(&mut p);
 
-    Ok(Xref {
+    if kind.parse::<XrefKind>().is_err() {
+        return Ok(None);
+    }
+
+    Ok(Some(Xref {
         name: name.to_string(),
         kind: kind
             .parse()
@@ -82,7 +91,7 @@ fn parse_xref_line(xref: &str) -> Result<Xref, CtagsAnalysisError> {
         },
 
         pattern: pattern.to_string(),
-    })
+    }))
 }
 
 pub fn run_xref(s: SourceFile) -> Result<XrefAnalysis, CtagsAnalysisError> {
@@ -103,7 +112,13 @@ pub fn run_xref(s: SourceFile) -> Result<XrefAnalysis, CtagsAnalysisError> {
         xrefs: output
             .stdout
             .lines()
-            .map(|i| parse_xref_line(&i?))
+            .map(|i| match i {
+                Ok(i) => {
+                    parse_xref_line(&i).transpose()
+                }
+                Err(i) => Some(Err(i.into()))
+            })
+            .flatten()
             .collect::<Result<Vec<_>, _>>()?,
     })
 }

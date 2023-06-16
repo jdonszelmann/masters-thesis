@@ -4,6 +4,7 @@ use std::io::{BufRead, BufReader, Read};
 use std::process::{Command, Stdio};
 use std::sync::{Arc, Mutex};
 use serde::Deserialize;
+use snailquote::unescape;
 use crate::analysis::dir::Analysis;
 use crate::analysis::file::FileAnalysis;
 use crate::input::{Analyser, AnalysisError};
@@ -149,10 +150,7 @@ impl ElaineAnalysis {
                     let line = line.map_err(ElaineAnalysisError::Line)?;
                     if let Some(rest) = line.strip_prefix("JSON METADATA:") {
                         json_buf.push_str(
-                            &rest
-                                .trim_end_matches('"')
-                                .trim_matches('"')
-                                .replace("\\\"", "\"")
+                            &unescape(&rest).unwrap()
                         );
                     } else {
                         println!("{}", line);
@@ -176,7 +174,7 @@ impl ElaineAnalysis {
 
         let spans = run_command("spans-json")?;
         let metadata = run_command("metadata-json")?;
-        // println!("{}", spans);
+        println!("{}", spans);
         println!("{}", metadata);
 
         let metadata: ElaineAnalysisMetadata = serde_json::from_str(&metadata).map_err(ElaineAnalysisError::DeserializeMetadata)?;
@@ -200,7 +198,7 @@ impl ElaineAnalysis {
                         category: match category.as_str() {
                             "keyword" => "keyword.elaine".to_string(),
                             "identifier" => "variable.elaine".to_string(),
-                            a => unimplemented!("don't know what to label elaine's {a} as")
+                            a => a.to_string(),
                         },
                     }
                 })
@@ -306,6 +304,10 @@ impl ElaineAnalyser {
 
     fn analyse(&self, s: &SourceDir, part: ElaineAnalysisSelector) -> Result<Analysis, AnalysisError> {
         s.map_analyze(|file| -> Result<FileAnalysis, AnalysisError> {
+            if file.path().starts_with("_") {
+                return Err(AnalysisError::NotImplemented);
+            }
+
             let Some(Language::Elaine) = file.path()
                 .extension()
                 .map(|i| Language::from_extension(i.to_string_lossy().to_string())) else {
@@ -314,7 +316,9 @@ impl ElaineAnalyser {
 
             let mut res = Vec::new();
 
-            let elaine_analysis = self.analyse_elaine(file)?;
+            let Ok(elaine_analysis) = self.analyse_elaine(file) else {
+                return Err(AnalysisError::NotImplemented);
+            };
 
             match part {
                 ElaineAnalysisSelector::References => res.extend(elaine_analysis.references(file)?),

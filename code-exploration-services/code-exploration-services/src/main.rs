@@ -9,6 +9,8 @@ use code_exploration_services_lib::output::latex::Latex;
 use code_exploration_services_lib::output::simple_html::SimpleHtml;
 use code_exploration_services_lib::sources::dir::SourceDir;
 use code_exploration_services_lib::Annotater;
+use code_exploration_services_lib::textmate::theme::TextmateThemeManager;
+use tracing::info;
 
 #[derive(Parser)]
 #[command(author, version, about)]
@@ -54,6 +56,11 @@ fn main() -> color_eyre::Result<()> {
     color_eyre::install()?;
     // install global collector configured based on RUST_LOG env var.
     tracing_subscriber::fmt::init();
+
+    let themes = TextmateThemeManager::default();
+    for i in themes.iter() {
+        info!("{}", i.name);
+    }
 
     let c: Cli = Cli::parse();
     match c.command {

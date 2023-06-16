@@ -210,6 +210,12 @@ fn parse_pattern(pattern: &Pattern) -> Result<ParsedPattern, ParsePatternError> 
                 .patterns
                 .iter()
                 .map(parse_pattern)
+                .map(|i| if let Err(e) = i {
+                    None
+                } else {
+                    Some(i)
+                })
+                .flatten()
                 .collect::<Result<_, _>>()?,
         },
         (None, None, Some(match_)) => ParsedPattern::Match {
@@ -225,7 +231,9 @@ fn parse_pattern(pattern: &Pattern) -> Result<ParsedPattern, ParsePatternError> 
                     .patterns
                     .iter()
                     .map(parse_pattern)
-                    .collect::<Result<_, _>>()?;
+                    .filter_map(Result::ok)
+                    .collect();
+                    // .collect::<Result<_, _>>()?;
                 ParsedPattern::Any(patterns)
             } else {
                 return Err(ParsePatternError::NoMatchBeginEnd(pattern.clone()));
@@ -303,7 +311,9 @@ impl<'a, 'g> Parser<'a, 'g> {
     pub fn new(source: &'a str, grammar: &'g TextmateGrammar) -> Result<Self, ParseError> {
         let mut repository = Repository::new();
         for (name, pattern) in &grammar.grammar.repository {
-            let pat = parse_pattern(pattern)?;
+            let Ok(pat) = parse_pattern(pattern) else {
+                continue;
+            };
             repository.insert(name.as_str(), pat);
         }
 
@@ -321,7 +331,9 @@ impl<'a, 'g> Parser<'a, 'g> {
             .patterns
             .iter()
             .map(parse_pattern)
-            .collect::<Result<Vec<_>, _>>()?;
+            .filter_map(Result::ok)
+            .collect_vec();
+            // .collect::<Result<Vec<_>, _>>()?;
 
         self.parse_with_patterns(patterns.as_slice())
     }
@@ -611,7 +623,8 @@ impl<'a, 'g> Parser<'a, 'g> {
         let mut tokens = Tokens::new();
         let mut offset = 0;
 
-        for line in self.source.lines_inclusive() {
+        for (idx, line) in self.source.lines_inclusive().enumerate() {
+            println!("{}", idx);
             self.parse_line(line, offset, patterns, &mut tokens, &mut scope_stack)?;
             offset += line.len();
         }

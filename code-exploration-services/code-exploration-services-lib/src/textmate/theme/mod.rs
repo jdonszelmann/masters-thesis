@@ -1,6 +1,8 @@
+use std::collections::HashMap;
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::{Display, Formatter};
+use serde_json::Value;
 
 pub mod constructor;
 
@@ -199,6 +201,12 @@ impl Default for TextmateThemeManager {
             ))
             .expect("theme to parse"),
         );
+        // res.add(
+        //     TextmateTheme::from_xml(include_str!(
+        //         "../../../../textmate_themes/github-light.tmTheme"
+        //     ))
+        //         .expect("theme to parse"),
+        // );
         res
     }
 }

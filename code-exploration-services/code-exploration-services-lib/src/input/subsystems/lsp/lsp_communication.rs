@@ -18,9 +18,10 @@ use std::path::PathBuf;
 use std::process::{Child, ChildStdin, ChildStdout, ExitStatus};
 use std::sync::atomic::{AtomicI32, Ordering};
 use std::sync::{Arc, Mutex};
+use std::sync::mpsc::channel;
 use std::thread;
 use std::thread::JoinHandle;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use thiserror::Error;
 use tracing::{debug, info};
 
@@ -268,9 +269,19 @@ impl Lsp {
     }
 
     pub fn wait_ready(&mut self) -> Result<(), RequestError> {
+        let (done_tx, done_rx) = channel();
+        thread::spawn(move || {
+            thread::sleep(Duration::from_secs(10));
+            let _ = done_tx.send(());
+        });
+
         self.check_errors_notifications()?;
 
         while let ReadyStatus::Progress(ref mut chans) = self.ready {
+            if done_rx.try_recv().is_ok() {
+                break;
+            }
+
             let mut new_chans = Vec::new();
 
             for rx in &*chans {
@@ -423,7 +434,7 @@ impl Lsp {
                 recv(self.errors_rx) -> err => return Err(err.unwrap()),
                 recv(self.notifications_rx) -> not => self.handle_notification(not.unwrap())?,
                 recv(self.requests_rx) -> req => self.handle_request(req.unwrap())?,
-                default(Duration::from_millis(10000)) => return Err(RequestError::Timeout),
+                default(Duration::from_millis(30000)) => return Err(RequestError::Timeout),
             }
         }
     }
@@ -483,7 +494,12 @@ impl Lsp {
 
         let response = 'outer: {
             let mut wrong_id = 0;
-            while let Ok(i) = self.response_or_err() {
+            loop {
+                let i = match self.response_or_err() {
+                    Ok(i) => i,
+                    Err(e) => return Err(e),
+                };
+
                 match i.id {
                     Nullable::Some(Union::A(resp_id)) if resp_id == id => {
                         break 'outer i;

@@ -9,4 +9,5 @@ edition = "2021"
 clap = {version="4.1.8", features=["derive", "color"]}
 code-exploration-services-lib = {path="../code-exploration-services-lib"}
 tracing-subscriber = "0.3.16"
+tracing = "0.1.37"
 color-eyre = "0.6.2"

@@ -224,10 +224,10 @@ impl LanguageServer {
             ..Default::default()
         })?;
         // verify capabilities
-        assert_eq!(
-            resp.capabilities.position_encoding,
-            Some(PositionEncodingKind::UTF16)
-        );
+        // assert_eq!(
+        //     resp.capabilities.position_encoding,
+        //     Some(PositionEncodingKind::UTF16)
+        // );
 
         // send initialized
         self.lsp
@@ -361,9 +361,13 @@ impl LanguageServer {
     fn start_from_path(
         path: &Path,
         lang_id: &str,
+        params: &str,
         source: &SourceDir,
     ) -> Result<Self, NewLanguageServerError> {
         let mut command = Command::new(path);
+        if !params.is_empty() {
+            command.arg(params);
+        }
         command.stdin(Stdio::piped());
         command.stdout(Stdio::piped());
         command.stderr(Stdio::inherit());
@@ -378,8 +382,8 @@ impl LanguageServer {
 
     pub fn new(ext: &str, source: &SourceDir) -> Result<Self, NewLanguageServerError> {
         let language = Language::from_extension(ext);
-        if let Some((lsp_path, lang_id)) = language.lsp() {
-            Self::start_from_path(&lsp_path, lang_id, source)
+        if let Some((lsp_path, params, lang_id)) = language.lsp() {
+            Self::start_from_path(&lsp_path, lang_id, params, source)
         } else {
             Err(NewLanguageServerError::LanguageNotSupported(
                 ext.to_string(),

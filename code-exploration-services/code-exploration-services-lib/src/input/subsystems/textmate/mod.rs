@@ -23,7 +23,7 @@ impl TextmateAnalyser {
 impl Analyser for TextmateAnalyser {
     fn syntax_coloring<'a>(&self, s: &'a SourceDir) -> Result<Analysis, AnalysisError> {
         s.map_analyze(|file| {
-
+            info!("colouring {:?}", file.path());
             let Some(ext) = file.path().extension() else {
                 info!("no extension {:?}", file.path());
                 return Err(AnalysisError::NotImplemented);

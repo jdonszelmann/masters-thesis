@@ -3,7 +3,7 @@ use crate::output::latex::colors::{Colors, ResolveColorError};
 use crate::output::scope_selector::ScopeSelectorFromStrError;
 use crate::output::span_to_class;
 use crate::output::theme::Theme;
-use crate::output::tokenize::{index_analyses, tokenize_string, OutlineSetting, Token};
+use crate::output::tokenize::{index_analyses, tokenize_string, OutlineSetting, Token, Classes};
 use crate::sources::dir::{ContentsError, HashError, SourceDir, SourceFile};
 use crate::textmate::theme::TextmateThemeManager;
 use crate::Annotater;
@@ -48,6 +48,7 @@ pub struct LatexOutput {
 
 pub struct LatexParams {
     theme: String,
+    generate_superscripts: bool,
 }
 
 impl Default for LatexParams {
@@ -55,6 +56,7 @@ impl Default for LatexParams {
         Self {
             theme: "One Dark".to_string(),
             // theme: "3024 day".to_string(),
+            generate_superscripts: true,
         }
     }
 }
@@ -137,7 +139,7 @@ impl Annotater for Latex {
             .to_case(Case::Camel);
 
             colors.add_tokens(&tokens)?;
-            let latex = generate_latex(file, &tokens, &colors, &all_labels)?;
+            let latex = generate_latex(file, &tokens, &colors, &all_labels, &params)?;
 
             info!("Generated latex for {:?}", file.path());
             info!("Insert into latex by using \\{command_name}");
@@ -194,70 +196,97 @@ fn validate(inp: impl AsRef<str>) -> String {
         .to_string()
 }
 
-fn generate_latex(
-    source: SourceFile,
-    tokens: &[Token],
-    colors: &Colors,
-    all_labels: &HashSet<String>,
-) -> Result<String, LatexError> {
-    let mut res = Vec::<String>::new();
-    let mut labels_already_inserted = HashSet::new();
+pub struct AnnotatedToken<'a> {
+    token: &'a Token,
+    refs: Vec<(String, String)>,
+    outline: Vec<String>,
+    targets: Vec<(String, usize)>
+}
 
-    // pre-generate annotations
-    let mut annotated_tokens = tokens
+fn find_refs(refs: &mut Vec<(String, String)>, classes: &Classes, all_labels: &HashSet<String>) {
+    let mut refs_already_inserted = HashSet::new();
+    let mut refs_from_classes = classes.references.clone();
+
+    refs_from_classes.sort_by_key(|i| i.to.start);
+    for i in refs_from_classes {
+        if i.file.is_some() {
+            error!("{:?}", i);
+        }
+
+        // skip self references, those only clutter the latex
+        if i.includes_self && !i.file.is_some() {
+            continue;
+        }
+
+        let label = span_to_class(&i.to);
+        if all_labels.contains(&label) && !refs_already_inserted.contains(&label) {
+            refs.push((
+                label.replace("-", ""),
+                i.description.chars().take(4).collect::<String>(),
+            ));
+            refs_already_inserted.insert(label);
+        }
+    }
+}
+
+fn find_outline_targets(outline: &mut Vec<String>, classes: &Classes, source: SourceFile) -> Result<(), LatexError> {
+    for i in &classes.outline_targets {
+        if !i.root {
+            continue;
+        }
+
+        let text = validate(source.slice(&i.span)?);
+        let entry = if let Some(ref description) = i.description {
+            format!("{description} {text}")
+        } else {
+            text
+        };
+
+        outline.push(entry);
+    }
+
+    Ok(())
+}
+
+fn find_reference_targets<'a>(targets: &mut Vec<(String, usize)>, classes: &'a Classes, target_index: &mut usize, targets_already_inserted: &mut HashSet<&'a String>) {
+    for i in &classes.reference_targets {
+        if !targets_already_inserted.contains(&i) {
+            targets_already_inserted.insert(i);
+            *target_index += 1;
+            targets.push((i.replace("-", ""), *target_index));
+        }
+    }
+}
+
+fn annotate_tokens<'a>(source: SourceFile, tokens: &'a [Token], all_labels: &HashSet<String>) -> Result<Vec<AnnotatedToken<'a>>, LatexError> {
+    let mut targets_already_inserted = HashSet::new();
+    let mut target_idx = 0;
+
+    tokens
         .into_iter()
-        .map(|i| -> Result<_, LatexError> {
+        .map(|token| -> Result<_, LatexError> {
             let mut refs = Vec::new();
             let mut outline = Vec::new();
+            let mut targets = Vec::new();
 
-            if let Token::Token { classes, .. } = i {
-                let mut refs_already_inserted = HashSet::new();
-                let mut refs_from_classes = classes.references.clone();
-                refs_from_classes.sort_by_key(|i| i.to.start);
-                for i in refs_from_classes {
-                    if i.file.is_some() {
-                        error!("{:?}", i);
-                    }
-
-                    // skip self references, those only clutter the latex
-                    if i.includes_self && !i.file.is_some() {
-                        continue;
-                    }
-
-                    let label = span_to_class(&i.to);
-                    if all_labels.contains(&label) && !refs_already_inserted.contains(&label) {
-                        refs.push((
-                            label.replace("-", ""),
-                            i.description.chars().take(4).collect::<String>(),
-                        ));
-                        refs_already_inserted.insert(label);
-                    }
-                }
-
-                for i in &classes.outline_targets {
-                    if !i.root {
-                        continue;
-                    }
-
-                    let text = validate(source.slice(&i.span)?);
-                    let entry = if let Some(ref description) = i.description {
-                        format!("{description} {text}")
-                    } else {
-                        text
-                    };
-
-                    outline.push(entry);
-                }
+            if let Token::Token { classes, .. } = token {
+                find_refs(&mut refs, classes, all_labels);
+                find_outline_targets(&mut outline, classes, source)?;
+                find_reference_targets(&mut targets, classes, &mut target_idx, &mut targets_already_inserted)
             }
 
-            Ok((i, refs, outline))
+            Ok(AnnotatedToken {
+                token, refs, outline,
+                targets
+            })
         })
-        .collect::<Result<Vec<_>, _>>()?;
+        .collect::<Result<Vec<_>, _>>()
+}
 
-    // deduplicate subsequent annotations
+fn deduplicate_annotated_tokens(annotated_tokens: &mut [AnnotatedToken]) {
     let mut next_refs = Vec::new();
     let mut next_outline = Vec::new();
-    for (_, refs, outline) in annotated_tokens.iter_mut().rev() {
+    for AnnotatedToken {refs, outline, ..} in annotated_tokens.iter_mut().rev() {
         if *refs == next_refs {
             next_refs = refs.clone();
             *refs = Vec::new()
@@ -272,28 +301,40 @@ fn generate_latex(
             next_outline = outline.clone();
         }
     }
+}
+
+fn generate_latex(
+    source: SourceFile,
+    tokens: &[Token],
+    colors: &Colors,
+    all_labels: &HashSet<String>,
+    params: &LatexParams
+) -> Result<String, LatexError> {
+    let mut res = Vec::<String>::new();
+
+    // pre-generate annotations
+    let mut annotated_tokens = annotate_tokens(source, tokens, all_labels)?;
+    deduplicate_annotated_tokens(&mut annotated_tokens);
 
     // generate latex
-    for (i, refs, outline) in annotated_tokens {
-        match i {
+    for AnnotatedToken{token, refs, outline, targets } in annotated_tokens {
+        match token {
             Token::Token { text, classes } => {
                 if text.is_empty() {
                     continue;
                 }
 
-                let mut labels = Vec::new();
-                for i in &classes.reference_targets {
-                    if !labels_already_inserted.contains(&i) {
-                        labels_already_inserted.insert(i);
-                        labels.push(i.replace("-", ""));
-                    }
-                }
-
                 let color = colors.color_for(classes);
 
                 let mut latex_code = format!("{{\\color{{{color}}}{}}}", validate(text));
-                for label in labels {
-                    latex_code = format!("\\linkdest{{{label}}}{{}}{latex_code}");
+                for (label, number) in targets {
+                    let superscript = if params.generate_superscripts {
+                        format!("\\textsuperscript{{\\color{{vforeground}}{number}}}")
+                    } else {
+                        String::new()
+                    };
+
+                    latex_code = format!("\\linkdest{{{label}}}{{}}{latex_code}{superscript}");
                 }
 
                 let num_refs = refs.len();
