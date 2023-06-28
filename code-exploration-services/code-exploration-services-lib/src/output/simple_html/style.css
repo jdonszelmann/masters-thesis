@@ -173,3 +173,9 @@ pre {
         border-radius: 1em;
     }
 }
+
+.diagnostic {
+    text-decoration: underline !important;
+    text-decoration-style: wavy !important;
+    text-decoration-color: yellow !important;
+}

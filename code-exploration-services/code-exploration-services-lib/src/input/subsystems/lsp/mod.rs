@@ -3,7 +3,7 @@ mod lsp_communication;
 mod lsp_messages;
 
 use crate::analysis::dir::Analysis;
-use crate::analysis::field::{Field, FieldRef};
+use crate::analysis::field::{Relation, Classification, Text};
 use crate::analysis::file::FileAnalysis;
 use crate::input::subsystems::lsp::lsp_communication::{Lsp, NewLspError, RequestError};
 use crate::input::{Analyser, AnalysisError};
@@ -16,14 +16,7 @@ use lsp_types::request::{
     GotoDeclaration, GotoDeclarationParams, GotoDefinition, GotoImplementation,
     GotoImplementationResponse, Initialize, References,
 };
-use lsp_types::{
-    ClientCapabilities, ClientInfo, DidOpenTextDocumentParams, GotoCapability,
-    GotoDefinitionParams, GotoDefinitionResponse, InitializeParams, InitializedParams, Position,
-    PositionEncodingKind, Range, ReferenceClientCapabilities, ReferenceContext, ReferenceParams,
-    TextDocumentClientCapabilities, TextDocumentIdentifier, TextDocumentItem,
-    TextDocumentPositionParams, TraceValue, Url, WindowClientCapabilities,
-    WorkspaceClientCapabilities,
-};
+use lsp_types::{ClientCapabilities, ClientInfo, DidOpenTextDocumentParams, GotoCapability, GotoDefinitionParams, GotoDefinitionResponse, InitializeParams, InitializedParams, Position, PositionEncodingKind, Range, ReferenceClientCapabilities, ReferenceContext, ReferenceParams, TextDocumentClientCapabilities, TextDocumentIdentifier, TextDocumentItem, TextDocumentPositionParams, TraceValue, Url, WindowClientCapabilities, WorkspaceClientCapabilities, Diagnostic, DiagnosticSeverity};
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::process::{id, Command, Stdio};
@@ -31,6 +24,7 @@ use std::thread;
 use std::time::Duration;
 use thiserror::Error;
 use tracing::info;
+use std::path::PathBuf;
 
 pub struct LspAnalyser;
 
@@ -73,7 +67,7 @@ macro_rules! create_sites_fn {
             other_files: &SourceDir,
             line: usize,
             character: usize,
-        ) -> Result<Vec<(Span, Option<String>)>, RequestError> {
+        ) -> Result<Vec<(Span, PathBuf)>, RequestError> {
             let mut res = Vec::new();
 
             if let Some(resp) = self.lsp.request::<$req>(&$params {
@@ -265,18 +259,18 @@ impl LanguageServer {
         uri: Url,
         file: SourceFile,
         other_files: &SourceDir,
-    ) -> Result<Option<(Span, Option<String>)>, RequestError> {
+    ) -> Result<Option<(Span, PathBuf)>, RequestError> {
         // TODO: inter-file references
         let path = if Path::new(uri.path()) == file.path() {
             // if it's this file, no filename is necessary
-            None
+            file.path().to_path_buf()
         } else if other_files.has_file(Path::new(uri.path())) {
             // if it's somewhere else in the dir, reference that file
             let relative = other_files
                 .relative_path_of(Path::new(uri.path()))
                 .expect("dir has file so must be prefix");
 
-            Some(relative.to_string_lossy().to_string())
+            relative
         } else {
             // otherwise, drop it
             return Ok(None);
@@ -298,6 +292,7 @@ impl LanguageServer {
             Span::from_start_end(
                 start_offset + start.character as usize,
                 end_offset + end.character as usize,
+                file.path(),
             ),
             path,
         )))
@@ -322,13 +317,22 @@ impl LanguageServer {
         GotoImplementationResponse
     );
 
+
+    fn clear_diagnostics(&self) {
+        self.lsp.diagnostics.lock().unwrap().clear();
+    }
+
+    fn get_diagnostics(&self) -> Vec<(Url, Diagnostic)> {
+        self.lsp.diagnostics.lock().unwrap().drain(..).collect()
+    }
+
     fn get_usage_sites(
         &mut self,
         file: SourceFile,
         other_files: &SourceDir,
         line: usize,
         character: usize,
-    ) -> Result<Vec<(Span, Option<String>)>, RequestError> {
+    ) -> Result<Vec<(Span, PathBuf)>, RequestError> {
         let mut res = Vec::new();
 
         if let Some(resp) = self.lsp.request::<References>(&ReferenceParams {
@@ -422,6 +426,9 @@ impl Analyser for LspAnalyser {
                 return Ok(FileAnalysis::new(file, Vec::new())?);
             };
 
+
+            server_for_file.clear_diagnostics();
+
             let mut fields = Vec::new();
 
             let mut line = 0;
@@ -456,13 +463,13 @@ impl Analyser for LspAnalyser {
                     .collect_vec();
 
                 let usage_references = if (implementation_references.len() + declaration_references.len() + definition_references.len()) > 0 {
-                    // Vec::new()
+                    Vec::new()
                     // TODO: enable again
-                    server_for_file.get_usage_sites(file, dir, line, character)
-                        .map_err(LanguageServerError::Request)?
-                        .into_iter()
-                        .map(|i| ("usage", i))
-                        .collect_vec()
+                    // server_for_file.get_usage_sites(file, dir, line, character)
+                    //     .map_err(LanguageServerError::Request)?
+                    //     .into_iter()
+                    //     .map(|i| ("usage", i))
+                    //     .collect_vec()
                 } else {
                     Vec::new()
                 };
@@ -476,18 +483,17 @@ impl Analyser for LspAnalyser {
 
                 if references != last.1 {
                     for (description, (definition_span, file)) in last.1 {
-                        let span = Span::from_start_end(last.0, offset - 1);
+                        let span = Span::from_start_end(last.0, offset - 1, &file);
                         // println!("pushing span {span:?} referring to {}", file.slice(&span)?);
                         fields.push((
                             span,
-                            Field::Ref {
-                                description: description.to_string(),
-                                reference: FieldRef {
+                            Relation::Reference {
+                                kind: Classification::from_dotted(description),
+                                reference: Span {
                                     start: definition_span.start,
                                     len: definition_span.len,
-                                    next: None,
+                                    file: file.clone(),
                                 },
-                                file,
                             }
                         ));
                     }
@@ -502,6 +508,40 @@ impl Analyser for LspAnalyser {
                 }
             }
             info!("indexing {}: 100%", file.name().expect("has a name"));
+
+            let diagnostics = server_for_file.get_diagnostics();
+            for (uri, Diagnostic {
+                range,
+                severity,
+                code,
+                code_description,
+                source,
+                message,
+                related_information,
+                tags,
+                data
+            }) in diagnostics {
+                let message = data
+                    .map(|i| i.get("rendered").cloned())
+                    .flatten()
+                    .map(|i| i.as_str().map(|i| i.to_string()))
+                    .flatten()
+                    .unwrap_or(message);
+                if let Some((span, _)) = server_for_file.span_from_range(range, uri, file, &dir)
+                    .map_err(LanguageServerError::Request)? {
+                    let severity = match severity {
+                        Some(DiagnosticSeverity::ERROR) => Classification(vec!["error".to_string()]),
+                        Some(DiagnosticSeverity::WARNING) => Classification(vec!["warning".to_string()]),
+                        Some(DiagnosticSeverity::HINT) => Classification(vec!["hint".to_string()]),
+                        _ | Some(DiagnosticSeverity::INFORMATION) => Classification(vec!["information".to_string()]),
+                    };
+
+                    fields.push((span, Relation::Diagnostics {
+                        severity,
+                        message: Text(message),
+                    }))
+                }
+            }
 
             Ok(FileAnalysis::new(file, fields)?)
         })?;

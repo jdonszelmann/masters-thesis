@@ -7,7 +7,7 @@ use std::process::Command;
 
 #[derive(Clone)]
 pub struct CtagsAnalysis {
-    pub tags: Vec<Tag>,
+    pub tags: Vec<CTag>,
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -18,7 +18,7 @@ pub enum TagType {
 }
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
-pub struct Tag {
+pub struct CTag {
     pub _type: TagType,
     pub name: String,
     pub path: String,
@@ -36,7 +36,7 @@ pub struct Tag {
     pub scope_kind: Option<String>,
 }
 
-fn parse_json_tag(json: &str) -> Result<Tag, CtagsAnalysisError> {
+fn parse_json_tag(json: &str) -> Result<CTag, CtagsAnalysisError> {
     Ok(serde_json::from_str(json)?)
 }
 

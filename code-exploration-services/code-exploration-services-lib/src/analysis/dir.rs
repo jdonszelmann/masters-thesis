@@ -20,7 +20,7 @@ pub enum GetAnalysisError {
 }
 
 pub struct Analysis {
-    files: HashMap<PathBuf, FileAnalysis>,
+    pub files: HashMap<PathBuf, FileAnalysis>,
 }
 
 impl Analysis {

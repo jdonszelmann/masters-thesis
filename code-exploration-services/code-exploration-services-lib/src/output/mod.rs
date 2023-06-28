@@ -17,11 +17,7 @@ pub trait Annotater {
 
 pub fn span_to_class(span: &Span) -> String {
     fn span_to_class_helper(span: &Span) -> String {
-        if let Some(ref i) = span.next {
-            format!("{}-{}-{}", span.start, span.len, span_to_class_helper(i))
-        } else {
-            format!("{}-{}", span.start, span.len)
-        }
+        format!("{}-{}", span.start, span.len)
     }
 
     format!("goto-{}", span_to_class_helper(span))

@@ -6,10 +6,7 @@ use crossbeam::channel::{unbounded, Receiver, Sender, TryRecvError};
 use crossbeam::select;
 use lsp_types::notification::Notification;
 use lsp_types::request::{Request, WorkDoneProgressCreate};
-use lsp_types::{
-    ProgressParams, ProgressParamsValue, ProgressToken, WorkDoneProgress, WorkDoneProgressBegin,
-    WorkDoneProgressCreateParams, WorkDoneProgressEnd, WorkDoneProgressReport,
-};
+use lsp_types::{Diagnostic, ProgressParams, ProgressParamsValue, ProgressToken, PublishDiagnosticsParams, Url, WorkDoneProgress, WorkDoneProgressBegin, WorkDoneProgressCreateParams, WorkDoneProgressEnd, WorkDoneProgressReport};
 use serde_json::Value;
 use std::collections::HashMap;
 use std::io::Read;
@@ -99,7 +96,7 @@ impl LspReceiver {
                     self.errors.send(RequestError::ChildStdoutDied).unwrap();
                     break;
                 }
-                debug!("{line_buf}");
+                // debug!("{line_buf}");
                 if let Some(header) = parse_header(&line_buf) {
                     match header {
                         Header::ContentType => { /* discard */ }
@@ -109,7 +106,7 @@ impl LspReceiver {
                     }
                 }
                 if line_buf.trim_end_matches("\r\n").is_empty() {
-                    debug!("now expecting body of length {current_length:?}");
+                    // debug!("now expecting body of length {current_length:?}");
                     expecting_header = false;
                 }
             } else if let Some(l) = current_length {
@@ -202,6 +199,8 @@ pub struct Lsp {
     notifications_rx: Receiver<NotificationMessage>,
     requests_rx: Receiver<RequestMessage>,
 
+    pub(super) diagnostics: Mutex<Vec<(Url, Diagnostic)>>,
+
     receiver_thread: Option<JoinHandle<()>>,
     exit: Receiver<RequestError>,
     ready: ReadyStatus,
@@ -240,7 +239,7 @@ impl Lsp {
             match local_process.lock().unwrap().try_wait() {
                 Ok(Some(i)) => {
                     info!("lsp exited");
-                    exit_tx.send(RequestError::ExitedCode(i)).unwrap();
+                    let _ = exit_tx.send(RequestError::ExitedCode(i));
                 }
                 Err(e) => {
                     info!("lsp exited");
@@ -261,6 +260,7 @@ impl Lsp {
             errors_rx,
             notifications_rx,
             requests_rx,
+            diagnostics: Mutex::new(vec![]),
             receiver_thread: Some(receiver_thread),
             exit: exit_rx,
             ready: ReadyStatus::Unknown,
@@ -418,6 +418,14 @@ impl Lsp {
                         self.progress_chans.remove(&token);
                     }
                 }
+            }
+            "textDocument/publishDiagnostics" => {
+                let params: PublishDiagnosticsParams = serde_json::from_value(msg.params.expect("params"))?;
+
+                self.diagnostics.lock().unwrap().extend(
+                    params.diagnostics.into_iter()
+                        .map(|i| (params.uri.clone(), i))
+                );
             }
             _ => {
                 info!("ignoring {msg:?}...");

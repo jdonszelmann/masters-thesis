@@ -9,6 +9,7 @@ use std::ffi::OsStr;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::{fs, io};
+use std::collections::HashMap;
 use thiserror::Error;
 use tracing::info;
 use walkdir::DirEntry;
@@ -66,7 +67,7 @@ impl Drop for SourceDir {
     }
 }
 
-const EXCLUDED_PATHS: &[&str] = &["target"];
+const EXCLUDED_PATHS: &[&str] = &["target", "elaine-repo"];
 
 fn excluded(p: &DirEntry) -> bool {
     for segment in p.path() {
@@ -168,9 +169,9 @@ impl SourceDir {
         pathdiff::diff_paths(path, self.root())
     }
 
-    pub fn file_from_suffix(&self, path: &str) -> Option<SourceFile> {
+    pub fn file_from_suffix(&self, path: impl AsRef<Path>) -> Option<SourceFile> {
         match &self.files {
-            FilesList::SingleFile(s) if s.path.to_string_lossy().contains(path) => {
+            FilesList::SingleFile(s) if s.path.to_string_lossy().contains(path.as_ref().to_string_lossy().as_ref()) => {
                 Some(SourceFile {
                     internal: &s,
                     dir: self,
@@ -178,7 +179,7 @@ impl SourceDir {
             }
             FilesList::Many(m) => {
                 for s in m {
-                    if s.path.to_string_lossy().contains(path) {
+                    if s.path.to_string_lossy().contains(path.as_ref().to_string_lossy().as_ref()) {
                         return Some(SourceFile {
                             internal: &s,
                             dir: self,
@@ -274,6 +275,8 @@ impl<'a> Iterator for FileIter<'a> {
 pub struct InternalSourceFileCache {
     hash: Option<SourceCodeHash>,
     contents: Option<String>,
+    // line number to start offset
+    line_table: Option<HashMap<usize, usize>>,
 }
 
 pub struct InternalSourceFile {
@@ -331,21 +334,26 @@ impl InternalSourceFile {
             .collect())
     }
 
+    // 1-based line number
     pub fn offset_of_line_num(&self, mut line_num: usize) -> Result<Option<usize>, ContentsError> {
         if line_num <= 1 {
             return Ok(Some(0));
         }
 
-        for (idx, i) in self.contents()?.bytes().enumerate() {
-            if i == b'\n' {
-                line_num -= 1;
-                if line_num <= 1 {
-                    return Ok(Some(idx + 1));
-                }
+        if let Some(ref i) = self.cache.borrow().line_table {
+            return Ok(i.get(&line_num).copied());
+        }
+        let mut res = HashMap::new();
+        let mut line_count = 1;
+        for (idx, i) in self.contents()?.chars().enumerate() {
+            if i == '\n' {
+                line_count += 1;
+                res.insert(line_count, idx + 1);
             }
         }
-
-        Ok(None)
+        let offset = res.get(&line_num).copied();
+        self.cache.borrow_mut().line_table = Some(res);
+        Ok(offset)
     }
 
     pub fn line_of(&self, offset: usize) -> Result<usize, ContentsError> {

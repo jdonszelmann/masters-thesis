@@ -12,7 +12,7 @@ use crate::languages::Language;
 use crate::sources::dir::{ContentsError, HashError, SourceDir, SourceFile};
 use thiserror::Error;
 use tracing::info;
-use crate::analysis::field::Field;
+use crate::analysis::field::{Classification, Relation, Tag};
 use crate::sources::hash::SourceCodeHash;
 use crate::sources::span::Span;
 
@@ -85,11 +85,11 @@ impl Ident {
         self.id_text.trim_end_matches(" ")
     }
 
-    pub fn span(&self) -> Option<Span> {
+    pub fn span(&self, file: SourceFile) -> Option<Span> {
         let len = self.span_len();
         let start = self.start()?;
 
-        Some(Span::new(start, len))
+        Some(Span::new(start, len, file.path()))
     }
 }
 
@@ -206,21 +206,19 @@ impl ElaineAnalysis {
         })
     }
 
-    fn references(&self, file: SourceFile) -> Result<Vec<(Span, Field)>, ElaineAnalysisError> {
+    fn references(&self, file: SourceFile) -> Result<Vec<(Span, Relation)>, ElaineAnalysisError> {
         let mut res = Vec::new();
 
         for i in &self.metadata.definitions {
-            if let (Some(usage_span), Some(definition_span)) = (i.0.span(), i.1.span()) {
-                res.push((usage_span.clone(), Field::Ref {
-                    description: "definition".to_string(),
+            if let (Some(usage_span), Some(definition_span)) = (i.0.span(file), i.1.span(file)) {
+                res.push((usage_span.clone(), Relation::Reference {
+                    kind: Classification(vec!["definition".to_string()]),
                     reference: definition_span.clone(),
-                    file: None,
                 }));
 
-                res.push((definition_span, Field::Ref {
-                    description: "usage".to_string(),
+                res.push((definition_span, Relation::Reference {
+                    kind: Classification(vec!["usage".to_string()]),
                     reference: usage_span,
-                    file: None,
                 }));
             }
         }
@@ -242,18 +240,16 @@ impl ElaineAnalysis {
                 }
             }
 
-            let usage_span = Span::from_start_end(start + 1, end + 1);
-            for definition_span in elabs.iter().map(|i| i.span()).flatten() {
-                res.push((usage_span.clone(), Field::Ref {
-                    description: "elaboration".to_string(),
+            let usage_span = Span::from_start_end(start + 1, end + 1, file.path());
+            for definition_span in elabs.iter().map(|i| i.span(file)).flatten() {
+                res.push((usage_span.clone(), Relation::Reference {
+                    kind: Classification(vec!["elaboration".to_string()]),
                     reference: definition_span.clone(),
-                    file: None,
                 }));
 
-                res.push((definition_span, Field::Ref {
-                    description: "usage".to_string(),
+                res.push((definition_span, Relation::Reference {
+                    kind: Classification(vec!["usage".to_string()]),
                     reference: usage_span.clone(),
-                    file: None,
                 }));
             }
         }
@@ -261,15 +257,17 @@ impl ElaineAnalysis {
         Ok(res)
     }
 
-    fn outline(&self) -> Result<Vec<(Span, Field)>, ElaineAnalysisError> {
+    fn outline(&self) -> Result<Vec<(Span, Relation)>, ElaineAnalysisError> {
         Ok(Vec::new())
     }
 
-    fn coloring(&self) -> Result<Vec<(Span, Field)>, ElaineAnalysisError> {
+    fn coloring(&self, file: SourceFile) -> Result<Vec<(Span, Relation)>, ElaineAnalysisError> {
         Ok(
             self.syntax_categorization
                 .iter()
-                .map(|i| (Span::from_start_end(i.start, i.end), Field::SyntaxColour(i.category.clone())))
+                .map(|i| (Span::from_start_end(i.start, i.end, file.path()), Relation::Syntax{
+                    kind: Classification::from_dotted(&i.category)
+                }))
                 .collect()
         )
     }
@@ -323,7 +321,7 @@ impl ElaineAnalyser {
             match part {
                 ElaineAnalysisSelector::References => res.extend(elaine_analysis.references(file)?),
                 ElaineAnalysisSelector::Outline => res.extend(elaine_analysis.outline()?),
-                ElaineAnalysisSelector::Coloring => res.extend(elaine_analysis.coloring()?),
+                ElaineAnalysisSelector::Coloring => res.extend(elaine_analysis.coloring(file)?),
             }
 
             let analysis = FileAnalysis::new(file, res)?;

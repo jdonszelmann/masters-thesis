@@ -11,6 +11,7 @@ use axohtml::types::{Class, SpacedSet};
 use axohtml::{html, text, unsafe_text};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use tracing::info;
 
 fn generate_reference(
     references: &[&Reference],
@@ -18,8 +19,8 @@ fn generate_reference(
 ) -> Result<(Box<dyn FlowContent<String>>, usize), ContentsError> {
     let mut description = Vec::new();
     for i in references {
-        if !description.contains(&i.description.as_str()) {
-            description.push(i.description.as_str());
+        if !description.contains(&i.kind.0.join(".")) {
+            description.push(i.kind.0.join("."));
         }
     }
 
@@ -101,8 +102,9 @@ fn generate_line_from_tokens(
             for i in classes
                 .color_classes
                 .iter()
-                .chain(classes.outline_targets.iter().map(|i| &i.class))
-                .chain(&classes.reference_targets)
+                .map(|i| i.0.join("."))
+                .chain(classes.outline_targets.iter().map(|i| i.class.clone()))
+                .chain(classes.reference_targets.iter().cloned())
             {
                 let mut res = String::new();
                 for i in i.split_inclusive('.') {
@@ -125,8 +127,20 @@ fn generate_line_from_tokens(
                 class.add("clickable");
             }
 
+            if !classes.diagnostics.is_empty() {
+                class.add("diagnostic");
+            }
+
+            let mut title = Vec::new();
+            for i in &classes.diagnostics {
+                if !title.contains(&i.message.as_str()) {
+                    title.push(i.message.as_str());
+                }
+            }
+            let title = title.join("\n");
+
             let res: Box<dyn FlowContent<String>> = html! {
-                <div class=class data-line={line_num.to_string()}>
+                <div class=class data-line={line_num.to_string()} title=title>
                     {popup}
                     <span>{text!("{}", text)}</span>
                 </div>
@@ -207,7 +221,7 @@ pub fn generate_html(
     let doc: DOMTree<String> = html! {
         <html>
             <head>
-                <title>"CES"</title>
+                <title>"Codex"</title>
             </head>
             <body>
                 <div id="main" class=change_theme_classes>

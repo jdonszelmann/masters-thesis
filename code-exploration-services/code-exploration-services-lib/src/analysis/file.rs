@@ -1,4 +1,4 @@
-use crate::analysis::field::Field;
+use crate::analysis::field::Relation;
 use crate::sources::dir::{HashError, SourceFile};
 use crate::sources::hash::SourceCodeHash;
 use crate::sources::span::Span;
@@ -6,10 +6,12 @@ use std::fmt::{Display, Formatter};
 use std::io::Write;
 use thiserror::Error;
 
+type Metadata = Vec<(Span, Relation)>;
+
 #[derive(Debug)]
 pub struct FileAnalysis {
     hash: SourceCodeHash,
-    fields: Vec<(Span, Field)>,
+    fields: Metadata,
 }
 
 #[derive(Debug, Error)]
@@ -19,7 +21,7 @@ pub enum NewFileAnalysisError {
 }
 
 impl FileAnalysis {
-    pub fn new(s: SourceFile, fields: Vec<(Span, Field)>) -> Result<Self, NewFileAnalysisError> {
+    pub fn new(s: SourceFile, fields: Vec<(Span, Relation)>) -> Result<Self, NewFileAnalysisError> {
         Ok(Self {
             hash: s.hash()?.clone(),
             fields,
@@ -30,7 +32,7 @@ impl FileAnalysis {
         &self.hash
     }
 
-    pub fn fields(&self) -> impl Iterator<Item = &(Span, Field)> {
+    pub fn fields(&self) -> impl Iterator<Item = &(Span, Relation)> {
         self.fields.iter()
     }
 
@@ -48,7 +50,7 @@ impl FileAnalysis {
     pub fn serialize(&self) -> Vec<u8> {
         let mut w = Vec::new();
 
-        let _ = writeln!(&mut w, "{}", self.hash);
+        let _ = writeln!(&mut w, "{:?}", self.hash);
         for f in &self.fields {
             serde_json::to_writer(&mut w, f).unwrap();
             let _ = writeln!(&mut w);

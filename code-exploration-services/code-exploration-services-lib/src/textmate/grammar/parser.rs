@@ -55,6 +55,12 @@ pub struct Span {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Name(Rc<Vec<String>>);
 
+impl Name {
+    pub fn parts(&self) -> impl Iterator<Item=String> + '_ {
+        self.0.iter().map(ToString::to_string)
+    }
+}
+
 impl Display for Name {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0.join("."))
@@ -624,7 +630,6 @@ impl<'a, 'g> Parser<'a, 'g> {
         let mut offset = 0;
 
         for (idx, line) in self.source.lines_inclusive().enumerate() {
-            println!("{}", idx);
             self.parse_line(line, offset, patterns, &mut tokens, &mut scope_stack)?;
             offset += line.len();
         }

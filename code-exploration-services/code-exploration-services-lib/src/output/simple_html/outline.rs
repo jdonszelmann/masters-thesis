@@ -1,4 +1,4 @@
-use crate::analysis::field::Field;
+use crate::analysis::field::{Relation, Tag};
 use crate::analysis::file::FileAnalysis;
 use crate::output;
 use crate::output::simple_html::generate_html::generate_html_from_tokens;
@@ -16,14 +16,14 @@ use std::collections::VecDeque;
 struct OutlineItem<'a> {
     span: &'a Span,
     children: Vec<OutlineItem<'a>>,
-    description: &'a Option<String>,
+    description: Option<&'a String>,
 }
 
 fn insert<'a>(
     outline: &mut Vec<OutlineItem<'a>>,
     span: &'a Span,
     parent: &'a Span,
-    description: &'a Option<String>,
+    description: Option<&'a String>,
 ) -> bool {
     for i in outline {
         if i.span == parent {
@@ -58,7 +58,7 @@ fn generate_outline_html(
         .collect::<Result<Vec<_>, _>>()?;
 
     let source_text = source.slice(parent.span)?;
-    let tokens = tokenize_string(&source_text, parent.span.start, index, DontGenerateOutline);
+    let tokens = tokenize_string(&source_text, parent.span.start, index, DontGenerateOutline, source);
 
     let heading = if let Some(description) = parent.description {
         text!("{}: ", description)
@@ -99,11 +99,12 @@ pub fn generate_outline(
     let mut outline = Vec::new();
 
     for (span, field) in analysis.fields() {
-        if let Field::Outline {
+        if let Relation::Outline {
             parent,
-            description,
+            kind,
         } = field
         {
+            let description = kind.0.get(0);
             if let Some(parent) = parent {
                 todo.push_back((span, parent, description));
             } else {

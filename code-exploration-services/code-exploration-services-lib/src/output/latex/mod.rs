@@ -10,8 +10,10 @@ use crate::Annotater;
 use convert_case::{Case, Casing};
 use std::collections::HashSet;
 use std::path::PathBuf;
+use itertools::Itertools;
 use thiserror::Error;
 use tracing::{error, info};
+use crate::analysis::field::Classification;
 
 mod colors;
 
@@ -47,16 +49,24 @@ pub struct LatexOutput {
 }
 
 pub struct LatexParams {
-    theme: String,
-    generate_superscripts: bool,
+    pub do_refs: bool,
+    pub do_wrap: bool,
+    pub do_usage: bool,
+    pub theme: String,
+    pub generate_superscripts: bool,
+    pub generate_outline: bool,
 }
 
 impl Default for LatexParams {
     fn default() -> Self {
         Self {
+            do_refs: true,
+            do_wrap: true,
+            do_usage: true,
             theme: "One Dark".to_string(),
             // theme: "3024 day".to_string(),
-            generate_superscripts: true,
+            generate_superscripts: false,
+            generate_outline: false,
         }
     }
 }
@@ -100,6 +110,7 @@ impl Annotater for Latex {
                 0,
                 &field_index,
                 OutlineSetting::GenerateOutline,
+                file,
             );
 
             for i in tokens {
@@ -118,6 +129,7 @@ impl Annotater for Latex {
                 0,
                 &field_index,
                 OutlineSetting::GenerateOutline,
+                file
             );
 
             let file_name = file
@@ -136,7 +148,7 @@ impl Annotater for Latex {
             } else {
                 format!("code {name} ")
             }
-            .to_case(Case::Camel);
+                .to_case(Case::Camel);
 
             colors.add_tokens(&tokens)?;
             let latex = generate_latex(file, &tokens, &colors, &all_labels, &params)?;
@@ -144,12 +156,17 @@ impl Annotater for Latex {
             info!("Generated latex for {:?}", file.path());
             info!("Insert into latex by using \\{command_name}");
 
-            let latex_name = validate(file_name);
+            let latex_name = validate(file_name, !params.do_wrap);
+            let heading = if params.generate_outline {
+                format!(r#"\subsection{{{latex_name}}}"#)
+            } else {
+                String::new()
+            };
 
             latexes.push(format!(
                 r#"
 \newcommand\{command_name}{{
-\subsection{{{latex_name}}}
+{heading}
 \begin{{codexcode}}
     {latex}
 \end{{codexcode}}
@@ -179,7 +196,13 @@ impl Annotater for Latex {
     }
 }
 
-fn validate(inp: impl AsRef<str>) -> String {
+fn validate(inp: impl AsRef<str>, no_wrap: bool) -> String {
+    let wrap = if no_wrap {
+        r"\enspace "
+    } else {
+        r"\enspace \allowbreak "
+    };
+
     inp.as_ref()
         .replace("\\", r"\\")
         .replace("#", r"\#")
@@ -188,7 +211,7 @@ fn validate(inp: impl AsRef<str>) -> String {
         .replace("&", r"\&")
         .replace("{", r"\{")
         .replace("}", r"\}")
-        .replace(" ", r"\char0032 \allowbreak ")
+        .replace(" ", wrap)
         .replace("\t", r"\char0009 ")
         .replace("_", r"\_")
         .replace("~", r"\textasciicircum")
@@ -198,23 +221,21 @@ fn validate(inp: impl AsRef<str>) -> String {
 
 pub struct AnnotatedToken<'a> {
     token: &'a Token,
-    refs: Vec<(String, String)>,
+    refs: Vec<(String, String, bool)>,
     outline: Vec<String>,
-    targets: Vec<(String, usize)>
+    targets: Vec<(String, usize)>,
 }
 
-fn find_refs(refs: &mut Vec<(String, String)>, classes: &Classes, all_labels: &HashSet<String>) {
+fn find_refs(refs: &mut Vec<(String, String, bool)>, classes: &Classes, all_labels: &HashSet<String>, file: SourceFile) {
     let mut refs_already_inserted = HashSet::new();
     let mut refs_from_classes = classes.references.clone();
 
     refs_from_classes.sort_by_key(|i| i.to.start);
     for i in refs_from_classes {
-        if i.file.is_some() {
-            error!("{:?}", i);
-        }
+        let different_file = i.to.file != file.path();
 
         // skip self references, those only clutter the latex
-        if i.includes_self && !i.file.is_some() {
+        if i.includes_self && !different_file {
             continue;
         }
 
@@ -222,21 +243,22 @@ fn find_refs(refs: &mut Vec<(String, String)>, classes: &Classes, all_labels: &H
         if all_labels.contains(&label) && !refs_already_inserted.contains(&label) {
             refs.push((
                 label.replace("-", ""),
-                i.description.chars().take(4).collect::<String>(),
+                i.kind.0.join(".").chars().take(4).collect::<String>(),
+                different_file,
             ));
             refs_already_inserted.insert(label);
         }
     }
 }
 
-fn find_outline_targets(outline: &mut Vec<String>, classes: &Classes, source: SourceFile) -> Result<(), LatexError> {
+fn find_outline_targets(outline: &mut Vec<String>, classes: &Classes, source: SourceFile, no_wrap: bool) -> Result<(), LatexError> {
     for i in &classes.outline_targets {
         if !i.root {
             continue;
         }
 
-        let text = validate(source.slice(&i.span)?);
-        let entry = if let Some(ref description) = i.description {
+        let text = validate(source.slice(&i.span)?, no_wrap);
+        let entry = if let Some(ref description) = i.description.0.get(0) {
             format!("{description} {text}")
         } else {
             text
@@ -258,7 +280,7 @@ fn find_reference_targets<'a>(targets: &mut Vec<(String, usize)>, classes: &'a C
     }
 }
 
-fn annotate_tokens<'a>(source: SourceFile, tokens: &'a [Token], all_labels: &HashSet<String>) -> Result<Vec<AnnotatedToken<'a>>, LatexError> {
+fn annotate_tokens<'a>(source: SourceFile, tokens: &'a [Token], all_labels: &HashSet<String>, no_wrap: bool) -> Result<Vec<AnnotatedToken<'a>>, LatexError> {
     let mut targets_already_inserted = HashSet::new();
     let mut target_idx = 0;
 
@@ -270,14 +292,16 @@ fn annotate_tokens<'a>(source: SourceFile, tokens: &'a [Token], all_labels: &Has
             let mut targets = Vec::new();
 
             if let Token::Token { classes, .. } = token {
-                find_refs(&mut refs, classes, all_labels);
-                find_outline_targets(&mut outline, classes, source)?;
+                find_refs(&mut refs, classes, all_labels, source);
+                find_outline_targets(&mut outline, classes, source, no_wrap)?;
                 find_reference_targets(&mut targets, classes, &mut target_idx, &mut targets_already_inserted)
             }
 
             Ok(AnnotatedToken {
-                token, refs, outline,
-                targets
+                token,
+                refs,
+                outline,
+                targets,
             })
         })
         .collect::<Result<Vec<_>, _>>()
@@ -286,7 +310,7 @@ fn annotate_tokens<'a>(source: SourceFile, tokens: &'a [Token], all_labels: &Has
 fn deduplicate_annotated_tokens(annotated_tokens: &mut [AnnotatedToken]) {
     let mut next_refs = Vec::new();
     let mut next_outline = Vec::new();
-    for AnnotatedToken {refs, outline, ..} in annotated_tokens.iter_mut().rev() {
+    for AnnotatedToken { refs, outline, .. } in annotated_tokens.iter_mut().rev() {
         if *refs == next_refs {
             next_refs = refs.clone();
             *refs = Vec::new()
@@ -308,16 +332,16 @@ fn generate_latex(
     tokens: &[Token],
     colors: &Colors,
     all_labels: &HashSet<String>,
-    params: &LatexParams
+    params: &LatexParams,
 ) -> Result<String, LatexError> {
     let mut res = Vec::<String>::new();
 
     // pre-generate annotations
-    let mut annotated_tokens = annotate_tokens(source, tokens, all_labels)?;
+    let mut annotated_tokens = annotate_tokens(source, tokens, all_labels, !params.do_wrap)?;
     deduplicate_annotated_tokens(&mut annotated_tokens);
 
     // generate latex
-    for AnnotatedToken{token, refs, outline, targets } in annotated_tokens {
+    for AnnotatedToken { token, refs, outline, targets } in annotated_tokens {
         match token {
             Token::Token { text, classes } => {
                 if text.is_empty() {
@@ -326,9 +350,9 @@ fn generate_latex(
 
                 let color = colors.color_for(classes);
 
-                let mut latex_code = format!("{{\\color{{{color}}}{}}}", validate(text));
+                let mut latex_code = format!("{{\\color{{{color}}}{}}}", validate(text, !params.do_wrap));
                 for (label, number) in targets {
-                    let superscript = if params.generate_superscripts {
+                    let superscript = if params.generate_superscripts && params.do_refs {
                         format!("\\textsuperscript{{\\color{{vforeground}}{number}}}")
                     } else {
                         String::new()
@@ -337,24 +361,33 @@ fn generate_latex(
                     latex_code = format!("\\linkdest{{{label}}}{{}}{latex_code}{superscript}");
                 }
 
-                let num_refs = refs.len();
-                if num_refs == 1 {
-                    let (label, _) = refs.first().unwrap();
-                    latex_code = format!("\\hyperlink{{{label}}}{{\\color{{vforeground}}\\underline{{{latex_code}}}}}")
-                } else {
-                    for (idx, (label, text)) in refs.into_iter().enumerate() {
-                        let separator = if idx == num_refs - 1 {
-                            ""
-                        } else {
-                            ","
-                        };
+                if params.do_refs {
+                    let refs = refs.into_iter()
+                        // if we don't do usages, filter out usages unless the usage is in a different file
+                        .filter(|i| params.do_usage || i.1 != "usag" || i.2)
+                        .collect_vec();
 
-                        latex_code = format!("{latex_code}\\textsuperscript{{\\hyperlink{{{label}}}{{\\color{{vforeground}}{text}{separator}}}}}");
+                    let num_refs = refs.len();
+                    if num_refs == 1 {
+                        let (label, _, _) = refs.first().unwrap();
+                        latex_code = format!("\\hyperlink{{{label}}}{{\\color{{vforeground}}\\underline{{{latex_code}}}}}")
+                    } else {
+                        for (idx, (label, text, _)) in refs.into_iter().enumerate() {
+                            let separator = if idx == num_refs - 1 {
+                                ""
+                            } else {
+                                ","
+                            };
+
+                            latex_code = format!("{latex_code}\\textsuperscript{{\\hyperlink{{{label}}}{{\\color{{vforeground}}{text}{separator}}}}}");
+                        }
                     }
                 }
 
-                for entry in outline {
-                    latex_code = format!("\\outlineentry{{{entry}}}{latex_code}");
+                if params.generate_outline {
+                    for entry in outline {
+                        latex_code = format!("\\outlineentry{{{entry}}}{latex_code}");
+                    }
                 }
 
                 res.push(latex_code);

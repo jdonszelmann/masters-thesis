@@ -15,6 +15,7 @@ impl<'a> Theme<'a> {
             foreground: None,
             background: None,
             font_style: None,
+            content: None,
         };
 
         for i in &tm.settings {

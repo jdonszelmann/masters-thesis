@@ -1,7 +1,7 @@
 use crate::output::scope_selector::ScopeSelector;
 use crate::output::simple_html::SimpleHtmlError;
 use crate::textmate::theme::{
-    FontStyle, Settings, SettingsItem, TextmateTheme, TextmateThemeManager,
+    Settings, SettingsItem, TextmateTheme, TextmateThemeManager,
 };
 use std::str::FromStr;
 
@@ -113,7 +113,7 @@ fn generate_theme_style(theme: &TextmateTheme) -> Result<String, SimpleHtmlError
                 let underline = if settings
                     .font_style
                     .as_ref()
-                    .map(|i| i == &FontStyle::Underline)
+                    .map(|i| i.contains("underline"))
                     .unwrap_or(false)
                 {
                     "text-decoration: underline;"
@@ -123,7 +123,7 @@ fn generate_theme_style(theme: &TextmateTheme) -> Result<String, SimpleHtmlError
                 let bold = if settings
                     .font_style
                     .as_ref()
-                    .map(|i| i == &FontStyle::Bold)
+                    .map(|i| i.contains("bold"))
                     .unwrap_or(false)
                 {
                     "font-weight: bold;"
@@ -133,7 +133,7 @@ fn generate_theme_style(theme: &TextmateTheme) -> Result<String, SimpleHtmlError
                 let italics = if settings
                     .font_style
                     .as_ref()
-                    .map(|i| i == &FontStyle::Italic)
+                    .map(|i| i.contains("italic"))
                     .unwrap_or(false)
                 {
                     "font-style: italic;"

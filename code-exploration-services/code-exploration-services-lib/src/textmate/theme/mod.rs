@@ -1,8 +1,6 @@
-use std::collections::HashMap;
 use serde::de::Error;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::{Display, Formatter};
-use serde_json::Value;
 
 pub mod constructor;
 
@@ -21,10 +19,21 @@ impl Display for Color {
 
 impl<'de> Deserialize<'de> for Color {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
+        where
+            D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
+        if s.len() == 4 {
+            let b1 =
+                u8::from_str_radix(&s[1..=1], 16).map_err(|_| D::Error::custom("can't parse as u8"))?;
+            let b2 =
+                u8::from_str_radix(&s[2..=2], 16).map_err(|_| D::Error::custom("can't parse as u8"))?;
+            let b3 =
+                u8::from_str_radix(&s[3..=3], 16).map_err(|_| D::Error::custom("can't parse as u8"))?;
+
+            return Ok(Self(b1 | b1 << 4, b2 | b2 << 4, b3 | b3 << 4, 0));
+        }
+
         if s.len() != 7 && s.len() != 9 {
             return Err(D::Error::custom(format!(
                 "can't parse as colour because length isn't 7 or 9: {s}"
@@ -49,8 +58,8 @@ impl<'de> Deserialize<'de> for Color {
 
 impl Serialize for Color {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
+        where
+            S: Serializer,
     {
         self.to_string().serialize(serializer)
     }
@@ -87,48 +96,11 @@ pub enum SettingsItem {
         settings: Settings,
     },
     Style {
+        #[serde(default)]
         name: String,
         scope: String,
         settings: StyleItemSettings,
     },
-}
-
-#[derive(Debug, PartialEq)]
-pub enum FontStyle {
-    Bold,
-    Italic,
-    Underline,
-    None,
-}
-
-impl Serialize for FontStyle {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self {
-            FontStyle::Bold => "bold".serialize(serializer),
-            FontStyle::Italic => "italic".serialize(serializer),
-            FontStyle::Underline => "underline".serialize(serializer),
-            FontStyle::None => "".serialize(serializer),
-        }
-    }
-}
-
-impl<'de> Deserialize<'de> for FontStyle {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        Ok(match s.trim().to_lowercase().as_str() {
-            "bold" => Self::Bold,
-            "italic" => Self::Italic,
-            "underline" => Self::Underline,
-            "" => Self::None,
-            s => return Err(D::Error::custom(format!("not a valid font style: {s}"))),
-        })
-    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -142,7 +114,11 @@ pub struct StyleItemSettings {
     #[serde(rename = "fontStyle")]
     #[serde(default)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub font_style: Option<FontStyle>,
+    pub font_style: Option<String>,
+    #[serde(rename = "fontStyle")]
+    #[serde(default)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -169,7 +145,7 @@ impl TextmateThemeManager {
         self.items.push(theme);
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = &TextmateTheme> {
+    pub fn iter(&self) -> impl Iterator<Item=&TextmateTheme> {
         self.items.iter()
     }
 }
@@ -193,20 +169,26 @@ impl Default for TextmateThemeManager {
             TextmateTheme::from_xml(include_str!(
                 "../../../../textmate_themes/solarized-dark.tmTheme"
             ))
-            .expect("theme to parse"),
+                .expect("theme to parse"),
         );
         res.add(
             TextmateTheme::from_xml(include_str!(
                 "../../../../textmate_themes/solarized-light.tmTheme"
             ))
-            .expect("theme to parse"),
+                .expect("theme to parse"),
         );
-        // res.add(
-        //     TextmateTheme::from_xml(include_str!(
-        //         "../../../../textmate_themes/github-light.tmTheme"
-        //     ))
-        //         .expect("theme to parse"),
-        // );
+        res.add(
+            TextmateTheme::from_xml(include_str!(
+                "../../../../textmate_themes/Fluidvision.tmTheme"
+            ))
+                .expect("theme to parse"),
+        );
+        res.add(
+            TextmateTheme::from_xml(include_str!(
+                "../../../../textmate_themes/GitHub.tmTheme"
+            ))
+                .expect("theme to parse"),
+        );
         res
     }
 }

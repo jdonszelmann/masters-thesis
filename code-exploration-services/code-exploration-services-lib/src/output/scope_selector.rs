@@ -130,7 +130,7 @@ impl ScopeSelector {
     pub fn matches(&self, classes: &ColorClasses) -> bool {
         let mut split_classes = Vec::new();
         for i in classes {
-            split_classes.push(i.split('.').collect::<VecDeque<_>>());
+            split_classes.push(i.0.iter().map(|i| i.as_str()).collect::<VecDeque<_>>());
         }
 
         self.matches_split(split_classes)

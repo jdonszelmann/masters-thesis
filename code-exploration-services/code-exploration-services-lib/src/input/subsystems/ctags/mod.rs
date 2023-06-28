@@ -1,5 +1,5 @@
 use crate::analysis::dir::Analysis;
-use crate::analysis::field::{Field, FieldRef};
+use crate::analysis::field::{Classification, Relation, Tag};
 use crate::analysis::file::FileAnalysis;
 use crate::input::subsystems::ctags::xref_kinds::XrefKind;
 use crate::input::subsystems::ctags::xrefs::Xref;
@@ -11,6 +11,7 @@ use std::io;
 use std::num::ParseIntError;
 use strum::ParseError;
 use thiserror::Error;
+use tracing::info;
 
 pub mod tags;
 pub mod xref_kinds;
@@ -48,7 +49,7 @@ fn find_parent(
     span: &Span,
     file: SourceFile,
     index: &Index,
-) -> Result<Option<FieldRef>, AnalysisError> {
+) -> Result<Option<Span>, AnalysisError> {
     let Some(index_entry ) = index.get(&(parent, parent_kind)) else {
         return Ok(None);
     };
@@ -91,6 +92,7 @@ impl CtagsAnalyser {
 impl Analyser for CtagsAnalyser {
     fn outline(&self, s: &SourceDir) -> Result<Analysis, AnalysisError> {
         s.map_analyze(|file| -> Result<FileAnalysis, AnalysisError> {
+            info!("CTAGS analyzing {:?}", file.path());
             let xref_output = xrefs::run_xref(file)?;
 
             let mut index: Index = HashMap::new();
@@ -116,11 +118,11 @@ impl Analyser for CtagsAnalyser {
 
                 res.push((
                     span,
-                    Field::Outline {
-                        description: Some(xref.kind.as_ref().to_string()),
+                    Relation::Outline {
+                        kind: Classification(vec![xref.kind.as_ref().to_string()]),
                         parent,
-                    },
-                ));
+                    }),
+                )
             }
 
             let analysis = FileAnalysis::new(file, res)?;

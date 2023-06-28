@@ -1,0 +1,30 @@
+["data_structures.rs!17+14", {
+  "Reference":
+  {
+    "kind": ["declaration"],
+    "reference": "data_structures.rs!1+44"
+  }
+}]
+//...
+["data_structures.rs!107+4", {
+  "Diagnostics":
+  {
+    "severity": ["error"],
+    "message": "struct Path not in scope"
+  }
+}]
+//...
+["data_structures.rs!17+14", {
+  "Outline":
+  {
+    "kind": ["struct"],
+    "parent": null
+  }
+}]
+//...
+[ "data_structures.rs!10+6", {
+  "Syntax":
+  {
+    "kind": ["keyword","declaration","struct","rust"]
+  }
+}]

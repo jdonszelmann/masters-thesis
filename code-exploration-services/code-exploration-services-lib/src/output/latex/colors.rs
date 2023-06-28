@@ -4,6 +4,7 @@ use crate::textmate::theme::Color;
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, HashSet};
 use thiserror::Error;
+use tracing::error;
 
 #[derive(Debug, Error)]
 pub enum ResolveColorError {

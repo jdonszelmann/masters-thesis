@@ -115,7 +115,7 @@ impl Language {
             .to_string_lossy()
             .to_string();
 
-        let source_dir_path = tempdir::TempDir::new("CES").map_err(IntoSourceDirError::Tempdir)?;
+        let source_dir_path = tempdir::TempDir::new("CODEX").map_err(IntoSourceDirError::Tempdir)?;
 
         let file_in_dir = match self {
             Self::Rust => {

@@ -46,7 +46,7 @@ impl Annotater for SimpleHtml {
             .remove(&file.hash()?)
             .expect("has file");
 
-        let tokens = tokenize::tokenize_string(&file.contents()?, 0, &field_index, GenerateOutline);
+        let tokens = tokenize::tokenize_string(&file.contents()?, 0, &field_index, GenerateOutline, file);
         let outline = outline::generate_outline(&a, &field_index, file)?;
 
         let style = include_str!("./style.css");

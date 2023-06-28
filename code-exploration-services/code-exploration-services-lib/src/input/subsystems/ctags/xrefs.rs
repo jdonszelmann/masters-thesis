@@ -39,7 +39,7 @@ impl Xref {
 
         let len = self.name.len();
 
-        Ok(Some(Span::new(start, len)))
+        Ok(Some(Span::new(start, len, source.path())))
     }
 }
 

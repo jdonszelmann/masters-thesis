@@ -1,12 +1,15 @@
+use std::str::FromStr;
+use onig::EncodedChars;
 use crate::analysis::dir::Analysis;
-use crate::analysis::field::Field;
+use crate::analysis::field::{Classification, Relation, Tag};
 use crate::analysis::file::FileAnalysis;
 use crate::input::{Analyser, AnalysisError};
 use crate::sources::dir::SourceDir;
 use crate::sources::span::Span;
 use crate::textmate;
 use thiserror::Error;
-use tracing::info;
+use tracing::{error, info};
+use crate::output::scope_selector::ScopeSelector;
 
 #[derive(Debug, Error)]
 pub enum TextmateAnalysisError {
@@ -17,7 +20,7 @@ pub enum TextmateAnalysisError {
 pub struct TextmateAnalyser;
 
 impl TextmateAnalyser {
-    pub fn new() -> Self {Self}
+    pub fn new() -> Self { Self }
 }
 
 impl Analyser for TextmateAnalyser {
@@ -30,7 +33,7 @@ impl Analyser for TextmateAnalyser {
             };
             let Some(parser) = textmate::TextmateGrammar::from_language(&ext.to_string_lossy())? else {
                 info!("not implemented for {ext:?}");
-                return Err(AnalysisError::NotImplemented)
+                return Err(AnalysisError::NotImplemented);
             };
 
             let res = parser
@@ -39,10 +42,19 @@ impl Analyser for TextmateAnalyser {
             let mut fields = Vec::new();
 
             for (span, name) in res {
-                fields.push((
-                    Span::new(span.start, span.len),
-                    Field::SyntaxColour(name.to_string()),
-                ))
+                let classes = ScopeSelector::from_str(&name.to_string()).expect(&format!("weird scope selector: {name}"));
+                for i in classes.classes() {
+                    let kind = Classification(
+                        i.split(['-', '.'])
+                            .filter(|i| !i.is_empty())
+                            .map(ToString::to_string).collect()
+                    );
+
+                    fields.push((
+                        Span::new(span.start, span.len, file.path()),
+                        Relation::Syntax { kind },
+                    ))
+                }
             }
 
             Ok(FileAnalysis::new(file, fields)?)

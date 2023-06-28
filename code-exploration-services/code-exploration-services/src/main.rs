@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::{stdin, stdout, Read, Write};
 use std::path::{Path, PathBuf};
 
-use code_exploration_services_lib::output::latex::Latex;
+use code_exploration_services_lib::output::latex::{Latex, LatexParams};
 use code_exploration_services_lib::output::simple_html::SimpleHtml;
 use code_exploration_services_lib::sources::dir::SourceDir;
 use code_exploration_services_lib::Annotater;
@@ -49,6 +49,19 @@ enum Commands {
         analysis: Option<PathBuf>,
         #[arg(long, short)]
         output: Option<PathBuf>,
+
+        #[arg(long)]
+        no_refs: bool,
+        #[arg(long)]
+        no_wrap: bool,
+        #[arg(long)]
+        no_usage: bool,
+
+        #[arg(long)]
+        outline: bool,
+
+        #[arg(long)]
+        theme: Option<String>,
     },
 }
 
@@ -80,10 +93,15 @@ fn main() -> color_eyre::Result<()> {
             analysis,
             output,
             output_type,
+            no_refs,
+            no_wrap,
+            no_usage,
+            outline,
+            theme,
         } => {
             let source = SourceDir::new(file)?;
 
-            let analysis = if let Some(analysis) = analysis {
+            let mut analysis = if let Some(analysis) = analysis {
                 let string_analysis = if analysis == Path::new("-") {
                     let mut buf = Vec::new();
                     stdin().read_to_end(&mut buf)?;
@@ -110,10 +128,25 @@ fn main() -> color_eyre::Result<()> {
                 Output::Latex => {
                     ensure!(output.is_some(), "specify an output directory");
                     let output = output.unwrap();
-                    ensure!(output.exists(), "make sure the output path exists");
-                    ensure!(output.is_dir(), "make sure the output path is a directory");
+                    ensure!(output.exists(), "make sure the output path exists: {output:?}");
+                    ensure!(output.is_dir(), "make sure the output path is a directory: {output:?}");
 
-                    let res = Latex.annotate(&source, analysis, Default::default())?;
+                    if no_refs {
+                        info!("excluding references");
+                    } else {
+                        info!("including references")
+                    }
+
+                    let default_params = LatexParams::default();
+
+                    let res = Latex.annotate(&source, analysis, LatexParams {
+                        do_refs: !no_refs,
+                        do_wrap: !no_wrap,
+                        do_usage: !no_usage,
+                        theme: theme.unwrap_or(default_params.theme),
+                        generate_outline: outline,
+                        ..Default::default()
+                    })?;
 
                     let sty_path = output.join(res.codex_sty.0);
                     std::fs::create_dir_all(sty_path.parent().context("has parent")?)?;
