@@ -36,7 +36,7 @@ fn generate_reference(
                 <span class="context">{text!("{}", context)}</span>
             </div>
         },
-        line,
+        references[0].to.start,
     ))
 }
 
