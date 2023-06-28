@@ -24,6 +24,9 @@ fn generate_theme_style(theme: &TextmateTheme) -> Result<String, SimpleHtmlError
             global_settings = s.clone();
         }
     }
+    let original_background = global_settings.background;
+    global_settings.foreground.3 = 0xff;
+    global_settings.background.3 = 0xff;
 
     res.push_str(
         format!(
@@ -98,7 +101,7 @@ fn generate_theme_style(theme: &TextmateTheme) -> Result<String, SimpleHtmlError
 }}
     ",
             sanitize_theme_name(&theme.name),
-            global_settings.line_highlight
+            global_settings.caret
         )
         .as_str(),
     );
@@ -141,12 +144,19 @@ fn generate_theme_style(theme: &TextmateTheme) -> Result<String, SimpleHtmlError
                     ""
                 };
 
+                let bgcolor = settings.background.unwrap_or(global_settings.background);
+                let background = if bgcolor == original_background {
+                    "".to_string()
+                } else {
+                    format!("background: {};", bgcolor)
+                };
+
                 res.push_str(
                     format!(
                         "
 .{} {} {{
     color: {};
-    background: {};
+    {}
     {}
     {}
     {}
@@ -155,7 +165,7 @@ fn generate_theme_style(theme: &TextmateTheme) -> Result<String, SimpleHtmlError
                         sanitize_theme_name(&theme.name),
                         class,
                         settings.foreground.unwrap_or(global_settings.foreground),
-                        settings.background.unwrap_or(global_settings.background),
+                        background,
                         underline,
                         italics,
                         bold,
