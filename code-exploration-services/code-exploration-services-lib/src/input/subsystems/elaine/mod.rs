@@ -11,7 +11,7 @@ use crate::input::{Analyser, AnalysisError};
 use crate::languages::Language;
 use crate::sources::dir::{ContentsError, HashError, SourceDir, SourceFile};
 use thiserror::Error;
-use tracing::info;
+use tracing::{error, info};
 use crate::analysis::field::{Classification, Relation};
 use crate::sources::hash::SourceCodeHash;
 use crate::sources::span::Span;
@@ -173,13 +173,24 @@ impl ElaineAnalysis {
             Ok(json_buf)
         };
 
-        let spans = run_command("spans-json")?;
-        let metadata = run_command("metadata-json")?;
-        println!("{}", spans);
-        println!("{}", metadata);
+        let spans: Vec<(ElaineSpan, String)> = match run_command("spans-json") {
+            Ok(spans) => serde_json::from_str(&spans).map_err(ElaineAnalysisError::DeserializeSpans)?,
+            Err(e) => {
+                error!("{}", e);
+                Vec::new()
+            },
+        };
 
-        let metadata: ElaineAnalysisMetadata = serde_json::from_str(&metadata).map_err(ElaineAnalysisError::DeserializeMetadata)?;
-        let spans: Vec<(ElaineSpan, String)> = serde_json::from_str(&spans).map_err(ElaineAnalysisError::DeserializeSpans)?;
+        let metadata: ElaineAnalysisMetadata = match run_command("metadata-json") {
+            Ok(metadata) => serde_json::from_str(&metadata).map_err(ElaineAnalysisError::DeserializeMetadata)?,
+            Err(e) => {
+                error!("{}", e);
+                ElaineAnalysisMetadata {
+                    definitions: vec![],
+                    elabs: Default::default(),
+                }
+            }
+        };
 
         Ok(Self {
             metadata,
