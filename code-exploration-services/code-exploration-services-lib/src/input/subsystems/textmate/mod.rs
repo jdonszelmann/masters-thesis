@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use onig::EncodedChars;
 use crate::analysis::dir::Analysis;
-use crate::analysis::field::{Classification, Relation, Tag};
+use crate::analysis::field::{Classification, Relation};
 use crate::analysis::file::FileAnalysis;
 use crate::input::{Analyser, AnalysisError};
 use crate::sources::dir::SourceDir;

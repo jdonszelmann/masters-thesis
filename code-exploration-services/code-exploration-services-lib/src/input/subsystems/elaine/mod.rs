@@ -12,7 +12,7 @@ use crate::languages::Language;
 use crate::sources::dir::{ContentsError, HashError, SourceDir, SourceFile};
 use thiserror::Error;
 use tracing::info;
-use crate::analysis::field::{Classification, Relation, Tag};
+use crate::analysis::field::{Classification, Relation};
 use crate::sources::hash::SourceCodeHash;
 use crate::sources::span::Span;
 
@@ -81,9 +81,9 @@ impl Ident {
         }
     }
 
-    pub fn source_text(&self) -> &str {
-        self.id_text.trim_end_matches(" ")
-    }
+    // pub fn source_text(&self) -> &str {
+    //     self.id_text.trim_end_matches(" ")
+    // }
 
     pub fn span(&self, file: SourceFile) -> Option<Span> {
         let len = self.span_len();
@@ -113,6 +113,7 @@ struct ElaineSyntaxCategorization {
     start: usize,
     end: usize,
 
+    #[allow(unused)]
     source_text: String,
     category: String,
 }
@@ -185,7 +186,7 @@ impl ElaineAnalysis {
             syntax_categorization: spans
                 .into_iter()
                 .map(|(span, category)| {
-                    let mut num_ending_spaces = span.2
+                    let num_ending_spaces = span.2
                         .chars()
                         .rev()
                         .take_while(|i| i.is_whitespace())

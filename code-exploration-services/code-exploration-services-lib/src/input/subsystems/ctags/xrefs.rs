@@ -6,8 +6,8 @@ use crate::sources::dir::{ContentsError, SourceFile};
 use crate::sources::span::Span;
 use std::io::BufRead;
 use std::process::Command;
-use tracing::{error, info};
-use crate::input::AnalysisError;
+
+
 
 #[derive(Clone, Debug)]
 pub struct XrefAnalysis {

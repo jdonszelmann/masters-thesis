@@ -335,7 +335,7 @@ impl InternalSourceFile {
     }
 
     // 1-based line number
-    pub fn offset_of_line_num(&self, mut line_num: usize) -> Result<Option<usize>, ContentsError> {
+    pub fn offset_of_line_num(&self, line_num: usize) -> Result<Option<usize>, ContentsError> {
         if line_num <= 1 {
             return Ok(Some(0));
         }

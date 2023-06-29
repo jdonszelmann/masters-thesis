@@ -11,7 +11,7 @@ use axohtml::types::{Class, SpacedSet};
 use axohtml::{html, text, unsafe_text};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use tracing::info;
+
 
 fn generate_reference(
     references: &[&Reference],

@@ -1,4 +1,4 @@
-use crate::analysis::field::{Relation, Tag};
+use crate::analysis::field::{Relation};
 use crate::analysis::file::FileAnalysis;
 use crate::output;
 use crate::output::simple_html::generate_html::generate_html_from_tokens;

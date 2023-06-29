@@ -18,9 +18,9 @@ use std::sync::{Arc, Mutex};
 use std::sync::mpsc::channel;
 use std::thread;
 use std::thread::JoinHandle;
-use std::time::{Duration, Instant};
+use std::time::{Duration};
 use thiserror::Error;
-use tracing::{debug, info};
+use tracing::{info};
 
 pub enum Header {
     ContentType,
@@ -527,7 +527,7 @@ impl Lsp {
                 }
             }
 
-            return Err(RequestError::Timeout);
+            // return Err(RequestError::Timeout);
         };
 
         if let Some(i) = response.error {

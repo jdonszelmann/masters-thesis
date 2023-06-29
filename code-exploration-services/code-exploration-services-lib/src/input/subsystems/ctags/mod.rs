@@ -1,5 +1,5 @@
 use crate::analysis::dir::Analysis;
-use crate::analysis::field::{Classification, Relation, Tag};
+use crate::analysis::field::{Classification, Relation};
 use crate::analysis::file::FileAnalysis;
 use crate::input::subsystems::ctags::xref_kinds::XrefKind;
 use crate::input::subsystems::ctags::xrefs::Xref;

@@ -101,7 +101,7 @@ fn main() -> color_eyre::Result<()> {
         } => {
             let source = SourceDir::new(file)?;
 
-            let mut analysis = if let Some(analysis) = analysis {
+            let analysis = if let Some(analysis) = analysis {
                 let string_analysis = if analysis == Path::new("-") {
                     let mut buf = Vec::new();
                     stdin().read_to_end(&mut buf)?;

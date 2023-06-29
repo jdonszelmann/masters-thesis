@@ -1,4 +1,4 @@
-use crate::analysis::field::{Relation, Tag, Classification, Text};
+use crate::analysis::field::{Relation, Classification, Text};
 use crate::analysis::file::FileAnalysis;
 use crate::output::span_to_class;
 use crate::output::tokenize::Token::Newline;
@@ -7,8 +7,8 @@ use crate::sources::hash::SourceCodeHash;
 use crate::sources::span::Span;
 use itertools::Itertools;
 use std::collections::{BTreeSet, HashMap};
-use std::path::PathBuf;
-use tracing::{error, info};
+
+
 
 #[derive(Debug)]
 pub enum IndexField<'a> {

@@ -13,7 +13,7 @@ use std::path::PathBuf;
 use itertools::Itertools;
 use thiserror::Error;
 use tracing::{error, info};
-use crate::analysis::field::Classification;
+
 
 mod colors;
 
@@ -142,7 +142,7 @@ impl Annotater for Latex {
                 .and_then(|i| i.file_name())
                 .map(|i| latex_safe(i.to_string_lossy()));
 
-            let command_name = if let Some(parent) = parent {
+            let command_name = if let Some(_parent) = parent {
                 format!("code {name} ")
                 // format!("code {parent} {name}")
             } else {

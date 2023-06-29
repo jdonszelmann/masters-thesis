@@ -16,7 +16,7 @@ use lsp_types::request::{
     GotoDeclaration, GotoDeclarationParams, GotoDefinition, GotoImplementation,
     GotoImplementationResponse, Initialize, References,
 };
-use lsp_types::{ClientCapabilities, ClientInfo, DidOpenTextDocumentParams, GotoCapability, GotoDefinitionParams, GotoDefinitionResponse, InitializeParams, InitializedParams, Position, PositionEncodingKind, Range, ReferenceClientCapabilities, ReferenceContext, ReferenceParams, TextDocumentClientCapabilities, TextDocumentIdentifier, TextDocumentItem, TextDocumentPositionParams, TraceValue, Url, WindowClientCapabilities, WorkspaceClientCapabilities, Diagnostic, DiagnosticSeverity};
+use lsp_types::{ClientCapabilities, ClientInfo, DidOpenTextDocumentParams, GotoCapability, GotoDefinitionParams, GotoDefinitionResponse, InitializeParams, InitializedParams, Position, Range, ReferenceClientCapabilities, ReferenceContext, ReferenceParams, TextDocumentClientCapabilities, TextDocumentIdentifier, TextDocumentItem, TextDocumentPositionParams, TraceValue, Url, WindowClientCapabilities, WorkspaceClientCapabilities, Diagnostic, DiagnosticSeverity};
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::process::{id, Command, Stdio};
@@ -132,7 +132,7 @@ impl LanguageServer {
         source: &SourceDir,
     ) -> Result<(), RequestError> {
         // send capabilities
-        let resp = self.lsp.request::<Initialize>(&InitializeParams {
+        let _resp = self.lsp.request::<Initialize>(&InitializeParams {
             process_id: Some(parent_id),
             root_uri: Some(
                 Url::from_file_path(source.root())
@@ -326,6 +326,7 @@ impl LanguageServer {
         self.lsp.diagnostics.lock().unwrap().drain(..).collect()
     }
 
+    #[allow(unused)]
     fn get_usage_sites(
         &mut self,
         file: SourceFile,
@@ -513,12 +514,12 @@ impl Analyser for LspAnalyser {
             for (uri, Diagnostic {
                 range,
                 severity,
-                code,
-                code_description,
-                source,
+                code: _,
+                code_description: _,
+                source: _,
                 message,
-                related_information,
-                tags,
+                related_information: _,
+                tags: _,
                 data
             }) in diagnostics {
                 let message = data
@@ -533,7 +534,7 @@ impl Analyser for LspAnalyser {
                         Some(DiagnosticSeverity::ERROR) => Classification(vec!["error".to_string()]),
                         Some(DiagnosticSeverity::WARNING) => Classification(vec!["warning".to_string()]),
                         Some(DiagnosticSeverity::HINT) => Classification(vec!["hint".to_string()]),
-                        _ | Some(DiagnosticSeverity::INFORMATION) => Classification(vec!["information".to_string()]),
+                        _ => Classification(vec!["information".to_string()]),
                     };
 
                     fields.push((span, Relation::Diagnostics {

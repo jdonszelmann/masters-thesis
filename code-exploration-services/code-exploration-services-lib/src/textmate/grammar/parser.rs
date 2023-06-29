@@ -216,7 +216,7 @@ fn parse_pattern(pattern: &Pattern) -> Result<ParsedPattern, ParsePatternError> 
                 .patterns
                 .iter()
                 .map(parse_pattern)
-                .map(|i| if let Err(e) = i {
+                .map(|i| if let Err(_e) = i {
                     None
                 } else {
                     Some(i)
@@ -629,7 +629,7 @@ impl<'a, 'g> Parser<'a, 'g> {
         let mut tokens = Tokens::new();
         let mut offset = 0;
 
-        for (idx, line) in self.source.lines_inclusive().enumerate() {
+        for (_idx, line) in self.source.lines_inclusive().enumerate() {
             self.parse_line(line, offset, patterns, &mut tokens, &mut scope_stack)?;
             offset += line.len();
         }
