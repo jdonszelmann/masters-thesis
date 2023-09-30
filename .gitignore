@@ -7,3 +7,5 @@ raproxy
 .errorviz-version
 examples/checker.ts
 crates/
+results.txt
+results_compressed.txt

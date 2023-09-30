@@ -1,5 +1,114 @@
 % !TEX root = document.tex
 
-\chapter{Introduction}\label{chap:introduction}
+\chapter*{Introduction}\label{chap:introduction}
+\addcontentsline{toc}{chapter}{Introduction}
 
+As programmers, we spend much more time reading code than writing it.
+We try to get acquainted with a code base as part of our new job,
+work our way though the API documentation of the new cutting-edge framework that everyone uses,
+or attempt to comprehend code written decades ago.
+All in all, compared to writing code, we spend an estimated ten times more time reading code~\autocite{clean_code}.
 
+We read code in our highly interactive code editors and \acp{IDE},
+but also explore code repositories on GitHub,
+browse API documentation and specifications,
+look for answers to our questions on StackOverflow,
+and even internalize code from offline paper-based publications.
+
+In this thesis, we introduce the term \emph{code exploration} to refer to this; the process of analyzing and understanding a software code base by examining its structure, components, and dependencies.
+To explore code effectively, we use what we will call \emph{code exploration services}.
+These form a subset of the more well-known \emph{editor services}~\autocite{ErdwegSV13}, but exclude services that are only useful when writing code.
+
+Code exploration services range from simple yet effective syntax coloring, all the way to interactive services such as code navigation and hover information.
+These services are not only useful in a code editor, but also in other \emph{code exploration media}; places where code might be explored, such as on documentation websites and in books.
+The code exploration services and their presentations need to be adjusted to meet the limitations of the specific medium.
+For example, syntax coloring is feasible in a printed book, but one cannot instantly jump to a definition.
+
+There are existing solutions that facilitate code exploration.
+Most major programming languages have spent effort to implement their own editor plugins that provide syntax coloring and additional editor services.
+To support authors of code libraries, more and more languages include tooling to generate language-specific documentation websites from a code base.
+For example, Rust has RustDoc, Haskell has Haddock, and Agda can output code as rich HTML and even LaTeX code.
+However, all these solutions are very narrowly applicable to only particular languages where the developers have gone through the trouble of providing, implementing, and maintaining these services.
+Especially for languages with less development power, investing in the implementation of such services may not be worthwhile.
+
+At the same time, there are tools that apply to multiple languages but target only a very specific code exploration service.
+For example, there is Bootlin's Elixir cross referencer,
+which allows users to navigate C and C++ source code online, such as the Linux Kernel source code\footnote{Explore the Linux Kernel source code at \url{https://elixir.bootlin.com}}.
+To provide code navigation in editors that support it, there is also CTAGS~\autocite{ctags}, which is a tool that generates an index of all identifiers found in a code base and which supports more than a hundred languages.
+We will call these \emph{narrow} tools: those that either provide few services for many languages, or many services for few languages.
+
+This hints at a problem often called the \emph{\ac{IDE} portability problem}, where $m$ languages providing services for $n$ editors require \problem{\times} implementations and related effort~\autocite{KeidelPE16}.
+One solution to the \ac{IDE} portability problem is a system that \emph{decouples} editors from language-specific providers of editor services, which is what a system like \ac{LSP} does.
+All languages that provide a \emph{language server} implementation can provide editor services to all editors with an \ac{LSP} client.
+With \ac{LSP}, $m$ languages need and $n$ editors need to support \ac{LSP}, transforming the effort required from \problem{\times} into \problem{+}.
+
+\todo{Why is LSP not good enough for code exploration services}
+
+% Our prototype
+% =============
+% - We made a prototype that shows:
+% - two approaches to generate metadata (from existing tools and from directly the compiler/static analysis tool)
+% - two viewers
+% - the intermediate format at work??
+
+%%%%%%%%%%%%%%
+The IDE portability problem forms the core of what this thesis is about.
+There are maybe a dozen major code editors, but a nearly limitless number of places, such as many different websites, where having better code exploration services makes sense.
+The \problem{\times} problem is thus even bigger for code exploration services than for editor services!
+In this thesis, we will therefore aim to answer the question:
+
+\begin{center}
+    \textbf{Can we provide code exploration services outside editors in a way that decouples programming languages from code exploration media?}
+\end{center}
+
+\section*{Codex}
+
+To answer that question, we present \emph{Codex}: an intermediate format for describing code base metadata, a solution to the \problem{\times} problem for rich code exploration.
+The format is language-agnostic and can be extended to support new kinds of metadata for future code exploration services.
+Thanks to its offline nature, the format allows the code to be explored at a point later in time from when the metadata is generated, even when the specific versions of tooling that were used on the code base are no longer available.
+We discuss the reasoning that led us to the Codex format, describe what choices we made in the progress, demonstrate our implementation of
+five prototype \emph{generators} of the Codex format and two different rich prototype \emph{presentations} of the Codex format and finally reflect on our experience making these prototypes. %
+
+\paragraph{Contributions}
+
+In summary, our contributions are:
+\begin{itemize}
+    \item the Codex metadata format, a tractable solution to the \problem{\times} problem for code exploration services, suitable for describing code bases of both DSLs and mainstream languages;
+    \item a proof of concept comprising four prototype generators of Codex metadata (LSP, CTAGS, TextMate, Elaine), and two prototype code presentations derived from Codex metadata (LaTeX, HTML);
+    \item an analysis of the trade-offs when designing a code metadata format.
+\end{itemize}
+
+These contributions align with the contributions of a paper which we submitted to Software Language Engineering (SLE) 2023 called \citetitle{our_paper}~\autocite{our_paper}.
+Unfortunately, this paper was not accepted, the main reason being how we treated related work.
+This thesis will reiterate many points from that paper, and is intended to serve as an extension of that paper, containing much more detailed related work and reasoning behind decisions.
+Therefore, besides the contributions of that paper, in this thesis we present:
+
+\begin{itemize}
+    \item a much more thorough introduction of editor services and the IDE portability problem than was given in the paper;
+    \item rigorous definitions of the terms ``Code Exploration'' and ``Code Exploration Services'', which we introduced;
+    \item a more detailed study of existing tools that provide Code Exploration Services and how they relate to the Codex metadata format;
+    \item a new generator that generates Codex metadata from Agda.
+\end{itemize}
+
+We do this in the following order.
+We start in \cref{chap:editor-services} with an overview of what editor services are, together with a detailed explanation of the \ac{IDE} portability problem.
+This leads into \cref{chap:code-exploration-services}, where we define the terms \emph{code exploration}, and \emph{code exploration services}
+We relate these terms to what we learned about editor services in the previous chapter, go over existing solutions for code exploration services.
+With this theory behind us, we will demonstrate our solution: the Codex Metadata Format in \cref{chap:codex}
+<WIP> Finally, we discuss future work in \cref{chap:future_work} and conclude this thesis in \cref{chap:conclusion}.
+
+%\todo[inline]{text-form TOC (commented below)}
+%We give a high-level explanation of the Codex format in~\cref{sec:our-solution}, and demonstrate a proof of concept in~\cref{sec:demonstration} to show that our idea can indeed power such rich code exploration services.
+%This demonstration is followed by an extensive discussion in~\cref{sec:considerations} of all the considerations that went into this proof of concept, followed by an analysis of its limitations and how we envision its future in~\cref{sec:fw}.
+%We finish with a comparison of our solution to related work in~\cref{sec:prior-work}, and end with our conclusion in~\cref{sec:conclusion}.
+
+% \paragraph {Background}
+% \begin{itemize}
+%     \item Editor Services
+%     \item Code Exploration Services
+% \end{itemize}
+% \paragraph{Out of scope}
+% \begin{itemize}
+% \item speed of generation
+% \end{itemize}
+% \paragraph{Problem statement}

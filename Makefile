@@ -17,7 +17,7 @@ SRCS       := Makefile $(wildcard $(SRCDIR)/*.tex) $(shell find $(FIGDIR)/* $(IM
 IMGS       := $(wildcard $(IMGDIR)/*.ps) $(wildcard $(IMGDIR)/*.eps)
 OBJS       := $(wildcard $(OUTDIR)/*.aux) $(wildcard $(OUTDIR)/*.bbl) $(wildcard $(OUTDIR)/*.pdf)
 
-.PHONY: all clean .refresh view show bib clean-bib
+.PHONY: all clean .refresh view show bib clean-bib fixup
 
 all: $(OUTDIR)/$(DOCUMENT).pdf
 
@@ -26,7 +26,6 @@ all: $(OUTDIR)/$(DOCUMENT).pdf
 
 $(OUTDIR):
 	mkdir -p $(OUTDIR)
-	sudo mount -t tmpfs -o size=1g tmpfs $(OUTDIR)
 
 $(OUTDIR)/$(DOCUMENT).pdf: $(SRCBIB) | $(OUTDIR)
 	cd $(SRCDIR)/ && \
@@ -43,6 +42,12 @@ watch: $(SRCBIB) | $(OUTDIR)
 			-output-directory=$(OUTDIR) \
 			$(DOCUMENT)
 
+fixup:
+	cd $(SRCDIR); \
+		pdfjam --outfile $(OUTDIR)/paper.pdf --a4paper ../../paper.pdf; \
+		pdfunite $(OUTDIR)/$(DOCUMENT).pdf $(OUTDIR)/paper.pdf $(OUTDIR)/temp.pdf; \
+		mv $(OUTDIR)/temp.pdf $(OUTDIR)/$(DOCUMENT).pdf
+
 bib: clean-bib $(SRCBIB) fix-bib
 
 $(SRCBIB):
@@ -58,7 +63,6 @@ clean-bib:
 
 clean: clean-bib
 	rm -rf $(OUTDIR)/*
-	-sudo umount -R $(OUTDIR)
 	rm -rf $(OUTDIR)
 	rm -f $(WORKDIR)/*.aux
 	rm -f $(WORKDIR)/*.bbl

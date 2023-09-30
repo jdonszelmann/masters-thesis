@@ -9,8 +9,6 @@
 
 
 % References
-\usepackage[hidelinks]{hyperref}
-\usepackage[capitalise, noabbrev]{cleveref}
 % Use:
 %   \Cref{} -- at the start of a sentence
 %   \cref{} -- not at the start of a sentence
@@ -28,13 +26,14 @@
 % fn:     Footnote
 \newrobustcmd*{\citefirstlastauthor}{\AtNextCite{\DeclareNameAlias{labelname}{given-family}}\citeauthor}
 
+\usepackage[a4paper]{geometry}
 
 % Graphics
 \usepackage{xargs}
 \usepackage[dvips]{graphicx}
 \usepackage[dvips]{color}
 \usepackage[dvipsnames]{xcolor}
-
+\usepackage{pdfpages}
 
 % Fonts
 \usepackage{xltxtra}

@@ -2,18 +2,74 @@
 \RequirePackage{snapshot}
 \makeatletter
 \def\snap@providesfile#1[#2]{%
-  \wlog{File: #1 #2}%
-  \if\expandafter\snap@graphic@test\expanded{#2}@@\@nil
+    \wlog{File: #1 #2}%
+    \if\expandafter\snap@graphic@test\expanded{#2}@@\@nil
     \snap@record@graphic#1\relax #2 (type ??)\@nil
-  \else
+    \else
     \expandafter\xdef\csname ver@#1\endcsname{#2}%
-  \fi
-  \endgroup
+    \fi
+    \endgroup
 }
 \makeatother
 
+%\pgfplotsset{compat=1.18}
 \documentclass[twoside,a4paper,11pt]{memoir}
 \usepackage{document}
+\usepackage[hidelinks]{hyperref}
+\usepackage[noabbrev, nameinlink]{cleveref}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage[outputdir=../out]{minted}
+\usepackage{listings-rust}
+\usepackage{codex}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{fontawesome5}
+
+\usetikzlibrary{%
+    arrows,%
+    calc,%
+    fit,%
+    patterns,%
+    plotmarks,%
+    shapes.geometric,%
+    shapes.misc,%
+    shapes.symbols,%
+    shapes.arrows,%
+    shapes.callouts,%
+% shapes.multipart,%
+% shapes.gates.logic.US,%
+% shapes.gates.logic.IEC,%
+% er,%
+% automata,%
+    backgrounds,%
+    chains,%
+    topaths,%
+    trees,%
+    petri,%
+    mindmap,%
+    matrix,%
+% calendar,%
+    folding,%
+    fadings,%
+    through,%
+    positioning,%
+    scopes,%
+    decorations.fractals,%
+    decorations.shapes,%
+    decorations.text,%
+    decorations.pathmorphing,%
+    decorations.pathreplacing,%
+    decorations.footprints,%
+    decorations.markings,%
+    shadows}
+\newfontfamily\xkcd{xkcd}
+
+\newfloat{lstfloat}{htbp}{lop}
+\floatname{lstfloat}{Listing}
+\def\lstfloatautorefname{Listing}
+
+\newcommand{\problem}[1]{$m #1 n$}
 
 % Add \@ _before_ the terminating period of the sentence (`UI\@. Test`)
 % to allow inter-sentence spacing when the sentence ends with a capital letter.
@@ -25,34 +81,47 @@
 
 \begin{document}
 
-\frontmatter
-\thispagestyle{empty}
-\maketitle
-\makeformaltitlepages{\input{000-abstract}}
+    \include{elaine}
+    \include{field}
+    \include{initial_example}
+    \include{metadata_json}
 
-\include{010-preface}
+%    \frontmatter
+%    \thispagestyle{empty}
+%    \maketitle
+    \thispagestyle{empty}
+    \begin{tikzpicture}[remember picture, overlay]
+        \node[inner sep=0pt] at (current page.center) {%
+            \includegraphics[width=\paperwidth,height=\paperheight]{../images/cover}%
+        };
+    \end{tikzpicture}
+    \cleardoublepage{}
+    \makeformaltitlepages{\input{000-abstract}}
 
-\cleardoublepage\tableofcontents
-\cleardoublepage\listoffigures
-\cleardoublepage\listoftables
-\cleardoublepage\mainmatter{}
+    \include{010-preface}
 
-\newtheorem{definition}{Definition}
+    \cleardoublepage\tableofcontents
+%\cleardoublepage\listoffigures
+%\cleardoublepage\listoftables
+    \cleardoublepage\mainmatter{}
 
-\include{100-introduction}
-\include{200-editor-services}
-\include{300-code-exploration-services}
-\include{400-tradeoffs-of-an-index-format}
-\include{500-providing-cvs}
-\include{600-related-work}
-\include{700-conclusion}
+    \newtheorem{definition}{Definition}
 
-\printbibliography{}
+    \include{100-introduction}
+    \include{200-editor-services}
+    \include{300-code-exploration-services}
+    \include{400-design}
+    \include{500-codex}
+    \include{600-evaluation}
+    \include{700-future-work}
+    \include{800-conclusion}
 
-\include{acronyms}
+    \printbibliography{}
 
-\appendix
-\def\chaptername{Appendix}
-\include{A00-appendix}
+    \include{acronyms}
+
+    \appendix
+    \def\chaptername{Appendix}
+    \include{A00-appendix}
 
 \end{document}

@@ -1,3 +1,11 @@
 % !TEX root = document.tex
 
-Abstract here.
+Programmers spend significantly more time trying to comprehend existing code than writing new code.
+They gain an understanding of the code by navigating the code base in an IDE, by reading documentation online, and by browsing code repositories on websites such as GitHub.
+Creating rich experiences for a variety of programming languages across those various media is a large effort.
+This effort might be worthwhile for popular languages, but for niche or experimental languages the required effort is often too large.
+Solutions to reduce this effort in IDEs exist, like LSP, but to reduce the effort in other places, we introduce the \emph{Codex metadata format}, separating the language-specific generation of code metadata from its language-agnostic presentation.
+We demonstrate this approach by implementing five language-specific generators (from LSP, CTAGS, TextMate, Agda and Elaine) and two language-agnostic presentations (PDF documents, and a code viewer website) of code and metadata.
+To demonstrate different kinds of code metadata, we implemented four different code exploration services: syntax coloring, code navigation, structure outline, and diagnostic messages.
+As part of this thesis, we submitted a paper in which we demonstrate that the Codex format successfully decouples languages and their metadata from their presentations.
+In this thesis, we continue the work from that paper, discussing each topic more in-depth and expanding on ideas from the paper.

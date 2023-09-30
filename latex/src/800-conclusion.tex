@@ -1,0 +1,15 @@
+% !TEX root = document.tex
+\chapter{Conclusion}\label{chap:conclusion}
+
+\todo[inline]{this is literally from the paper, so this should definitely be changed}
+
+We presented Codex, a language-agnostic format for describing the metadata of a code base, with the purpose of providing code exploration services in different types of presentations, such as HTML websites and LaTeX documents.
+The format decouples generating the metadata from its presentation, addressing  the \problem{\times} problem for code exploration services.
+The format allows the code to be explored at a point later in time from when the metadata is generated, even when the specific versions of tooling that was used on the code base is no longer available.
+
+By implementing multiple language-specific generators, we showed that the Codex metadata format can be generated from several existing narrow tools (e.g., TextMate grammars, LSP, CTAGS) for various programming languages (e.g. Rust, Haskell).
+This includes generating metadata for a Domain-Specific Language (DSL), called Elaine, demonstrating that providing code exploration services for such languages without pre-existing tooling is feasible.
+The code examples in the digital version of this paper are interactive, allowing the reader to navigate between code usages and definitions.
+These interactive features and the syntax highlighting are generated based on the Codex metadata format, using our language-agnostic LaTeX presentation.
+Additionally, we demonstrated an interactive HTML presentation that can be used to explore a code base.
+We show that the Codex format successfully decouples languages and their metadata from their presentations.
